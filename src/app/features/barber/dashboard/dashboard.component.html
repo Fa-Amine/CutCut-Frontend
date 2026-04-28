@@ -1,0 +1,134 @@
+<section class="dashboard-page">
+    <div class="dashboard-shell">
+      <div class="page-header">
+        <span class="page-kicker">{{ langService.t().dashboard }}</span>
+        <h1>{{ langService.t().barberDashboardTitle }}</h1>
+        <p>{{ langService.t().barberDashboardSubtitle }}</p>
+      </div>
+  
+      <app-loading-spinner
+        *ngIf="isLoading()"
+        message="Chargement du tableau de bord...">
+      </app-loading-spinner>
+  
+      <app-error-alert
+        *ngIf="!isLoading() && errorMessage()"
+        title="Erreur"
+        [message]="errorMessage()">
+      </app-error-alert>
+  
+      <ng-container *ngIf="!isLoading() && !errorMessage() && dashboard() as stats">
+        <div class="stats-grid">
+          <p-card>
+            <div class="stat-card">
+              <span>{{ langService.t().totalBookings }}</span>
+              <strong>{{ stats.totalBookings }}</strong>
+            </div>
+          </p-card>
+  
+          <p-card>
+            <div class="stat-card">
+              <span>{{ langService.t().completedBookings }}</span>
+              <strong>{{ stats.completedBookings }}</strong>
+            </div>
+          </p-card>
+  
+          <p-card>
+            <div class="stat-card">
+              <span>{{ langService.t().currentBalance }}</span>
+              <strong>{{ stats.currentBalance }} MAD</strong>
+            </div>
+          </p-card>
+  
+          <p-card>
+            <div class="stat-card">
+              <span>{{ langService.t().commission }}</span>
+              <strong>{{ stats.totalCommission }} MAD</strong>
+            </div>
+          </p-card>
+        </div>
+  
+        <div class="dashboard-content">
+          <p-card>
+            <div class="panel-card">
+              <div class="panel-head">
+                <div>
+                  <span class="panel-kicker">{{ langService.t().upcomingBookingsPreview }}</span>
+                  <h2>{{ langService.t().upcomingBookingsPreview }}</h2>
+                </div>
+  
+                <button
+                  pButton
+                  type="button"
+                  [label]="langService.t().viewAllBookings"
+                  class="p-button-text"
+                  routerLink="/barber/bookings">
+                </button>
+              </div>
+  
+              <app-empty-state
+                *ngIf="!upcomingBookings().length"
+                [title]="langService.t().noReservations"
+                message="Aucun rendez-vous à venir pour le moment.">
+              </app-empty-state>
+  
+              <div class="booking-preview-list" *ngIf="upcomingBookings().length">
+                <div class="booking-preview-item" *ngFor="let booking of upcomingBookings()">
+                  <div>
+                    <h3>{{ booking.client.name }}</h3>
+                    <p>{{ formatDate(booking.slot.startTime) }} • {{ formatTime(booking.slot.startTime) }}</p>
+                  </div>
+  
+                  <p-tag
+                    [value]="getStatusLabel(booking.status)"
+                    [severity]="getStatusSeverity(booking.status)">
+                  </p-tag>
+                </div>
+              </div>
+            </div>
+          </p-card>
+  
+          <p-card>
+            <div class="panel-card">
+              <span class="panel-kicker">{{ langService.t().earningsOverview }}</span>
+              <h2>{{ langService.t().earningsOverview }}</h2>
+  
+              <div class="earnings-box">
+                <div class="earnings-row">
+                  <span>{{ langService.t().currentBalance }}</span>
+                  <strong>{{ stats.currentBalance }} MAD</strong>
+                </div>
+  
+                <div class="earnings-row">
+                  <span>{{ langService.t().commission }}</span>
+                  <strong>{{ stats.totalCommission }} MAD</strong>
+                </div>
+              </div>
+  
+              <p class="commission-note">
+                {{ langService.t().commissionNote }}
+              </p>
+  
+              <div class="dashboard-actions">
+                <button
+                  pButton
+                  type="button"
+                  [label]="langService.t().manageAvailability"
+                  routerLink="/barber/availability">
+                </button>
+  
+                <button
+                  pButton
+                  type="button"
+                  [label]="langService.t().businessProfile"
+                  severity="secondary"
+                  [outlined]="true"
+                  routerLink="/barber/profile">
+                </button>
+              </div>
+            </div>
+          </p-card>
+        </div>
+      </ng-container>
+    </div>
+  </section>

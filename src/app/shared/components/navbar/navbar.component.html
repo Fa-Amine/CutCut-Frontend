@@ -1,0 +1,113 @@
+<header class="navbar-shell">
+  <div class="navbar">
+    <div class="navbar-inner">
+      <a routerLink="/" class="brand" (click)="closeMobileMenu()">
+        <img src="/assets/images/logo.png" alt="" class="brand-logo" />
+      </a>
+
+      <nav class="nav-center desktop-only">
+        <a
+          *ngFor="let link of navLinks()"
+          [routerLink]="link.path"
+          routerLinkActive="active-link"
+          [routerLinkActiveOptions]="{ exact: link.path === '/' }">
+          {{ link.label }}
+        </a>
+      </nav>
+
+      <div class="nav-right desktop-only">
+        <div class="lang-switch">
+          <button
+            type="button"
+            class="lang-btn"
+            [class.active]="langService.lang() === 'fr'"
+            (click)="setLanguage('fr')">
+            FR
+          </button>
+
+          <button
+            type="button"
+            class="lang-btn"
+            [class.active]="langService.lang() === 'ar'"
+            (click)="setLanguage('ar')">
+            AR
+          </button>
+        </div>
+
+        <ng-container *ngIf="sessionService.isGuest(); else authActions">
+          <button
+            pButton
+            type="button"
+            [label]="langService.t().login"
+            class="login-btn p-button-text"
+            routerLink="/login">
+          </button>
+
+          <button
+            pButton
+            type="button"
+            [label]="langService.t().register"
+            class="register-btn"
+            routerLink="/register">
+          </button>
+        </ng-container>
+
+        <ng-template #authActions>
+          <button
+            pButton
+            type="button"
+            [label]="langService.t().logout"
+            class="login-btn p-button-text"
+            (click)="logout()">
+          </button>
+        </ng-template>
+      </div>
+
+      <div class="mobile-actions mobile-only">
+        <div class="lang-switch compact-lang">
+          <button
+            type="button"
+            class="lang-btn"
+            [class.active]="langService.lang() === 'fr'"
+            (click)="setLanguage('fr')">
+            FR
+          </button>
+
+          <button
+            type="button"
+            class="lang-btn"
+            [class.active]="langService.lang() === 'ar'"
+            (click)="setLanguage('ar')">
+            AR
+          </button>
+        </div>
+
+        <button class="menu-toggle" type="button" (click)="toggleMobileMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-menu" *ngIf="mobileMenuOpen()">
+    <a
+      *ngFor="let link of navLinks()"
+      [routerLink]="link.path"
+      (click)="closeMobileMenu()">
+      {{ link.label }}
+    </a>
+
+    <ng-container *ngIf="sessionService.isGuest(); else mobileAuthActions">
+      <a routerLink="/login" (click)="closeMobileMenu()">{{ langService.t().login }}</a>
+      <a routerLink="/register" (click)="closeMobileMenu()">{{ langService.t().register }}</a>
+    </ng-container>
+
+    <ng-template #mobileAuthActions>
+      <a href="#" (click)="logout(); $event.preventDefault()">{{ langService.t().logout }}</a>
+    </ng-template>
+  </div>
+
+  
+</header>

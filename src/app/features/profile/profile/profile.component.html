@@ -1,0 +1,97 @@
+<section class="profile-page">
+    <div class="profile-shell">
+      <div class="page-header">
+        <span class="page-kicker">{{ langService.t().profile }}</span>
+        <h1>{{ langService.t().profile }}</h1>
+        <p>Consultez et modifiez vos informations personnelles.</p>
+      </div>
+  
+      <p-message
+        *ngIf="successMessage()"
+        severity="success"
+        [text]="successMessage()">
+      </p-message>
+  
+      <app-loading-spinner
+        *ngIf="isLoading()"
+        message="Chargement du profil...">
+      </app-loading-spinner>
+  
+      <app-error-alert
+        *ngIf="!isLoading() && errorMessage()"
+        title="Erreur"
+        [message]="errorMessage()">
+      </app-error-alert>
+  
+      <p-card *ngIf="!isLoading() && !errorMessage() && profile()">
+        <div class="profile-card">
+          <div class="profile-top">
+            <p-avatar
+              [label]="getInitials(profile()!.name)"
+              shape="circle"
+              size="xlarge">
+            </p-avatar>
+  
+            <div>
+              <h2>{{ profile()!.name }}</h2>
+              <p>Client CutCut</p>
+            </div>
+          </div>
+  
+          <form [formGroup]="profileForm" class="profile-grid">
+            <div class="info-box">
+              <span>Nom</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.name }}</strong>
+              <input *ngIf="isEditMode()" pInputText formControlName="name" class="w-full" />
+            </div>
+  
+            <div class="info-box">
+              <span>Email</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.email }}</strong>
+              <input *ngIf="isEditMode()" pInputText formControlName="email" class="w-full" />
+            </div>
+  
+            <div class="info-box">
+              <span>Téléphone</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.phone }}</strong>
+              <input *ngIf="isEditMode()" pInputText formControlName="phone" class="w-full" />
+            </div>
+  
+            <div class="info-box">
+              <span>Rôle</span>
+              <strong>{{ profile()!.role || 'CLIENT' }}</strong>
+            </div>
+          </form>
+  
+          <div class="profile-actions">
+            <button
+              *ngIf="!isEditMode()"
+              pButton
+              type="button"
+              label="Modifier"
+              (click)="startEdit()">
+            </button>
+  
+            <ng-container *ngIf="isEditMode()">
+              <button
+                pButton
+                type="button"
+                label="Enregistrer"
+                [disabled]="isSaving()"
+                (click)="saveProfile()">
+              </button>
+  
+              <button
+                pButton
+                type="button"
+                label="Annuler"
+                severity="secondary"
+                [outlined]="true"
+                (click)="cancelEdit()">
+              </button>
+            </ng-container>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </section>

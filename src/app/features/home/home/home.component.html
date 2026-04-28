@@ -1,0 +1,177 @@
+<section class="hero-section">
+  <div class="hero-container">
+    <div class="hero-text">
+      <span class="eyebrow">{{ langService.t().heroBadge }}</span>
+
+      <h1>{{ langService.t().heroTitle }}</h1>
+
+      <p>
+        {{ langService.t().heroSubtitle }}
+      </p>
+
+      <div class="hero-actions">
+        <button
+          pButton
+          type="button"
+          [label]="langService.t().bookNow"
+          icon="pi pi-calendar-plus"
+          class="hero-primary-btn"
+          routerLink="/barbers">
+        </button>
+      
+        <button
+          *ngIf="sessionService.isGuest()"
+          pButton
+          type="button"
+          [label]="langService.t().becomeBarber"
+          icon="pi pi-user-plus"
+          class="hero-secondary-btn"
+          routerLink="/register">
+        </button>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat-box">
+          <strong>{{ langService.t().fast }}</strong>
+          <span>{{ langService.t().fastDesc }}</span>
+        </div>
+
+        <div class="stat-box">
+          <strong>{{ langService.t().simple }}</strong>
+          <span>{{ langService.t().simpleDesc }}</span>
+        </div>
+
+        <div class="stat-box">
+          <strong>{{ langService.t().reliable }}</strong>
+          <span>{{ langService.t().reliableDesc }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-preview">
+      <div class="booking-preview-card">
+        <div class="preview-header">
+          <span>{{ langService.t().nextAvailable }}</span>
+          <p-tag [value]="langService.t().today" severity="info"></p-tag>
+        </div>
+
+        <ng-container *ngIf="previewBarber() as barber; else noPreviewBarber">
+          <div class="preview-barber">
+            <ng-container *ngIf="barber.photoUrl; else previewAvatar">
+              <p-avatar [image]="barber.photoUrl" shape="circle" size="large"></p-avatar>
+            </ng-container>
+
+            <ng-template #previewAvatar>
+              <p-avatar [label]="getInitials(barber.name)" shape="circle" size="large"></p-avatar>
+            </ng-template>
+
+            <div>
+              <h3>{{ barber.name }}</h3>
+              <p>{{ barber.shopName || 'CutCut' }}</p>
+            </div>
+          </div>
+
+          <div class="slot-list" *ngIf="previewSlots().length; else noSlots">
+            <button
+              pButton
+              type="button"
+              *ngFor="let slot of previewSlots(); let i = index"
+              [label]="formatTime(slot.startTime)"
+              [class.hero-primary-btn]="i === 1"
+              [severity]="i === 1 ? undefined : 'secondary'"
+              [outlined]="i !== 1"
+              [routerLink]="['/barbers', barber.id]">
+            </button>
+          </div>
+
+          <ng-template #noSlots>
+            <p class="preview-empty">Aucun créneau disponible pour le moment.</p>
+          </ng-template>
+
+          <button
+            pButton
+            type="button"
+            [label]="langService.t().confirmBooking"
+            class="confirm-btn navy-btn block-btn"
+            [routerLink]="['/barbers', barber.id]">
+          </button>
+        </ng-container>
+
+        <ng-template #noPreviewBarber>
+          <p class="preview-empty">Aucun barbier disponible pour le moment.</p>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how-section">
+  <div class="section-header">
+    <span class="section-kicker">{{ langService.t().howItWorks }}</span>
+    <h2>{{ langService.t().howTitle }}</h2>
+  </div>
+
+  <div class="steps-grid">
+    <div class="modern-step-card">
+      <div class="step-number">01</div>
+      <h3>{{ langService.t().step1Title }}</h3>
+      <p>{{ langService.t().step1Desc }}</p>
+    </div>
+
+    <div class="modern-step-card">
+      <div class="step-number">02</div>
+      <h3>{{ langService.t().step2Title }}</h3>
+      <p>{{ langService.t().step2Desc }}</p>
+    </div>
+
+    <div class="modern-step-card">
+      <div class="step-number">03</div>
+      <h3>{{ langService.t().step3Title }}</h3>
+      <p>{{ langService.t().step3Desc }}</p>
+    </div>
+  </div>
+</section>
+
+<section class="barbers-section">
+  <div class="section-header">
+    <span class="section-kicker">{{ langService.t().featured }}</span>
+    <h2>{{ langService.t().featuredTitle }}</h2>
+  </div>
+
+  <p *ngIf="!featuredBarbers().length">Aucun barbier à afficher pour le moment.</p>
+
+  <div class="barbers-grid" *ngIf="featuredBarbers().length">
+    <div class="modern-barber-card" *ngFor="let barber of featuredBarbers()">
+      <div class="barber-top">
+        <ng-container *ngIf="barber.photoUrl; else barberAvatar">
+          <p-avatar [image]="barber.photoUrl" shape="circle" size="xlarge"></p-avatar>
+        </ng-container>
+
+        <ng-template #barberAvatar>
+          <p-avatar [label]="getInitials(barber.name)" shape="circle" size="xlarge"></p-avatar>
+        </ng-template>
+
+        <div>
+          <h3>{{ barber.name }}</h3>
+          <p>{{ barber.shopName || 'CutCut' }}</p>
+        </div>
+      </div>
+
+      <div class="barber-meta">
+        <p-tag
+          [value]="barber.bio || ((barber.price ?? 0) + ' MAD')"
+          severity="contrast">
+        </p-tag>
+      </div>
+
+      <button
+        pButton
+        type="button"
+        [label]="langService.t().bookThisBarber"
+        icon="pi pi-arrow-right"
+        class="navy-btn"
+        [routerLink]="['/barbers', barber.id]">
+      </button>
+    </div>
+  </div>
+</section>

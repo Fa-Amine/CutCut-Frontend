@@ -1,0 +1,122 @@
+<section class="barber-bookings-page">
+    <div class="bookings-shell">
+      <div class="page-header">
+        <span class="page-kicker">{{ langService.t().allBookings }}</span>
+        <h1>{{ langService.t().barberBookingsTitle }}</h1>
+        <p>{{ langService.t().barberBookingsSubtitle }}</p>
+      </div>
+  
+      <p-message
+        *ngIf="successMessage()"
+        severity="success"
+        [text]="successMessage()">
+      </p-message>
+  
+      <app-loading-spinner
+        *ngIf="isLoading()"
+        message="Chargement des réservations...">
+      </app-loading-spinner>
+  
+      <app-error-alert
+        *ngIf="!isLoading() && errorMessage()"
+        title="Erreur"
+        [message]="errorMessage()">
+      </app-error-alert>
+  
+      <div class="summary-strip" *ngIf="!isLoading()">
+        <div class="summary-box">
+          <span>{{ langService.t().todayBookings }}</span>
+          <strong>{{ todayBookings().length }}</strong>
+        </div>
+  
+        <div class="summary-box">
+          <span>{{ langService.t().allBookings }}</span>
+          <strong>{{ bookings().length }}</strong>
+        </div>
+  
+        <div class="summary-box">
+          <span>{{ langService.t().upcomingClients }}</span>
+          <strong>{{ upcomingClientsCount() }}</strong>
+        </div>
+      </div>
+  
+      <app-empty-state
+        *ngIf="!isLoading() && !bookings().length"
+        [title]="langService.t().noReservations"
+        message="Aucune réservation reçue pour le moment.">
+      </app-empty-state>
+  
+      <div class="bookings-list" *ngIf="!isLoading() && bookings().length">
+        <div class="booking-card" *ngFor="let booking of bookings()">
+          <div class="booking-main">
+            <div class="booking-ident">
+              <ng-container *ngIf="booking.client?.name; else noClientAvatar">
+                <p-avatar
+                  [label]="getInitials(booking.client.name)"
+                  shape="circle"
+                  size="xlarge">
+                </p-avatar>
+              </ng-container>
+  
+              <ng-template #noClientAvatar>
+                <p-avatar label="C" shape="circle" size="xlarge"></p-avatar>
+              </ng-template>
+  
+              <div>
+                <h3>{{ booking.client.name }}</h3>
+                <p>{{ langService.t().serviceLabel }} • {{ booking.servicePrice }} MAD</p>
+              </div>
+            </div>
+  
+            <div class="booking-meta">
+              <div class="meta-item">
+                <span>{{ langService.t().reservationDate }}</span>
+                <strong>{{ formatDate(booking.slot.startTime) }}</strong>
+              </div>
+  
+              <div class="meta-item">
+                <span>{{ langService.t().reservationTime }}</span>
+                <strong>{{ formatTime(booking.slot.startTime) }}</strong>
+              </div>
+            </div>
+  
+            <div class="booking-status">
+              <p-tag
+                [value]="getStatusLabel(booking.status)"
+                [severity]="getStatusSeverity(booking.status)">
+              </p-tag>
+            </div>
+          </div>
+  
+          <div class="booking-actions">
+            <button
+              *ngIf="booking.status === 'PENDING'"
+              pButton
+              type="button"
+              [label]="langService.t().accept"
+              (click)="acceptBooking(booking.id)">
+            </button>
+  
+            <button
+              *ngIf="booking.status === 'PENDING' || booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED'"
+              pButton
+              type="button"
+              severity="danger"
+              [outlined]="true"
+              [label]="langService.t().cancelReservation"
+              (click)="rejectBooking(booking.id)">
+            </button>
+  
+            <button
+            *ngIf="booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED'"
+            pButton
+            type="button"
+            severity="success"
+            [label]="langService.t().completed"
+            (click)="completeBooking(booking.id)">
+          </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>

@@ -1,0 +1,37 @@
+:host {
+    display: block;
+  }
+  
+  .error-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    border-radius: 18px;
+    color: #991b1b;
+  }
+  
+  .error-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #dc2626;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  
+  .error-content h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+  }
+  
+  .error-content p {
+    margin: 0;
+    line-height: 1.55;
+    color: #7f1d1d;
+  }

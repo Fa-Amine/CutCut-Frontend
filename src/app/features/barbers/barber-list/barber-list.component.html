@@ -1,0 +1,99 @@
+<section class="barbers-page">
+    <div class="barbers-shell">
+      <div class="page-header">
+        <div>
+          <span class="page-kicker">{{ langService.t().availableBarbers }}</span>
+          <h1>{{ langService.t().barbersTitle }}</h1>
+          <p>{{ langService.t().barbersSubtitle }}</p>
+        </div>
+      </div>
+  
+      <div class="filters-card">
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>{{ langService.t().searchBarber }}</label>
+            <input
+              pInputText
+              class="w-full"
+              [ngModel]="searchTerm()"
+              (ngModelChange)="setSearch($event)"
+              [placeholder]="langService.t().searchPlaceholder" />
+          </div>
+        </div>
+      </div>
+  
+      <app-loading-spinner
+        *ngIf="isLoading()"
+        message="Chargement des barbiers...">
+      </app-loading-spinner>
+  
+      <app-error-alert
+        *ngIf="!isLoading() && errorMessage()"
+        title="Erreur"
+        [message]="errorMessage()">
+      </app-error-alert>
+  
+      <app-empty-state
+        *ngIf="!isLoading() && !errorMessage() && !filteredBarbers().length"
+        [title]="langService.t().noBarbersFound"
+        message="Aucun barbier disponible pour le moment.">
+      </app-empty-state>
+  
+      <div class="barbers-grid" *ngIf="!isLoading() && !errorMessage() && filteredBarbers().length">
+        <div class="barber-card" *ngFor="let barber of filteredBarbers()">
+          <div class="barber-card-top">
+            <div class="barber-ident">
+              <ng-container *ngIf="barber.photoUrl; else initialsAvatar">
+                <img
+                  [src]="barber.photoUrl"
+                  [alt]="barber.name"
+                  class="barber-photo" />
+              </ng-container>
+  
+              <ng-template #initialsAvatar>
+                <p-avatar
+                  [label]="getInitials(barber.name)"
+                  shape="circle"
+                  size="xlarge">
+                </p-avatar>
+              </ng-template>
+  
+              <div>
+                <h3>{{ barber.name }}</h3>
+                <p>{{ barber.shopName || 'CutCut' }}</p>
+              </div>
+            </div>
+  
+            <p-tag
+              *ngIf="barber.price !== undefined && barber.price !== null"
+              [value]="barber.price + ' MAD'"
+              severity="info">
+            </p-tag>
+          </div>
+  
+          <div class="barber-meta" *ngIf="barber.bio">
+            <span class="specialty-chip">{{ barber.bio }}</span>
+          </div>
+  
+          <div class="barber-actions">
+            <button
+              pButton
+              type="button"
+              [label]="langService.t().bookAction"
+              icon="pi pi-calendar-plus"
+              [routerLink]="['/barbers', barber.id]">
+            </button>
+  
+            <button
+              pButton
+              type="button"
+              [label]="langService.t().viewProfile"
+              severity="secondary"
+              [outlined]="true"
+              [routerLink]="['/barbers', barber.id]">
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>

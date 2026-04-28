@@ -1,0 +1,80 @@
+:host {
+  display: block;
+}
+
+.not-found-page {
+  min-height: calc(100vh - 76px);
+  background: #ffffff;
+  padding: 2rem 1.25rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.not-found-shell {
+  width: 100%;
+  max-width: 900px;
+}
+
+.not-found-card {
+  background: #ffffff;
+  border: 1px solid #e5edf5;
+  border-radius: 28px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.05);
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.error-code {
+  font-size: clamp(4rem, 10vw, 7rem);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: #2563eb;
+  margin-bottom: 1rem;
+}
+
+.not-found-card h1 {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: #0f172a;
+}
+
+.not-found-card p {
+  margin: 0 auto 1.75rem;
+  max-width: 560px;
+  color: #64748b;
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+.not-found-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+html[dir='rtl'] .not-found-card {
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .not-found-page {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .not-found-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .not-found-actions {
+    flex-direction: column;
+  }
+
+  .not-found-actions .p-button {
+    width: 100%;
+  }
+}

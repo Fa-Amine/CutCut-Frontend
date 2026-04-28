@@ -1,0 +1,193 @@
+<section class="auth-page">
+    <div class="auth-container">
+      <div class="auth-left">
+        <div class="auth-illustration-card">
+          <img
+            src="/assets/images/login-illustration.jpg"
+            [alt]="langService.lang() === 'fr' ? 'Illustration salon de coiffure' : 'رسم توضيحي لأدوات الحلاقة'" />
+        </div>
+      </div>
+  
+      <div class="auth-right">
+        <p-card>
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+            <div class="form-header">
+              <h2>{{ langService.t().registerTitle }}</h2>
+              <p>{{ currentSubtitle }}</p>
+            </div>
+  
+            <app-error-alert
+              *ngIf="errorMessage()"
+              title="Erreur"
+              [message]="errorMessage()">
+            </app-error-alert>
+  
+            <div class="form-group">
+              <label>Client ou Barbier</label>
+  
+              <p-selectButton
+                [options]="translatedRoleOptions()"
+                [ngModel]="selectedRole()"
+                (onOptionClick)="setRole($event.option.value)"
+                [ngModelOptions]="{ standalone: true }"
+                optionLabel="label"
+                optionValue="value">
+              </p-selectButton>
+            </div>
+  
+            <div class="form-group">
+              <label for="name">{{ langService.t().fullName }}</label>
+              <input
+                id="name"
+                type="text"
+                pInputText
+                formControlName="name"
+                [placeholder]="langService.t().fullNamePlaceholder"
+                class="w-full" />
+  
+              <small class="error-text" *ngIf="nameControl?.touched && nameControl?.hasError('required')">
+                {{ langService.t().fullNameRequired }}
+              </small>
+            </div>
+  
+            <div class="form-group">
+              <label for="email">{{ langService.t().email }}</label>
+              <input
+                id="email"
+                type="email"
+                pInputText
+                formControlName="email"
+                [placeholder]="langService.t().emailPlaceholder"
+                class="w-full" />
+  
+              <small class="error-text" *ngIf="emailControl?.touched && emailControl?.hasError('required')">
+                {{ langService.t().emailRequired }}
+              </small>
+  
+              <small class="error-text" *ngIf="emailControl?.touched && emailControl?.hasError('email')">
+                {{ langService.t().emailInvalid }}
+              </small>
+            </div>
+  
+            <div class="form-group">
+              <label for="phone">{{ langService.t().phoneNumber }}</label>
+              <input
+                id="phone"
+                type="text"
+                pInputText
+                formControlName="phone"
+                [placeholder]="langService.t().phoneNumberPlaceholder"
+                class="w-full" />
+            </div>
+  
+            <ng-container *ngIf="selectedRole() === 'BARBER'">
+              <div class="form-group">
+                <label for="shopName">{{ langService.t().shopName }}</label>
+                <input
+                  id="shopName"
+                  type="text"
+                  pInputText
+                  formControlName="shopName"
+                  [placeholder]="langService.t().shopNamePlaceholder"
+                  class="w-full" />
+  
+                <small class="error-text" *ngIf="shopNameControl?.touched && shopNameControl?.hasError('required')">
+                  {{ langService.t().shopNameRequired }}
+                </small>
+              </div>
+  
+              <div class="form-group">
+                <label for="bio">{{ langService.t().shopBio }}</label>
+                <textarea
+                  id="bio"
+                  pTextarea
+                  rows="4"
+                  formControlName="bio"
+                  [placeholder]="langService.t().shopBioPlaceholder"
+                  class="w-full">
+                </textarea>
+              </div>
+  
+              <!-- <div class="form-group">
+                <label for="photoUrl">{{ langService.t().photoUrlLabel }}</label>
+                <input
+                  id="photoUrl"
+                  type="text"
+                  pInputText
+                  formControlName="photoUrl"
+                  [placeholder]="langService.t().photoUrlPlaceholder"
+                  class="w-full" />
+              </div> -->
+  
+              <div class="form-group">
+                <label for="price">{{ langService.t().price }}</label>
+                <p-inputNumber
+                  inputId="price"
+                  formControlName="price"
+                  mode="decimal"
+                  [min]="0"
+                  [useGrouping]="false"
+                  styleClass="w-full">
+                </p-inputNumber>
+  
+                <small class="error-text" *ngIf="priceControl?.touched && priceControl?.hasError('required')">
+                  {{ langService.t().priceRequired }}
+                </small>
+              </div>
+            </ng-container>
+  
+            <div class="form-group">
+              <label for="password">{{ langService.t().password }}</label>
+              <p-password
+                inputId="password"
+                formControlName="password"
+                [feedback]="false"
+                [toggleMask]="true"
+                [placeholder]="langService.t().passwordPlaceholder"
+                styleClass="w-full"
+                inputStyleClass="w-full">
+              </p-password>
+  
+              <small class="error-text" *ngIf="passwordControl?.touched && passwordControl?.hasError('required')">
+                {{ langService.t().passwordRequired }}
+              </small>
+            </div>
+  
+            <div class="form-group">
+              <label for="confirmPassword">{{ langService.t().confirmPassword }}</label>
+              <p-password
+                inputId="confirmPassword"
+                formControlName="confirmPassword"
+                [feedback]="false"
+                [toggleMask]="true"
+                [placeholder]="langService.t().confirmPasswordPlaceholder"
+                styleClass="w-full"
+                inputStyleClass="w-full">
+              </p-password>
+  
+              <small class="error-text" *ngIf="confirmPasswordControl?.touched && confirmPasswordControl?.hasError('required')">
+                {{ langService.t().confirmPasswordRequired }}
+              </small>
+  
+              <small class="error-text" *ngIf="passwordMismatch">
+                {{ langService.t().passwordMismatch }}
+              </small>
+            </div>
+  
+            <button
+              pButton
+              type="submit"
+              class="submit-btn"
+              [label]="isLoading() ? '...' : langService.t().registerButton"
+              [disabled]="isLoading()">
+            </button>
+  
+            <div class="auth-footer">
+              <span>{{ langService.t().haveAccount }}</span>
+              <a routerLink="/login">{{ langService.t().signIn }}</a>
+            </div>
+          </form>
+        </p-card>
+      </div>
+    </div>
+  </section>

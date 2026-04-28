@@ -1,0 +1,27 @@
+<section class="admin-dashboard-page">
+    <div class="admin-dashboard-shell">
+      <div class="page-header">
+        <span class="page-kicker">{{ langService.t().adminPanel }}</span>
+        <h1>{{ langService.t().adminDashboardTitle }}</h1>
+        <p>{{ langService.t().adminDashboardSubtitle }}</p>
+      </div>
+  
+      <app-loading-spinner
+        *ngIf="isLoading()"
+        message="Chargement du tableau de bord...">
+      </app-loading-spinner>
+  
+      <app-error-alert
+        *ngIf="!isLoading() && errorMessage()"
+        title="Erreur"
+        [message]="errorMessage()">
+      </app-error-alert>
+  
+      <div class="stats-grid" *ngIf="!isLoading() && !errorMessage() && dashboard()">
+        <div class="stat-card" *ngFor="let card of statCards()">
+          <span>{{ card.label }}</span>
+          <strong>{{ card.value }}</strong>
+        </div>
+      </div>
+    </div>
+  </section>

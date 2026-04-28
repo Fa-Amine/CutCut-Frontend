@@ -1,0 +1,104 @@
+<section class="availability-page">
+    <div class="availability-shell">
+      <div class="page-header">
+        <span class="page-kicker">{{ langService.t().manageAvailability }}</span>
+        <h1>{{ langService.t().availabilityTitle }}</h1>
+        <p>{{ langService.t().availabilitySubtitle }}</p>
+      </div>
+  
+      <p-message
+        *ngIf="successMessage()"
+        severity="success"
+        [text]="successMessage()">
+      </p-message>
+  
+      <app-loading-spinner
+        *ngIf="isLoading()"
+        [message]="langService.lang() === 'ar' ? 'جارٍ تحميل التوفر...' : 'Chargement des disponibilités...'">
+      </app-loading-spinner>
+  
+      <app-error-alert
+        *ngIf="!isLoading() && errorMessage()"
+        [title]="langService.lang() === 'ar' ? 'خطأ' : 'Erreur'"
+        [message]="errorMessage()">
+      </app-error-alert>
+  
+      <div class="add-slot-card" *ngIf="!isLoading()">
+        <div class="add-slot-header">
+          <h2>
+            {{ langService.lang() === 'ar' ? 'إضافة فترة' : 'Ajouter un créneau' }}
+          </h2>
+          <p>
+            {{
+              langService.lang() === 'ar'
+                ? 'اختر تاريخًا ووقت بداية. سيتم تحديد المدة تلقائيًا بـ 30 دقيقة.'
+                : 'Choisissez une date et une heure de début. La durée sera automatiquement de 30 minutes.'
+            }}
+          </p>
+        </div>
+  
+        <div class="add-slot-grid">
+          <div class="picker-card">
+            <label for="slot-date">
+              {{ langService.lang() === 'ar' ? 'التاريخ' : 'Date' }}
+            </label>
+            <input
+              id="slot-date"
+              class="modern-picker"
+              type="date"
+              [ngModel]="newDate()"
+              (ngModelChange)="newDate.set($event); clearError()" />
+          </div>
+  
+          <div class="picker-card">
+            <label for="slot-start">
+              {{ langService.lang() === 'ar' ? 'وقت البداية' : 'Heure de début' }}
+            </label>
+            <input
+              id="slot-start"
+              class="modern-picker"
+              type="time"
+              [ngModel]="newStartTime()"
+              (ngModelChange)="newStartTime.set($event); clearError()"
+              step="1800" />
+          </div>
+  
+          <div class="action-card">
+            <button
+              pButton
+              type="button"
+              class="add-slot-btn"
+              [label]="isSaving() ? '...' : langService.t().addSlot"
+              [disabled]="isSaving()"
+              (click)="addSlot()">
+            </button>
+          </div>
+        </div>
+      </div>
+  
+      <app-empty-state
+        *ngIf="!isLoading() && !groupedSlots().length"
+        [title]="langService.lang() === 'ar' ? 'لا توجد فترات' : 'Aucun créneau'"
+        [message]="langService.lang() === 'ar' ? 'لا توجد فترات متاحة حاليًا.' : 'Aucun créneau disponible pour le moment.'">
+      </app-empty-state>
+  
+      <div class="days-grid" *ngIf="!isLoading() && groupedSlots().length">
+        <p-card *ngFor="let group of groupedSlots()">
+          <div class="day-card">
+            <div class="day-top">
+              <h2>{{ group.label }}</h2>
+            </div>
+  
+            <div class="slots-list">
+              <div class="slot-chip" *ngFor="let slot of group.slots">
+                <span>{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</span>
+                <small *ngIf="slot.booked">
+                  {{ langService.lang() === 'ar' ? 'محجوز' : 'Réservé' }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </section>

@@ -1,0 +1,78 @@
+<section class="auth-page">
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="auth-illustration-card">
+              <img
+                src="\assets\images\login-illustration.jpg"
+                [alt]="langService.lang() === 'fr' ? 'Illustration salon de coiffure' : 'رسم توضيحي لأدوات الحلاقة'" />
+            </div>
+          </div>
+  
+      <div class="auth-right">
+        <p-card>
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+            
+            <app-error-alert
+                *ngIf="errorMessage()"
+                title="Erreur"
+                [message]="errorMessage()">
+            </app-error-alert>
+            
+            <div class="form-header">
+              <h2>{{ langService.t().loginTitle }}</h2>
+              <p>{{ langService.t().loginSubtitle }}</p>
+            </div>
+  
+            <div class="form-group">
+              <label for="email">{{ langService.t().email }}</label>
+              <input
+                id="email"
+                type="email"
+                pInputText
+                formControlName="email"
+                [placeholder]="langService.t().emailPlaceholder"
+                class="w-full" />
+  
+              <small class="error-text" *ngIf="emailControl?.touched && emailControl?.hasError('required')">
+                {{ langService.t().emailRequired }}
+              </small>
+  
+              <small class="error-text" *ngIf="emailControl?.touched && emailControl?.hasError('email')">
+                {{ langService.t().emailInvalid }}
+              </small>
+            </div>
+  
+            <div class="form-group">
+              <label for="password">{{ langService.t().password }}</label>
+              <p-password
+                inputId="password"
+                formControlName="password"
+                [feedback]="false"
+                [toggleMask]="true"
+                [placeholder]="langService.t().passwordPlaceholder"
+                styleClass="w-full"
+                inputStyleClass="w-full">
+              </p-password>
+  
+              <small class="error-text" *ngIf="passwordControl?.touched && passwordControl?.hasError('required')">
+                {{ langService.t().passwordRequired }}
+              </small>
+            </div>
+  
+            <button
+                pButton
+                type="submit"
+                class="submit-btn"
+                [label]="isLoading() ? '...' : langService.t().loginButton"
+                [disabled]="isLoading()">
+            </button>
+  
+            <div class="auth-footer">
+              <span>{{ langService.t().noAccount }}</span>
+              <a routerLink="/register">{{ langService.t().createAccount }}</a>
+            </div>
+          </form>
+        </p-card>
+      </div>
+    </div>
+  </section>

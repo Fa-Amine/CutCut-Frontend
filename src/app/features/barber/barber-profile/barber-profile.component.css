@@ -1,0 +1,124 @@
+:host {
+    display: block;
+  }
+  
+  .barber-profile-page {
+    background: #ffffff;
+    min-height: calc(100vh - 76px);
+    padding: 2rem 1.25rem 3rem;
+  }
+  
+  .barber-profile-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .page-kicker {
+    display: inline-block;
+    color: #2563eb;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  
+  .page-header h1 {
+    margin: 0 0 0.6rem;
+    font-size: clamp(2rem, 4vw, 3.1rem);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: #0f172a;
+  }
+  
+  .page-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 1.02rem;
+    line-height: 1.7;
+  }
+  
+  :host ::ng-deep .p-card {
+    background: #ffffff;
+    border: 1px solid #e5edf5;
+    border-radius: 24px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  }
+  
+  .profile-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .profile-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .profile-top h2 {
+    margin: 0 0 0.25rem;
+    color: #0f172a;
+  }
+  
+  .profile-top p {
+    margin: 0;
+    color: #64748b;
+  }
+  
+  .profile-tags {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  
+  .info-box {
+    background: #f8fbff;
+    border: 1px solid #e5edf5;
+    border-radius: 18px;
+    padding: 1rem;
+  }
+  
+  .info-box span {
+    display: block;
+    color: #64748b;
+    margin-bottom: 0.35rem;
+  }
+  
+  .info-box strong {
+    color: #0f172a;
+  }
+  
+  .full-width {
+    grid-column: 1 / -1;
+  }
+  
+  .barber-photo-large {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid #e5edf5;
+  }
+  
+  @media (max-width: 768px) {
+    .profile-grid {
+      grid-template-columns: 1fr;
+    }
+    .profile-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+  }

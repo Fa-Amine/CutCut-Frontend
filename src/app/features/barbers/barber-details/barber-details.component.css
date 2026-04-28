@@ -1,0 +1,293 @@
+:host {
+    display: block;
+  }
+  
+  .barber-details-page {
+    background: #ffffff;
+    min-height: calc(100vh - 76px);
+    padding: 2rem 1.25rem 3rem;
+  }
+  
+  .barber-details-shell {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .page-kicker {
+    display: inline-block;
+    color: #2563eb;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  
+  .page-header h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    line-height: 1.02;
+    letter-spacing: -0.05em;
+    color: #0f172a;
+  }
+  
+  .details-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  
+  :host ::ng-deep .p-card {
+    background: #ffffff;
+    border: 1px solid #e5edf5;
+    border-radius: 28px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  }
+  
+  :host ::ng-deep .p-card .p-card-body {
+    padding: 1.5rem;
+  }
+  
+  .barber-profile-card,
+  .booking-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+  }
+  
+  .barber-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .barber-top h2 {
+    margin: 0 0 0.3rem;
+    color: #0f172a;
+    font-size: 2rem;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+  }
+  
+  .barber-top p {
+    margin: 0;
+    color: #64748b;
+    font-size: 1rem;
+  }
+  
+  .barber-photo-large {
+    width: 72px;
+    height: 72px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid #e5edf5;
+  }
+  
+  .barber-tags {
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+  
+  .barber-bio h3 {
+    margin: 0 0 0.5rem;
+    color: #0f172a;
+    font-size: 1.15rem;
+  }
+  
+  .barber-bio p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.7;
+    font-size: 1.02rem;
+  }
+  
+  .section-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  
+  .section-block h3,
+  .booking-summary h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 1.2rem;
+  }
+  
+  .day-list,
+  .slot-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  :host ::ng-deep .day-btn.p-button,
+  :host ::ng-deep .slot-btn.p-button {
+    border-radius: 16px;
+    border: 1px solid #d7e0ea;
+    background: #ffffff;
+    color: #0f172a;
+    box-shadow: none;
+    padding: 0.8rem 1rem;
+  }
+  
+  :host ::ng-deep .day-btn.p-button:hover,
+  :host ::ng-deep .slot-btn.p-button:hover {
+    background: #f8fbff;
+    border-color: #bfd5ff;
+    color: #0f172a;
+  }
+  
+  :host ::ng-deep .day-btn.day-active.p-button,
+  :host ::ng-deep .slot-btn.slot-active.p-button {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+  }
+  
+  .helper-text {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.6;
+  }
+  
+  .booking-summary {
+    background: #f8fbff;
+    border: 1px solid #e5edf5;
+    border-radius: 20px;
+    padding: 1.1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+  
+  .summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  
+  .summary-row span {
+    color: #64748b;
+  }
+  
+  .summary-row strong {
+    color: #0f172a;
+  }
+  
+  :host ::ng-deep .confirm-btn.p-button {
+    width: 100%;
+    border-radius: 18px;
+    padding: 1rem 1.2rem;
+    font-weight: 700;
+    background: #2563eb;
+    border-color: #2563eb;
+  }
+  
+  :host ::ng-deep .confirm-btn.p-button:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+  }
+  
+  :host ::ng-deep .confirm-btn.p-button:disabled {
+    opacity: 0.6;
+  }
+  
+  .booking-column .booking-card {
+    color: #0f172a;
+  }
+  
+  .booking-column .booking-card * {
+    box-sizing: border-box;
+  }
+  
+  .booking-column .booking-card .no-availability-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    padding: 1.5rem;
+    border: 1px dashed #cfe0ff !important;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%) !important;
+    text-align: center;
+    color: #0f172a !important;
+  }
+  
+  .booking-column .booking-card .no-availability-state h3 {
+    margin: 0 0 0.6rem;
+    color: #0f172a !important;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.2;
+    background: transparent !important;
+  }
+  
+  .booking-column .booking-card .no-availability-state p {
+    margin: 0;
+    color: #64748b !important;
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 340px;
+    background: transparent !important;
+  }
+  
+  html[dir='rtl'] .page-header,
+  html[dir='rtl'] .barber-profile-card,
+  html[dir='rtl'] .booking-card,
+  html[dir='rtl'] .barber-bio,
+  html[dir='rtl'] .booking-summary,
+  html[dir='rtl'] .no-availability-state {
+    text-align: right;
+  }
+  
+  html[dir='rtl'] .barber-top {
+    flex-direction: row-reverse;
+  }
+  
+  @media (max-width: 960px) {
+    .details-layout {
+      grid-template-columns: 1fr;
+    }
+  
+    .page-header h1 {
+      font-size: clamp(2.1rem, 10vw, 3.4rem);
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .barber-details-page {
+      padding: 1.25rem 1rem 2rem;
+    }
+  
+    :host ::ng-deep .p-card .p-card-body {
+      padding: 1.1rem;
+    }
+  
+    .barber-top {
+      align-items: flex-start;
+    }
+  
+    .barber-top h2 {
+      font-size: 1.7rem;
+    }
+  
+    .summary-row {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+  
+    .booking-column .booking-card .no-availability-state {
+      min-height: 180px;
+      padding: 1.1rem;
+    }
+  }

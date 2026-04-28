@@ -1,0 +1,143 @@
+<section class="reservations-page">
+    <div class="reservations-shell">
+      <div class="page-header">
+        <span class="page-kicker">{{ langService.t().bookings }}</span>
+        <h1>{{ langService.t().myReservationsTitle }}</h1>
+        <p>{{ langService.t().myReservationsSubtitle }}</p>
+      </div>
+  
+      <p-message
+        *ngIf="successMessage()"
+        severity="success"
+        [text]="successMessage()">
+      </p-message>
+  
+      <section class="reservation-section">
+        <div class="section-title-row">
+          <h2>{{ langService.t().upcomingReservations }}</h2>
+        </div>
+  
+        <app-loading-spinner
+          *ngIf="isLoading()"
+          message="Chargement des réservations...">
+        </app-loading-spinner>
+  
+        <app-error-alert
+          *ngIf="!isLoading() && errorMessage()"
+          title="Erreur"
+          [message]="errorMessage()">
+        </app-error-alert>
+  
+        <app-empty-state
+          *ngIf="!isLoading() && !errorMessage() && !upcomingBookings().length"
+          [title]="langService.t().noReservations"
+          message="Vous n’avez aucune réservation à venir.">
+        </app-empty-state>
+  
+        <div class="reservations-grid" *ngIf="!isLoading() && !errorMessage() && upcomingBookings().length">
+          <div class="reservation-card" *ngFor="let booking of upcomingBookings()">
+            <div class="reservation-top">
+              <div class="reservation-ident">
+                <ng-container *ngIf="booking.barber.photoUrl; else barberAvatar">
+                  <img
+                    [src]="booking.barber.photoUrl"
+                    [alt]="booking.barber.name"
+                    class="booking-photo" />
+                </ng-container>
+  
+                <ng-template #barberAvatar>
+                  <p-avatar [label]="getInitials(booking.barber.name)" shape="circle" size="xlarge"></p-avatar>
+                </ng-template>
+  
+                <div>
+                  <h3>{{ booking.barber.name }}</h3>
+                  <p>{{ booking.barber.shopName || 'CutCut' }}</p>
+                </div>
+              </div>
+  
+              <p-tag
+                [value]="getStatusLabel(booking.status)"
+                [severity]="getStatusSeverity(booking.status)">
+              </p-tag>
+            </div>
+  
+            <div class="reservation-details">
+              <div class="detail-box">
+                <span>{{ langService.t().reservationDate }}</span>
+                <strong>{{ formatDate(booking.slot.startTime) }}</strong>
+              </div>
+  
+              <div class="detail-box">
+                <span>{{ langService.t().reservationTime }}</span>
+                <strong>{{ formatTime(booking.slot.startTime) }}</strong>
+              </div>
+            </div>
+  
+            <div class="reservation-actions">
+              <button
+                pButton
+                type="button"
+                [label]="langService.t().cancelReservation"
+                severity="danger"
+                [outlined]="true"
+                (click)="cancelBooking(booking.id)">
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+  
+      <section class="reservation-section">
+        <div class="section-title-row">
+          <h2>{{ langService.t().pastReservations }}</h2>
+        </div>
+  
+        <app-empty-state
+          *ngIf="!pastBookings().length"
+          [title]="langService.t().noReservations"
+          message="Aucune réservation passée pour le moment.">
+        </app-empty-state>
+  
+        <div class="reservations-grid" *ngIf="pastBookings().length">
+          <div class="reservation-card past-card" *ngFor="let booking of pastBookings()">
+            <div class="reservation-top">
+              <div class="reservation-ident">
+                <ng-container *ngIf="booking.barber.photoUrl; else pastBarberAvatar">
+                  <img
+                    [src]="booking.barber.photoUrl"
+                    [alt]="booking.barber.name"
+                    class="booking-photo" />
+                </ng-container>
+  
+                <ng-template #pastBarberAvatar>
+                  <p-avatar [label]="getInitials(booking.barber.name)" shape="circle" size="xlarge"></p-avatar>
+                </ng-template>
+  
+                <div>
+                  <h3>{{ booking.barber.name }}</h3>
+                  <p>{{ booking.barber.shopName || 'CutCut' }}</p>
+                </div>
+              </div>
+  
+              <p-tag
+                [value]="getStatusLabel(booking.status)"
+                [severity]="getStatusSeverity(booking.status)">
+              </p-tag>
+            </div>
+  
+            <div class="reservation-details">
+              <div class="detail-box">
+                <span>{{ langService.t().reservationDate }}</span>
+                <strong>{{ formatDate(booking.slot.startTime) }}</strong>
+              </div>
+  
+              <div class="detail-box">
+                <span>{{ langService.t().reservationTime }}</span>
+                <strong>{{ formatTime(booking.slot.startTime) }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </section>

@@ -1,0 +1,142 @@
+<section class="barber-details-page">
+    <div class="barber-details-shell">
+      <div class="page-header">
+        <span class="page-kicker">{{ langService.t().barbers }}</span>
+        <h1>{{ langService.t().barberDetailsTitle }}</h1>
+      </div>
+  
+      <app-loading-spinner
+        *ngIf="isLoading()"
+        message="Chargement du barbier...">
+      </app-loading-spinner>
+  
+      <app-error-alert
+        *ngIf="!isLoading() && errorMessage()"
+        title="Erreur"
+        [message]="errorMessage()">
+      </app-error-alert>
+  
+      <p-message
+        *ngIf="!isLoading() && !errorMessage() && successMessage()"
+        severity="success"
+        [text]="langService.t().reservationConfirmed">
+      </p-message>
+  
+      <div class="details-layout" *ngIf="!isLoading() && barber()">
+        <div class="info-column">
+          <p-card>
+            <div class="barber-profile-card">
+              <div class="barber-top">
+                <ng-container *ngIf="barber()!.photoUrl; else initialsAvatar">
+                  <img
+                    [src]="barber()!.photoUrl!"
+                    [alt]="barber()!.name"
+                    class="barber-photo-large" />
+                </ng-container>
+  
+                <ng-template #initialsAvatar>
+                  <p-avatar
+                    [label]="getInitials(barber()!.name)"
+                    shape="circle"
+                    size="xlarge">
+                  </p-avatar>
+                </ng-template>
+  
+                <div>
+                  <h2>{{ barber()!.name }}</h2>
+                  <p>{{ barber()!.shopName || 'CutCut' }}</p>
+                </div>
+              </div>
+  
+              <div class="barber-tags">
+                <p-tag
+                  *ngIf="barber()!.price !== undefined && barber()!.price !== null"
+                  [value]="barber()!.price + ' MAD'"
+                  severity="info">
+                </p-tag>
+              </div>
+  
+              <div class="barber-bio">
+                <h3>{{ langService.t().aboutBarber }}</h3>
+                <p>{{ barber()!.bio || '-' }}</p>
+              </div>
+            </div>
+          </p-card>
+        </div>
+  
+        <div class="booking-column">
+          <p-card>
+            <div class="booking-card">
+              <ng-container *ngIf="dayGroups().length; else noAvailability">
+                <div class="section-block">
+                  <h3>{{ langService.t().chooseDay }}</h3>
+  
+                  <div class="day-list">
+                    <button
+                      pButton
+                      type="button"
+                      *ngFor="let day of dayGroups()"
+                      [label]="day.label"
+                      [class.day-active]="selectedDay() === day.dateKey"
+                      class="day-btn"
+                      (click)="chooseDay(day.dateKey)">
+                    </button>
+                  </div>
+                </div>
+  
+                <div class="section-block">
+                  <h3>{{ langService.t().chooseSlot }}</h3>
+  
+                  <div class="slot-list" *ngIf="selectedDay(); else chooseDayFirst">
+                    <button
+                      pButton
+                      type="button"
+                      *ngFor="let slot of availableSlots()"
+                      [label]="formatTime(slot.startTime)"
+                      [class.slot-active]="selectedSlot()?.id === slot.id"
+                      class="slot-btn"
+                      (click)="chooseSlot(slot)">
+                    </button>
+                  </div>
+  
+                  <ng-template #chooseDayFirst>
+                    <p class="helper-text">{{ langService.t().selectDayFirst }}</p>
+                  </ng-template>
+                </div>
+  
+                <div class="booking-summary">
+                  <h3>{{ langService.t().bookingSummary }}</h3>
+  
+                  <div class="summary-row">
+                    <span>{{ langService.t().selectedDay }}</span>
+                    <strong>{{ selectedDay() || '-' }}</strong>
+                  </div>
+  
+                  <div class="summary-row">
+                    <span>{{ langService.t().selectedSlot }}</span>
+                    <strong>{{ selectedSlot() ? formatTime(selectedSlot()!.startTime) : '-' }}</strong>
+                  </div>
+                </div>
+  
+                <button
+                  pButton
+                  type="button"
+                  class="confirm-btn"
+                  [label]="isBooking() ? '...' : langService.t().confirmReservation"
+                  [disabled]="!selectedDay() || !selectedSlot() || isBooking()"
+                  (click)="confirmBooking()">
+                </button>
+              </ng-container>
+  
+              <ng-template #noAvailability>
+                <div class="no-availability-state">
+                  <h3>Aucune disponibilité</h3>
+                  <p>Ce barbier n’a actuellement aucun créneau disponible.</p>
+                </div>
+              </ng-template>
+            </div>
+          </p-card>
+        </div>
+      </div>
+    </div>
+  </section>

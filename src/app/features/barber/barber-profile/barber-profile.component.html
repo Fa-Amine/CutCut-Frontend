@@ -1,0 +1,144 @@
+<section class="barber-profile-page">
+    <div class="barber-profile-shell">
+      <div class="page-header">
+        <span class="page-kicker">{{ langService.t().barberProfileNav }}</span>
+        <h1>{{ langService.t().barberProfileNav }}</h1>
+        <p>Consultez et modifiez les informations de votre activité.</p>
+      </div>
+  
+      <p-message
+        *ngIf="successMessage()"
+        severity="success"
+        [text]="successMessage()">
+      </p-message>
+  
+      <app-loading-spinner
+        *ngIf="isLoading()"
+        message="Chargement du profil barbier...">
+      </app-loading-spinner>
+  
+      <app-error-alert
+        *ngIf="!isLoading() && errorMessage()"
+        title="Erreur"
+        [message]="errorMessage()">
+      </app-error-alert>
+  
+      <p-card *ngIf="!isLoading() && !errorMessage() && profile()">
+        <div class="profile-card">
+          <div class="profile-top">
+            <ng-container *ngIf="profile()!.photoUrl; else barberAvatar">
+              <img
+                [src]="profile()!.photoUrl!"
+                [alt]="profile()!.name"
+                class="barber-photo-large" />
+            </ng-container>
+  
+            <ng-template #barberAvatar>
+              <p-avatar
+                [label]="getInitials(profile()!.name)"
+                shape="circle"
+                size="xlarge">
+              </p-avatar>
+            </ng-template>
+  
+            <div>
+              <h2>{{ profile()!.name }}</h2>
+              <p>{{ profile()!.shopName || 'CutCut' }}</p>
+            </div>
+          </div>
+  
+          <div class="profile-tags">
+            <p-tag
+              *ngIf="profile()!.price !== undefined && profile()!.price !== null"
+              [value]="profile()!.price + ' MAD'"
+              severity="info">
+            </p-tag>
+  
+            <p-tag
+              *ngIf="profile()!.averageRating !== undefined && profile()!.averageRating !== null"
+              [value]="'⭐ ' + profile()!.averageRating"
+              severity="success">
+            </p-tag>
+          </div>
+  
+          <form [formGroup]="profileForm" class="profile-grid">
+            <div class="info-box">
+              <span>Nom</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.name }}</strong>
+              <input *ngIf="isEditMode()" pInputText formControlName="name" class="w-full" />
+            </div>
+  
+            <div class="info-box">
+              <span>Email</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.email }}</strong>
+              <input *ngIf="isEditMode()" pInputText formControlName="email" class="w-full" />
+            </div>
+  
+            <div class="info-box">
+              <span>Téléphone</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.phone }}</strong>
+              <input *ngIf="isEditMode()" pInputText formControlName="phone" class="w-full" />
+            </div>
+  
+            <div class="info-box">
+              <span>Salon</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.shopName || '-' }}</strong>
+              <input *ngIf="isEditMode()" pInputText formControlName="shopName" class="w-full" />
+            </div>
+  
+            <div class="info-box">
+              <span>Prix</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.price ?? 0 }} MAD</strong>
+              <p-inputNumber *ngIf="isEditMode()" formControlName="price" mode="decimal" [useGrouping]="false"></p-inputNumber>
+            </div>
+  
+            <div class="info-box">
+              <span>Portefeuille</span>
+              <strong>{{ profile()!.walletBalance ?? 0 }} MAD</strong>
+            </div>
+  
+            <div class="info-box full-width">
+              <span>Photo URL</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.photoUrl || '-' }}</strong>
+              <input *ngIf="isEditMode()" pInputText formControlName="photoUrl" class="w-full" />
+            </div>
+  
+            <div class="info-box full-width">
+              <span>Bio</span>
+              <strong *ngIf="!isEditMode()">{{ profile()!.bio || '-' }}</strong>
+              <textarea *ngIf="isEditMode()" pTextarea rows="4" formControlName="bio" class="w-full"></textarea>
+            </div>
+          </form>
+  
+          <div class="profile-actions">
+            <button
+              *ngIf="!isEditMode()"
+              pButton
+              type="button"
+              label="Modifier"
+              (click)="startEdit()">
+            </button>
+  
+            <ng-container *ngIf="isEditMode()">
+              <button
+                pButton
+                type="button"
+                label="Enregistrer"
+                [disabled]="isSaving()"
+                (click)="saveProfile()">
+              </button>
+  
+              <button
+                pButton
+                type="button"
+                label="Annuler"
+                severity="secondary"
+                [outlined]="true"
+                (click)="cancelEdit()">
+              </button>
+            </ng-container>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </section>

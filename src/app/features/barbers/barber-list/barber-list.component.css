@@ -1,0 +1,179 @@
+:host {
+    display: block;
+  }
+  
+  .barbers-page {
+    background: #ffffff;
+    min-height: calc(100vh - 72px);
+    padding: 2rem 1.25rem 3rem;
+  }
+  
+  .barbers-shell {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .page-kicker {
+    display: inline-block;
+    color: #2563eb;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  
+  .page-header h1 {
+    margin: 0 0 0.6rem;
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: #0f172a;
+  }
+  
+  .page-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 1.02rem;
+    line-height: 1.7;
+    max-width: 720px;
+  }
+  
+  .filters-card {
+    background: #f8fbff;
+    border: 1px solid #e6edf5;
+    border-radius: 24px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .filters-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: 1rem;
+  }
+  
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  
+  .filter-group label {
+    font-weight: 700;
+    color: #0f172a;
+  }
+  
+  .w-full {
+    width: 100%;
+  }
+  
+  .barbers-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+  
+  .barber-card {
+    background: #ffffff;
+    border: 1px solid #e5edf5;
+    border-radius: 24px;
+    padding: 1.25rem;
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
+  }
+  
+  .barber-card-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  
+  .barber-ident {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .barber-ident h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #0f172a;
+  }
+  
+  .barber-ident p {
+    margin: 0.25rem 0 0;
+    color: #64748b;
+  }
+  
+  .barber-meta {
+    margin-bottom: 1rem;
+  }
+  
+  .specialty-chip {
+    display: inline-block;
+    padding: 0.5rem 0.8rem;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  
+  .barber-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    border: 1px dashed #d7e0ea;
+    border-radius: 24px;
+    color: #64748b;
+  }
+  
+  html[dir='rtl'] .page-header,
+  html[dir='rtl'] .filter-group,
+  html[dir='rtl'] .barber-ident,
+  html[dir='rtl'] .barber-card {
+    text-align: right;
+  }
+  
+  html[dir='rtl'] .barber-ident {
+    flex-direction: row-reverse;
+  }
+  
+  @media (max-width: 900px) {
+    .filters-grid,
+    .barbers-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .barbers-page {
+      padding: 1.25rem 1rem 2rem;
+    }
+  
+    .barber-actions {
+      flex-direction: column;
+    }
+  
+    .barber-actions .p-button {
+      width: 100%;
+    }
+    .barber-photo {
+        width: 64px;
+        height: 64px;
+        border-radius: 999px;
+        object-fit: cover;
+        border: 1px solid #e5edf5;
+      }
+  }

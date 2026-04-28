@@ -1,0 +1,28 @@
+<section class="not-found-page">
+  <div class="not-found-shell">
+    <div class="not-found-card">
+      <div class="error-code">404</div>
+
+      <h1>{{ langService.t().notFoundTitle }}</h1>
+      <p>{{ langService.t().notFoundSubtitle }}</p>
+
+      <div class="not-found-actions">
+        <button
+          pButton
+          type="button"
+          [label]="langService.t().goHome"
+          routerLink="/">
+        </button>
+
+        <button
+          pButton
+          type="button"
+          severity="secondary"
+          [outlined]="true"
+          [label]="langService.t().browseBarbers"
+          routerLink="/barbers">
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
