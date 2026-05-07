@@ -1,104 +1,69 @@
-<section class="availability-page">
-    <div class="availability-shell">
-      <div class="page-header">
-        <span class="page-kicker">{{ langService.t().manageAvailability }}</span>
-        <h1>{{ langService.t().availabilityTitle }}</h1>
-        <p>{{ langService.t().availabilitySubtitle }}</p>
+<section class="availability-page" [dir]="langService.lang() === 'ar' ? 'rtl' : 'ltr'">
+  <div class="availability-shell">
+    
+    <app-loading-spinner 
+      *ngIf="isSaving()" 
+      [message]="langService.lang() === 'ar' ? 'جاري الحفظ...' : 'Enregistrement...'">
+    </app-loading-spinner>
+
+    <div class="page-header">
+      <span class="page-kicker">{{ langService.t().manageAvailability }}</span>
+      <h1>{{ langService.t().availabilityTitle }}</h1>
+      <p>{{ langService.t().availabilitySubtitle }}</p>
+    </div>
+
+    <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
+    <app-error-alert *ngIf="errorMessage()" [message]="errorMessage()"></app-error-alert>
+
+    <div class="schedule-card" *ngIf="!isLoading() && !isSaving()">
+      <div class="schedule-header">
+        <h2>{{ langService.t().workingDays }}</h2>
       </div>
-  
-      <p-message
-        *ngIf="successMessage()"
-        severity="success"
-        [text]="successMessage()">
-      </p-message>
-  
-      <app-loading-spinner
-        *ngIf="isLoading()"
-        [message]="langService.lang() === 'ar' ? 'جارٍ تحميل التوفر...' : 'Chargement des disponibilités...'">
-      </app-loading-spinner>
-  
-      <app-error-alert
-        *ngIf="!isLoading() && errorMessage()"
-        [title]="langService.lang() === 'ar' ? 'خطأ' : 'Erreur'"
-        [message]="errorMessage()">
-      </app-error-alert>
-  
-      <div class="add-slot-card" *ngIf="!isLoading()">
-        <div class="add-slot-header">
-          <h2>
-            {{ langService.lang() === 'ar' ? 'إضافة فترة' : 'Ajouter un créneau' }}
-          </h2>
-          <p>
-            {{
-              langService.lang() === 'ar'
-                ? 'اختر تاريخًا ووقت بداية. سيتم تحديد المدة تلقائيًا بـ 30 دقيقة.'
-                : 'Choisissez une date et une heure de début. La durée sera automatiquement de 30 minutes.'
-            }}
-          </p>
-        </div>
-  
-        <div class="add-slot-grid">
-          <div class="picker-card">
-            <label for="slot-date">
-              {{ langService.lang() === 'ar' ? 'التاريخ' : 'Date' }}
-            </label>
-            <input
-              id="slot-date"
-              class="modern-picker"
-              type="date"
-              [ngModel]="newDate()"
-              (ngModelChange)="newDate.set($event); clearError()" />
+
+      <div class="days-list">
+        <div *ngFor="let day of weeklySchedule()" class="day-item" [class.inactive-day]="!day.active">
+          
+          <div class="day-info-col">
+            <p-inputSwitch [(ngModel)]="day.active"></p-inputSwitch>
+            <span class="day-name">{{ langService.t()[day.name] }}</span>
           </div>
-  
-          <div class="picker-card">
-            <label for="slot-start">
-              {{ langService.lang() === 'ar' ? 'وقت البداية' : 'Heure de début' }}
-            </label>
-            <input
-              id="slot-start"
-              class="modern-picker"
-              type="time"
-              [ngModel]="newStartTime()"
-              (ngModelChange)="newStartTime.set($event); clearError()"
-              step="1800" />
-          </div>
-  
-          <div class="action-card">
-            <button
-              pButton
-              type="button"
-              class="add-slot-btn"
-              [label]="isSaving() ? '...' : langService.t().addSlot"
-              [disabled]="isSaving()"
-              (click)="addSlot()">
-            </button>
-          </div>
-        </div>
-      </div>
-  
-      <app-empty-state
-        *ngIf="!isLoading() && !groupedSlots().length"
-        [title]="langService.lang() === 'ar' ? 'لا توجد فترات' : 'Aucun créneau'"
-        [message]="langService.lang() === 'ar' ? 'لا توجد فترات متاحة حاليًا.' : 'Aucun créneau disponible pour le moment.'">
-      </app-empty-state>
-  
-      <div class="days-grid" *ngIf="!isLoading() && groupedSlots().length">
-        <p-card *ngFor="let group of groupedSlots()">
-          <div class="day-card">
-            <div class="day-top">
-              <h2>{{ group.label }}</h2>
+
+          <div class="schedule-inputs-col" *ngIf="day.active">
+            <div class="input-row">
+              <span class="row-label">{{ langService.lang() === 'ar' ? 'العمل' : 'Travail' }}</span>
+              <div class="controls-wrapper">
+                <input type="time" [(ngModel)]="day.startTime" class="modern-input">
+                <span class="arrow-sep">→</span>
+                <input type="time" [(ngModel)]="day.endTime" class="modern-input">
+              </div>
             </div>
-  
-            <div class="slots-list">
-              <div class="slot-chip" *ngFor="let slot of group.slots">
-                <span>{{ formatTime(slot.startTime) }} - {{ formatTime(slot.endTime) }}</span>
-                <small *ngIf="slot.booked">
-                  {{ langService.lang() === 'ar' ? 'محجوز' : 'Réservé' }}
-                </small>
+
+            <div class="input-row">
+              <span class="row-label">☕ {{ langService.lang() === 'ar' ? 'استراحة' : 'Pause' }}</span>
+              <div class="controls-wrapper">
+                <input type="time" [(ngModel)]="day.breakStart" class="modern-input pause-style">
+                <span class="arrow-sep">→</span>
+                <input type="time" [(ngModel)]="day.breakEnd" class="modern-input pause-style">
               </div>
             </div>
           </div>
-        </p-card>
+
+          <div class="off-label" *ngIf="!day.active">
+            {{ langService.lang() === 'ar' ? 'عطلة' : 'Repos' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button 
+          pButton 
+          type="button" 
+          class="save-schedule-btn"
+          [label]="isSaving() ? '...' : langService.t().saveAvailability" 
+          [disabled]="isSaving()"
+          (click)="saveFullSchedule()">
+        </button>
       </div>
     </div>
-  </section>
+  </div>
+</section>

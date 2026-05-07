@@ -1,230 +1,134 @@
-:host {
-    display: block;
-  }
-  
-  .availability-page {
-    background: #ffffff;
-    min-height: calc(100vh - 76px);
-    padding: 2rem 1.25rem 3rem;
-  }
-  
-  .availability-shell {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .page-header {
-    margin-bottom: 1.5rem;
-  }
-  
-  .page-kicker {
-    display: inline-block;
-    color: #2563eb;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-  }
-  
-  .page-header h1 {
-    margin: 0 0 0.6rem;
-    font-size: clamp(2rem, 4vw, 3.1rem);
-    line-height: 1.05;
-    letter-spacing: -0.04em;
-    color: #0f172a;
-  }
-  
-  .page-header p {
-    margin: 0;
-    color: #64748b;
-    font-size: 1.02rem;
-    line-height: 1.7;
-    max-width: 720px;
-  }
-  
-  .add-slot-card {
-    background: #ffffff;
-    border: 1px solid #e5edf5;
-    border-radius: 24px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
-    padding: 1.5rem;
-    margin: 1rem 0 1.5rem;
-  }
-  
-  .add-slot-header {
-    margin-bottom: 1.25rem;
-  }
-  
-  .add-slot-header h2 {
-    margin: 0 0 0.35rem;
-    color: #0f172a;
-    font-size: 1.35rem;
-    letter-spacing: -0.03em;
-  }
-  
-  .add-slot-header p {
-    margin: 0;
-    color: #64748b;
-    line-height: 1.6;
-  }
-  
-  .add-slot-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 1rem;
-    align-items: end;
-  }
-  
-  .picker-card {
-    background: #f8fbff;
-    border: 1px solid #e5edf5;
-    border-radius: 20px;
-    padding: 1rem;
-  }
-  
-  .picker-card label {
-    display: block;
-    margin-bottom: 0.55rem;
-    font-weight: 700;
-    color: #0f172a;
-  }
-  
-  .modern-picker {
-    width: 100%;
-    border: 1px solid #d7e0ea;
-    background: #ffffff;
-    color: #0f172a;
-    border-radius: 14px;
-    padding: 0.95rem 1rem;
-    font-size: 0.98rem;
-    outline: none;
-    box-shadow: none;
-    appearance: auto;
-    -webkit-appearance: auto;
-    -moz-appearance: auto;
-    color-scheme: light;
-  }
-  
-  .modern-picker:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-  }
-  
-  .action-card {
-    display: flex;
-    align-items: end;
-    justify-content: center;
-  }
-  
-  :host ::ng-deep .add-slot-btn.p-button {
-    width: 100%;
-    min-width: 180px;
-    border-radius: 14px;
-    padding: 0.95rem 1rem;
-    font-weight: 700;
-    background: #2563eb;
-    border-color: #2563eb;
-  }
-  
-  :host ::ng-deep .add-slot-btn.p-button:hover {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
-  }
-  
-  .days-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
-  }
-  
-  :host ::ng-deep .p-card {
-    background: #ffffff;
-    border: 1px solid #e5edf5;
-    border-radius: 24px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
-  }
-  
-  .day-card {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .day-top h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: #0f172a;
-  }
-  
-  .slots-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-  
-  .slot-chip {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.75rem 0.9rem;
-    border-radius: 16px;
-    background: #f8fbff;
-    border: 1px solid #e5edf5;
-    color: #0f172a;
-    font-weight: 600;
-  }
-  
-  .slot-chip small {
-    color: #64748b;
-    font-weight: 500;
-  }
-  
-  html[dir='rtl'] .page-header,
-  html[dir='rtl'] .day-card,
-  html[dir='rtl'] .picker-card,
-  html[dir='rtl'] .add-slot-header {
-    text-align: right;
-  }
-  
-  html[dir='rtl'] .add-slot-grid {
-    grid-template-columns: auto 1fr 1fr;
-  }
-  
-  html[dir='rtl'] .action-card {
-    justify-content: flex-start;
-  }
-  
-  html[dir='rtl'] .modern-picker,
-  html[dir='rtl'] .picker-card label,
-  html[dir='rtl'] .slot-chip {
-    text-align: right;
-  }
-  
-  @media (max-width: 980px) {
-    .add-slot-grid,
-    html[dir='rtl'] .add-slot-grid,
-    .days-grid {
-      grid-template-columns: 1fr;
-    }
-  
-    .action-card,
-    html[dir='rtl'] .action-card {
-      justify-content: stretch;
-    }
-  
-    :host ::ng-deep .add-slot-btn.p-button {
-      width: 100%;
-      min-width: 100%;
-    }
-  }
-  
-  @media (max-width: 640px) {
-    .availability-page {
-      padding: 1.25rem 1rem 2rem;
-    }
-  
-    .add-slot-card {
-      padding: 1rem;
-    }
-  }
+:host { display: block; }
+
+.availability-page {
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 2.5rem 1.25rem;
+}
+
+.availability-shell {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+/* Header Fix: Removed the border-bottom/line */
+.schedule-header {
+  margin-bottom: 2rem;
+  padding-bottom: 0; /* Removed padding */
+  border-bottom: none; /* Removed the line */
+}
+
+.schedule-header h2 {
+  font-size: 1.5rem;
+  color: #0f172a;
+  margin: 0;
+}
+
+.schedule-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  padding: 2.5rem;
+}
+
+.days-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.day-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 20px;
+}
+
+.day-info-col {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.day-name {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: #1e293b;
+}
+
+.schedule-inputs-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  justify-content: flex-end;
+}
+
+.row-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  min-width: 75px;
+  text-align: right;
+}
+
+.controls-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.modern-input {
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a !important;
+  outline: none;
+}
+
+.pause-style { background: #f8fafc; color: #64748b; }
+.arrow-sep { color: #cbd5e1; font-weight: bold; }
+
+/* Footer & Button Fixes */
+.footer-actions {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+:host ::ng-deep .save-schedule-btn.p-button {
+  background: #0f172a !important; /* Dark Navy */
+  color: #ffffff !important; /* Forces White text */
+  border: none;
+  padding: 1.2rem 3.5rem;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  transition: all 0.2s ease;
+}
+
+:host ::ng-deep .save-schedule-btn.p-button:hover {
+  background: #1e293b !important;
+  transform: translateY(-2px);
+}
+
+:host ::ng-deep .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+  background: #2563eb;
+}
+
+.inactive-day { opacity: 0.5; }
