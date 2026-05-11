@@ -9,13 +9,13 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { MessageModule } from 'primeng/message';
-
 import { LanguageService } from '../../../core/services/language.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { BarberProfile } from '../../../core/models/profile.models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
+import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
 
 @Component({
   selector: 'app-barber-profile',
@@ -32,7 +32,8 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert/erro
     TextareaModule,
     MessageModule,
     LoadingSpinnerComponent,
-    ErrorAlertComponent
+    ErrorAlertComponent,
+    SafeUrlPipe
   ],
   templateUrl: './barber-profile.component.html',
   styleUrl: './barber-profile.component.css'
@@ -50,6 +51,7 @@ export class BarberProfileComponent {
   errorMessage = signal('');
   successMessage = signal('');
   profile = signal<BarberProfile | null>(null);
+  mapUrl = signal('');
 
   profileForm = this.fb.group({
     name: ['', [Validators.required]],
@@ -58,7 +60,10 @@ export class BarberProfileComponent {
     shopName: ['', [Validators.required]],
     bio: [''],
     photoUrl: [''],
-    price: [0, [Validators.required]]
+    price: [0, [Validators.required]],
+    address: [''],
+    latitude: [null as number | null],
+    longitude: [null as number | null]
   });
 
   constructor() {
@@ -67,16 +72,13 @@ export class BarberProfileComponent {
 
   loadProfile() {
     const barberId = this.sessionService.userId();
-
     if (!barberId) {
       this.errorMessage.set('Barbier introuvable.');
       this.isLoading.set(false);
       return;
     }
-
     this.isLoading.set(true);
     this.errorMessage.set('');
-
     this.profileService.getBarberProfile(barberId).subscribe({
       next: (response) => {
         this.profile.set(response);
@@ -87,17 +89,29 @@ export class BarberProfileComponent {
           shopName: response.shopName || '',
           bio: response.bio || '',
           photoUrl: response.photoUrl || '',
-          price: response.price ?? 0
+          price: response.price ?? 0,
+          address: response.address || '',
+          latitude: response.latitude ?? null,
+          longitude: response.longitude ?? null
         });
+        this.updateMapUrl(response.latitude, response.longitude);
         this.isLoading.set(false);
       },
       error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Impossible de charger le profil barbier.'
-        );
+        this.errorMessage.set(error?.error?.message || 'Impossible de charger le profil barbier.');
         this.isLoading.set(false);
       }
     });
+  }
+
+  updateMapUrl(lat?: number, lng?: number) {
+    if (lat && lng) {
+      this.mapUrl.set(
+        `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lng}`
+      );
+    } else {
+      this.mapUrl.set('');
+    }
   }
 
   startEdit() {
@@ -116,7 +130,10 @@ export class BarberProfileComponent {
         shopName: profile.shopName || '',
         bio: profile.bio || '',
         photoUrl: profile.photoUrl || '',
-        price: profile.price ?? 0
+        price: profile.price ?? 0,
+        address: profile.address || '',
+        latitude: profile.latitude ?? null,
+        longitude: profile.longitude ?? null
       });
     }
     this.isEditMode.set(false);
@@ -125,21 +142,17 @@ export class BarberProfileComponent {
 
   saveProfile() {
     const barberId = this.sessionService.userId();
-
     if (!barberId) {
       this.errorMessage.set('Barbier introuvable.');
       return;
     }
-
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
       return;
     }
-
     this.isSaving.set(true);
     this.errorMessage.set('');
     this.successMessage.set('');
-
     this.profileService.updateBarberProfile(barberId, {
       name: this.profileForm.value.name!,
       email: this.profileForm.value.email!,
@@ -147,29 +160,27 @@ export class BarberProfileComponent {
       shopName: this.profileForm.value.shopName!,
       bio: this.profileForm.value.bio || '',
       photoUrl: this.profileForm.value.photoUrl || '',
-      price: Number(this.profileForm.value.price)
+      price: Number(this.profileForm.value.price),
+      address: this.profileForm.value.address || '',
+      latitude: this.profileForm.value.latitude ?? undefined,
+      longitude: this.profileForm.value.longitude ?? undefined
     }).subscribe({
       next: (response) => {
         this.profile.set(response);
+        this.updateMapUrl(response.latitude, response.longitude);
         this.isSaving.set(false);
         this.isEditMode.set(false);
         this.successMessage.set('Profil barbier mis à jour avec succès.');
       },
       error: (error) => {
         this.isSaving.set(false);
-        this.errorMessage.set(
-          error?.error?.message || 'Impossible de mettre à jour le profil barbier.'
-        );
+        this.errorMessage.set(error?.error?.message || 'Impossible de mettre à jour le profil barbier.');
       }
     });
   }
 
   getInitials(name: string): string {
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('');
+    return name.split(' ').filter(Boolean).slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '').join('');
   }
 }
