@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AvatarModule } from 'primeng/avatar';
@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { MessageModule } from 'primeng/message';
+import { HttpClient } from '@angular/common/http';
 import { LanguageService } from '../../../core/services/language.service';
 import { SessionService } from '../../../core/services/session.service';
 import { ProfileService } from '../../../core/services/profile.service';
@@ -16,6 +17,8 @@ import { BarberProfile } from '../../../core/models/profile.models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
+
+declare const L: any;
 
 @Component({
   selector: 'app-barber-profile',
@@ -38,10 +41,11 @@ import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
   templateUrl: './barber-profile.component.html',
   styleUrl: './barber-profile.component.css'
 })
-export class BarberProfileComponent {
+export class BarberProfileComponent implements AfterViewChecked {
   private sessionService = inject(SessionService);
   private profileService = inject(ProfileService);
   private fb = inject(FormBuilder);
+  private http = inject(HttpClient);
 
   langService = inject(LanguageService);
 
@@ -52,6 +56,10 @@ export class BarberProfileComponent {
   successMessage = signal('');
   profile = signal<BarberProfile | null>(null);
   mapUrl = signal('');
+
+  private editMap: any = null;
+  private editMarker: any = null;
+  private mapInitialized = false;
 
   profileForm = this.fb.group({
     name: ['', [Validators.required]],
@@ -67,7 +75,76 @@ export class BarberProfileComponent {
   });
 
   constructor() {
+    this.loadLeaflet();
     this.loadProfile();
+  }
+
+  loadLeaflet() {
+    if (!(window as any).L) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      document.head.appendChild(script);
+    }
+  }
+
+  ngAfterViewChecked() {
+    if (this.isEditMode() && !this.mapInitialized) {
+      const mapEl = document.getElementById('edit-map');
+      if (mapEl && (window as any).L) {
+        this.initEditMap();
+      }
+    }
+    if (!this.isEditMode()) {
+      this.mapInitialized = false;
+      if (this.editMap) {
+        this.editMap.remove();
+        this.editMap = null;
+        this.editMarker = null;
+      }
+    }
+  }
+
+  initEditMap() {
+    this.mapInitialized = true;
+    const lat = this.profileForm.value.latitude || 33.5731;
+    const lng = this.profileForm.value.longitude || -7.5898;
+
+    this.editMap = L.map('edit-map').setView([lat, lng], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(this.editMap);
+
+    if (this.profileForm.value.latitude && this.profileForm.value.longitude) {
+      this.editMarker = L.marker([lat, lng]).addTo(this.editMap);
+    }
+
+    this.editMap.on('click', (e: any) => {
+      const { lat, lng } = e.latlng;
+
+      if (this.editMarker) {
+        this.editMarker.setLatLng([lat, lng]);
+      } else {
+        this.editMarker = L.marker([lat, lng]).addTo(this.editMap);
+      }
+
+      this.profileForm.patchValue({ latitude: lat, longitude: lng });
+
+      this.http.get<any>(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+      ).subscribe({
+        next: (result) => {
+          if (result?.display_name) {
+            this.profileForm.patchValue({ address: result.display_name });
+          }
+        }
+      });
+    });
   }
 
   loadProfile() {
@@ -116,6 +193,7 @@ export class BarberProfileComponent {
 
   startEdit() {
     this.isEditMode.set(true);
+    this.mapInitialized = false;
     this.successMessage.set('');
     this.errorMessage.set('');
   }
@@ -135,6 +213,7 @@ export class BarberProfileComponent {
         latitude: profile.latitude ?? null,
         longitude: profile.longitude ?? null
       });
+      this.updateMapUrl(profile.latitude, profile.longitude);
     }
     this.isEditMode.set(false);
     this.errorMessage.set('');
