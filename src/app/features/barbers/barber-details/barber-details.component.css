@@ -106,6 +106,23 @@
     line-height: 1.7;
     font-size: 1.02rem;
   }
+
+  .barber-location h3 {
+    margin: 0 0 0.5rem;
+    color: #0f172a;
+    font-size: 1.15rem;
+  }
+
+  .barber-location p {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.7;
+    font-size: 1.02rem;
+  }
+
+  .barber-map {
+    width: 100%;
+  }
   
   .section-block {
     display: flex;
@@ -244,6 +261,7 @@
   html[dir='rtl'] .barber-profile-card,
   html[dir='rtl'] .booking-card,
   html[dir='rtl'] .barber-bio,
+  html[dir='rtl'] .barber-location,
   html[dir='rtl'] .booking-summary,
   html[dir='rtl'] .no-availability-state {
     text-align: right;
