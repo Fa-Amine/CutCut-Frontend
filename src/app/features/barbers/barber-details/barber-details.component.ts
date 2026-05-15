@@ -16,6 +16,7 @@ import { SessionService } from '../../../core/services/session.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
+import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-photo.service';
 
 interface DayGroup {
   dateKey: string;
@@ -46,6 +47,7 @@ export class BarberDetailsComponent {
   private availabilityService = inject(AvailabilityService);
   private bookingService = inject(BookingService);
   private sessionService = inject(SessionService);
+  private barberPhotoService = inject(BarberPhotoService);
 
   langService = inject(LanguageService);
 
@@ -56,7 +58,9 @@ export class BarberDetailsComponent {
 
   barber = signal<BarberDetails | null>(null);
   slots = signal<AvailabilitySlot[]>([]);
-
+  photos = signal<BarberPhoto[]>([]);
+galleryPhotos = computed(() => this.photos().filter(p => p.category === 'gallery' || p.category === null || !p.category));
+haircutPhotos = computed(() => this.photos().filter(p => p.category === 'haircut'));
   selectedDay = signal<string | null>(null);
   selectedSlot = signal<AvailabilitySlot | null>(null);
 
@@ -103,11 +107,19 @@ export class BarberDetailsComponent {
         this.reloadSlots(barberId, () => {
           this.isLoading.set(false);
         });
+        this.loadPhotos(barberId);
       },
       error: (error) => {
         this.errorMessage.set(error?.error?.message || 'Impossible de charger les détails du barbier.');
         this.isLoading.set(false);
       }
+    });
+  }
+
+  loadPhotos(barberId: number) {
+    this.barberPhotoService.getBarberPhotos(barberId).subscribe({
+      next: (photos) => this.photos.set(photos),
+      error: () => {}
     });
   }
 

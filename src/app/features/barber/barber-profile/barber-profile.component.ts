@@ -173,14 +173,16 @@ export class BarberProfileComponent implements AfterViewChecked {
     });
   }
 
-  onGalleryPhotoSelected(event: Event) {
+  onGalleryPhotoSelected(event: Event, category: string) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
     this.isUploadingGallery.set(true);
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+
     this.http.post<any>(
       `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData
@@ -189,25 +191,21 @@ export class BarberProfileComponent implements AfterViewChecked {
         const barberId = this.sessionService.userId();
         if (!barberId) return;
         this.barberPhotoService.addBarberPhoto(
-          barberId,
-          response.secure_url,
-          this.newCaption()
+          barberId, response.secure_url, this.newCaption(), category
         ).subscribe({
           next: (photo) => {
             this.photos.update(photos => [photo, ...photos]);
             this.newCaption.set('');
             this.isUploadingGallery.set(false);
-            this.successMessage.set('Photo ajoutée à la galerie !');
+            this.successMessage.set('Photo ajoutée !');
           },
           error: () => {
             this.isUploadingGallery.set(false);
-            this.errorMessage.set('Impossible d\'ajouter la photo.');
           }
         });
       },
       error: () => {
         this.isUploadingGallery.set(false);
-        this.errorMessage.set('Impossible d\'uploader la photo.');
       }
     });
   }

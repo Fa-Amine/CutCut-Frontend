@@ -8,6 +8,7 @@ export interface BarberPhoto {
   caption?: string;
   likeCount: number;
   createdAt: string;
+  category: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -19,8 +20,12 @@ export class BarberPhotoService {
     return this.http.get<BarberPhoto[]>(`${this.base}/barbers/${barberId}/photos`);
   }
 
-  addBarberPhoto(barberId: number, imageUrl: string, caption: string) {
-    return this.http.post<BarberPhoto>(`${this.base}/barbers/${barberId}/photos`, { imageUrl, caption });
+  getBarberPhotosByCategory(barberId: number, category: string) {
+    return this.http.get<BarberPhoto[]>(`${this.base}/barbers/${barberId}/photos/category/${category}`);
+  }
+
+  addBarberPhoto(barberId: number, imageUrl: string, caption: string, category: string) {
+    return this.http.post<BarberPhoto>(`${this.base}/barbers/${barberId}/photos`, { imageUrl, caption, category });
   }
 
   deleteBarberPhoto(barberId: number, photoId: number) {
