@@ -43,13 +43,18 @@ export class BarberListComponent implements AfterViewChecked {
   errorMessage = signal('');
   barbers = signal<BarberListItem[]>([]);
   viewMode = signal<'list' | 'map'>('list');
+  userLat = signal<number | null>(null);
+  userLng = signal<number | null>(null);
+  isLocating = signal(false);
+  sortByDistance = signal(false);
 
   private map: any = null;
   private mapInitialized = false;
+  private userMarker: any = null;
 
   filteredBarbers = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
-    return this.barbers().filter((barber) => {
+    let result = this.barbers().filter((barber) => {
       if (!term) return true;
       return (
         barber.name.toLowerCase().includes(term) ||
@@ -57,11 +62,70 @@ export class BarberListComponent implements AfterViewChecked {
         (barber.bio ?? '').toLowerCase().includes(term)
       );
     });
+
+    if (this.sortByDistance() && this.userLat() && this.userLng()) {
+      result = [...result].sort((a, b) => {
+        const distA = this.calculateDistance(this.userLat()!, this.userLng()!, a.latitude ?? 0, a.longitude ?? 0);
+        const distB = this.calculateDistance(this.userLat()!, this.userLng()!, b.latitude ?? 0, b.longitude ?? 0);
+        return distA - distB;
+      });
+    }
+
+    return result;
+  });
+
+  barbersWithDistance = computed(() => {
+    return this.filteredBarbers().map(barber => ({
+      ...barber,
+      distance: this.userLat() && this.userLng() && barber.latitude && barber.longitude
+        ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude)
+        : null
+    }));
   });
 
   constructor() {
     this.loadLeaflet();
     this.loadBarbers();
+  }
+
+  calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  locateMe() {
+    if (!navigator.geolocation) {
+      this.errorMessage.set('La géolocalisation n\'est pas supportée par votre navigateur.');
+      return;
+    }
+    this.isLocating.set(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.userLat.set(position.coords.latitude);
+        this.userLng.set(position.coords.longitude);
+        this.sortByDistance.set(true);
+        this.isLocating.set(false);
+
+        if (this.map && this.viewMode() === 'map') {
+          if (this.userMarker) this.userMarker.remove();
+          this.userMarker = L.marker(
+            [position.coords.latitude, position.coords.longitude],
+            { title: 'Votre position' }
+          ).addTo(this.map);
+          this.userMarker.bindPopup('📍 Vous êtes ici').openPopup();
+          this.map.setView([position.coords.latitude, position.coords.longitude], 13);
+        }
+      },
+      () => {
+        this.isLocating.set(false);
+        this.errorMessage.set('Impossible de récupérer votre position.');
+      }
+    );
   }
 
   loadLeaflet() {
@@ -70,7 +134,6 @@ export class BarberListComponent implements AfterViewChecked {
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
       document.head.appendChild(link);
-
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       document.head.appendChild(script);
@@ -89,23 +152,35 @@ export class BarberListComponent implements AfterViewChecked {
       if (this.map) {
         this.map.remove();
         this.map = null;
+        this.userMarker = null;
       }
     }
   }
 
   initMap() {
     this.mapInitialized = true;
-    this.map = L.map('barbers-map').setView([33.9716, -6.8498], 12);
-L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-  attribution: '© Google Maps'
-}).addTo(this.map);
-    const barbersWithLocation = this.filteredBarbers().filter(
-      b => b.latitude && b.longitude
-    );
+    const centerLat = this.userLat() || 33.9716;
+    const centerLng = this.userLng() || -6.8498;
+    this.map = L.map('barbers-map').setView([centerLat, centerLng], 12);
+
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      attribution: '© Google Maps'
+    }).addTo(this.map);
+
+    if (this.userLat() && this.userLng()) {
+      this.userMarker = L.marker([this.userLat()!, this.userLng()!])
+        .addTo(this.map);
+      this.userMarker.bindPopup('📍 Vous êtes ici').openPopup();
+    }
+
+    const barbersWithLocation = this.filteredBarbers().filter(b => b.latitude && b.longitude);
 
     barbersWithLocation.forEach(barber => {
-      const marker = L.marker([barber.latitude!, barber.longitude!]);
+      const dist = this.userLat() && this.userLng() && barber.latitude && barber.longitude
+        ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude).toFixed(1)
+        : null;
 
+      const marker = L.marker([barber.latitude!, barber.longitude!]);
       const popup = `
         <div style="text-align:center; min-width:150px;">
           ${barber.photoUrl
@@ -116,6 +191,7 @@ L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
           <span style="color:#64748b;font-size:0.85rem;">${barber.shopName || 'CutCut'}</span>
           <br/>
           <span style="color:#2563eb;font-weight:700;">${barber.price ?? 0} MAD</span>
+          ${dist ? `<br/><span style="color:#16a34a;font-size:0.85rem;">📍 ${dist} km</span>` : ''}
           <br/>
           <button onclick="window.location.href='/barbers/${barber.id}'"
             style="margin-top:8px;background:#2563eb;color:white;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;">
@@ -123,14 +199,11 @@ L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
           </button>
         </div>
       `;
-
       marker.bindPopup(popup).addTo(this.map);
     });
 
     if (barbersWithLocation.length > 0) {
-      const bounds = L.latLngBounds(
-        barbersWithLocation.map(b => [b.latitude!, b.longitude!])
-      );
+      const bounds = L.latLngBounds(barbersWithLocation.map(b => [b.latitude!, b.longitude!]));
       this.map.fitBounds(bounds, { padding: [50, 50] });
     }
   }
@@ -149,9 +222,7 @@ L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
         this.isLoading.set(false);
       },
       error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Impossible de charger les barbiers.'
-        );
+        this.errorMessage.set(error?.error?.message || 'Impossible de charger les barbiers.');
         this.isLoading.set(false);
       }
     });
@@ -162,11 +233,7 @@ L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
   }
 
   getInitials(name: string): string {
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('');
+    return name.split(' ').filter(Boolean).slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '').join('');
   }
 }

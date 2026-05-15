@@ -10,14 +10,10 @@
 
     <!-- TOGGLE LISTE / CARTE -->
     <div class="view-toggle">
-      <button
-        [class.active]="viewMode() === 'list'"
-        (click)="setViewMode('list')">
+      <button [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">
         📋 Liste
       </button>
-      <button
-        [class.active]="viewMode() === 'map'"
-        (click)="setViewMode('map')">
+      <button [class.active]="viewMode() === 'map'" (click)="setViewMode('map')">
         🗺️ Carte
       </button>
     </div>
@@ -26,18 +22,23 @@
       <div class="filters-grid">
         <div class="filter-group">
           <label>{{ langService.t().searchBarber }}</label>
-          <input
-            pInputText
-            class="w-full"
+          <input pInputText class="w-full"
             [ngModel]="searchTerm()"
             (ngModelChange)="setSearch($event)"
             [placeholder]="langService.t().searchPlaceholder" />
+        </div>
+        <div class="filter-group" style="justify-content:flex-end;">
+          <button pButton type="button"
+            [label]="isLocating() ? 'Localisation...' : sortByDistance() ? '📍 Trié par distance' : '📍 Près de moi'"
+            [disabled]="isLocating()"
+            [severity]="sortByDistance() ? 'success' : 'secondary'"
+            (click)="locateMe()">
+          </button>
         </div>
       </div>
     </div>
 
     <app-loading-spinner *ngIf="isLoading()" message="Chargement des barbiers..."></app-loading-spinner>
-
     <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
 
     <!-- VUE CARTE -->
@@ -56,8 +57,8 @@
         message="Aucun barbier disponible pour le moment.">
       </app-empty-state>
 
-      <div class="barbers-grid" *ngIf="!isLoading() && !errorMessage() && filteredBarbers().length">
-        <div class="barber-card" *ngFor="let barber of filteredBarbers()">
+      <div class="barbers-grid" *ngIf="!isLoading() && !errorMessage() && barbersWithDistance().length">
+        <div class="barber-card" *ngFor="let barber of barbersWithDistance()">
           <div class="barber-card-top">
             <div class="barber-ident">
               <ng-container *ngIf="barber.photoUrl; else initialsAvatar">
@@ -69,6 +70,10 @@
               <div>
                 <h3>{{ barber.name }}</h3>
                 <p>{{ barber.shopName || 'CutCut' }}</p>
+                <small *ngIf="barber.distance !== null"
+                  style="color:#16a34a; font-weight:600;">
+                  📍 {{ barber.distance!.toFixed(1) }} km
+                </small>
               </div>
             </div>
             <p-tag *ngIf="barber.price !== undefined && barber.price !== null"

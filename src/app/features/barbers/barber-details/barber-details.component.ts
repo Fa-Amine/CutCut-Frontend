@@ -17,6 +17,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
 import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-photo.service';
+import { ReviewService, Review } from '../../../core/services/review.service';
 
 interface DayGroup {
   dateKey: string;
@@ -48,6 +49,7 @@ export class BarberDetailsComponent {
   private bookingService = inject(BookingService);
   private sessionService = inject(SessionService);
   private barberPhotoService = inject(BarberPhotoService);
+  private reviewService = inject(ReviewService);
 
   langService = inject(LanguageService);
 
@@ -59,8 +61,8 @@ export class BarberDetailsComponent {
   barber = signal<BarberDetails | null>(null);
   slots = signal<AvailabilitySlot[]>([]);
   photos = signal<BarberPhoto[]>([]);
-galleryPhotos = computed(() => this.photos().filter(p => p.category === 'gallery' || p.category === null || !p.category));
-haircutPhotos = computed(() => this.photos().filter(p => p.category === 'haircut'));
+  reviews = signal<Review[]>([]);
+
   selectedDay = signal<string | null>(null);
   selectedSlot = signal<AvailabilitySlot | null>(null);
 
@@ -108,6 +110,7 @@ haircutPhotos = computed(() => this.photos().filter(p => p.category === 'haircut
           this.isLoading.set(false);
         });
         this.loadPhotos(barberId);
+        this.loadReviews(barberId);
       },
       error: (error) => {
         this.errorMessage.set(error?.error?.message || 'Impossible de charger les détails du barbier.');
@@ -121,6 +124,17 @@ haircutPhotos = computed(() => this.photos().filter(p => p.category === 'haircut
       next: (photos) => this.photos.set(photos),
       error: () => {}
     });
+  }
+
+  loadReviews(barberId: number) {
+    this.reviewService.getBarberReviews(barberId).subscribe({
+      next: (reviews) => this.reviews.set(reviews),
+      error: () => {}
+    });
+  }
+
+  getStars(count: number): string {
+    return '⭐'.repeat(count);
   }
 
   private reloadSlots(barberId: number, onDone?: () => void) {
@@ -203,6 +217,10 @@ haircutPhotos = computed(() => this.photos().filter(p => p.category === 'haircut
   formatDateLabel(dateKey: string): string {
     const date = new Date(dateKey);
     return date.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' });
+  }
+
+  formatDate(dateTime: string): string {
+    return new Date(dateTime).toLocaleDateString();
   }
 
   getInitials(name: string): string {

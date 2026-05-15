@@ -31,6 +31,9 @@
             <div class="barber-tags">
               <p-tag *ngIf="barber()!.price !== undefined && barber()!.price !== null"
                 [value]="barber()!.price + ' MAD'" severity="info"></p-tag>
+              <p-tag *ngIf="barber()!.averageRating"
+                [value]="'⭐ ' + barber()!.averageRating + ' (' + (barber()!.reviewCount || 0) + ' avis)'"
+                severity="success"></p-tag>
             </div>
 
             <div class="barber-bio">
@@ -56,7 +59,8 @@
             </div>
 
             <!-- PHOTOS -->
-            <div *ngIf="photos().length > 0" style="margin-top:1.5rem; border-top:1px solid #e5edf5; padding-top:1rem;">
+            <div *ngIf="photos().length > 0"
+              style="margin-top:1.5rem; border-top:1px solid #e5edf5; padding-top:1rem;">
               <h3 style="color:#0f172a; font-size:1.1rem; margin-bottom:1rem;">📸 Photos</h3>
               <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem;">
                 <div *ngFor="let photo of photos()"
@@ -64,6 +68,30 @@
                   <img [src]="photo.imageUrl" [alt]="photo.caption || 'Photo'"
                     style="width:100%; height:100%; object-fit:cover;" />
                 </div>
+              </div>
+            </div>
+
+            <!-- AVIS -->
+            <div style="margin-top:1.5rem; border-top:1px solid #e5edf5; padding-top:1rem;">
+              <h3 style="color:#0f172a; font-size:1.1rem; margin-bottom:1rem;">
+                ⭐ Avis clients ({{ reviews().length }})
+              </h3>
+
+              <div *ngIf="reviews().length === 0"
+                style="color:#64748b; text-align:center; padding:1rem;">
+                Aucun avis pour le moment.
+              </div>
+
+              <div *ngFor="let review of reviews()"
+                style="background:#f8fbff; border:1px solid #e5edf5; border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <strong style="color:#0f172a;">{{ review.client.name }}</strong>
+                  <span style="font-size:1.1rem;">{{ getStars(review.stars) }}</span>
+                </div>
+                <p *ngIf="review.comment" style="color:#64748b; margin:0; font-size:0.95rem;">
+                  {{ review.comment }}
+                </p>
+                <small style="color:#94a3b8;">{{ formatDate(review.createdAt) }}</small>
               </div>
             </div>
 
