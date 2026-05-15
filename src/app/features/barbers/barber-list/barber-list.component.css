@@ -110,6 +110,15 @@
     margin: 0.25rem 0 0;
     color: #64748b;
   }
+
+  .barber-photo {
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 1px solid #e5edf5;
+    flex-shrink: 0;
+  }
   
   .barber-meta {
     margin-bottom: 1rem;
@@ -169,11 +178,4 @@
     .barber-actions .p-button {
       width: 100%;
     }
-    .barber-photo {
-        width: 64px;
-        height: 64px;
-        border-radius: 999px;
-        object-fit: cover;
-        border: 1px solid #e5edf5;
-      }
   }
