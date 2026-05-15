@@ -2,31 +2,16 @@
   <div class="hero-container">
     <div class="hero-text">
       <span class="eyebrow">{{ langService.t().heroBadge }}</span>
-
       <h1>{{ langService.t().heroTitle }}</h1>
-
-      <p>
-        {{ langService.t().heroSubtitle }}
-      </p>
+      <p>{{ langService.t().heroSubtitle }}</p>
 
       <div class="hero-actions">
-        <button
-          pButton
-          type="button"
-          [label]="langService.t().bookNow"
-          icon="pi pi-calendar-plus"
-          class="hero-primary-btn"
-          routerLink="/barbers">
+        <button pButton type="button" [label]="langService.t().bookNow"
+          icon="pi pi-calendar-plus" class="hero-primary-btn" routerLink="/barbers">
         </button>
-      
-        <button
-          *ngIf="sessionService.isGuest()"
-          pButton
-          type="button"
-          [label]="langService.t().becomeBarber"
-          icon="pi pi-user-plus"
-          class="hero-secondary-btn"
-          routerLink="/register">
+        <button *ngIf="sessionService.isGuest()" pButton type="button"
+          [label]="langService.t().becomeBarber" icon="pi pi-user-plus"
+          class="hero-secondary-btn" routerLink="/register">
         </button>
       </div>
 
@@ -35,12 +20,10 @@
           <strong>{{ langService.t().fast }}</strong>
           <span>{{ langService.t().fastDesc }}</span>
         </div>
-
         <div class="stat-box">
           <strong>{{ langService.t().simple }}</strong>
           <span>{{ langService.t().simpleDesc }}</span>
         </div>
-
         <div class="stat-box">
           <strong>{{ langService.t().reliable }}</strong>
           <span>{{ langService.t().reliableDesc }}</span>
@@ -60,11 +43,9 @@
             <ng-container *ngIf="barber.photoUrl; else previewAvatar">
               <p-avatar [image]="barber.photoUrl" shape="circle" size="large"></p-avatar>
             </ng-container>
-
             <ng-template #previewAvatar>
               <p-avatar [label]="getInitials(barber.name)" shape="circle" size="large"></p-avatar>
             </ng-template>
-
             <div>
               <h3>{{ barber.name }}</h3>
               <p>{{ barber.shopName || 'CutCut' }}</p>
@@ -72,10 +53,7 @@
           </div>
 
           <div class="slot-list" *ngIf="previewSlots().length; else noSlots">
-            <button
-              pButton
-              type="button"
-              *ngFor="let slot of previewSlots(); let i = index"
+            <button pButton type="button" *ngFor="let slot of previewSlots(); let i = index"
               [label]="formatTime(slot.startTime)"
               [class.hero-primary-btn]="i === 1"
               [severity]="i === 1 ? undefined : 'secondary'"
@@ -83,24 +61,68 @@
               [routerLink]="['/barbers', barber.id]">
             </button>
           </div>
-
           <ng-template #noSlots>
             <p class="preview-empty">Aucun créneau disponible pour le moment.</p>
           </ng-template>
 
-          <button
-            pButton
-            type="button"
-            [label]="langService.t().confirmBooking"
-            class="confirm-btn navy-btn block-btn"
-            [routerLink]="['/barbers', barber.id]">
+          <button pButton type="button" [label]="langService.t().confirmBooking"
+            class="confirm-btn navy-btn block-btn" [routerLink]="['/barbers', barber.id]">
           </button>
         </ng-container>
-
         <ng-template #noPreviewBarber>
           <p class="preview-empty">Aucun barbier disponible pour le moment.</p>
         </ng-template>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- 🏆 TOP COIFFEURS -->
+<section class="how-section" *ngIf="topBarbers().length > 0">
+  <div class="section-header">
+    <span class="section-kicker">🏆 CLASSEMENT</span>
+    <h2>Meilleurs coiffeurs</h2>
+  </div>
+
+  <div class="barbers-grid">
+    <div class="modern-barber-card" *ngFor="let barber of topBarbers(); let i = index"
+      style="position:relative;">
+
+      <!-- BADGE POSITION -->
+      <div style="position:absolute; top:-10px; left:-10px; width:36px; height:36px;
+        border-radius:50%; display:flex; align-items:center; justify-content:center;
+        font-weight:900; font-size:1rem; color:white;"
+        [style.background]="i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : '#b45309'">
+        {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
+      </div>
+
+      <div class="barber-top">
+        <ng-container *ngIf="barber.photoUrl; else topAvatar">
+          <p-avatar [image]="barber.photoUrl" shape="circle" size="xlarge"></p-avatar>
+        </ng-container>
+        <ng-template #topAvatar>
+          <p-avatar [label]="getInitials(barber.name)" shape="circle" size="xlarge"></p-avatar>
+        </ng-template>
+        <div>
+          <h3>{{ barber.name }}</h3>
+          <p>{{ barber.shopName || 'CutCut' }}</p>
+        </div>
+      </div>
+
+      <div style="margin:0.5rem 0; font-size:1.1rem;">
+        {{ getStars(barber.averageRating ?? 0) }}
+        <span style="color:#64748b; font-size:0.9rem;">
+          {{ barber.averageRating }} / 5 ({{ barber.reviewCount }} avis)
+        </span>
+      </div>
+
+      <div class="barber-meta">
+        <p-tag [value]="(barber.price ?? 0) + ' MAD'" severity="info"></p-tag>
+      </div>
+
+      <button pButton type="button" [label]="langService.t().bookThisBarber"
+        icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
+      </button>
     </div>
   </div>
 </section>
@@ -117,13 +139,11 @@
       <h3>{{ langService.t().step1Title }}</h3>
       <p>{{ langService.t().step1Desc }}</p>
     </div>
-
     <div class="modern-step-card">
       <div class="step-number">02</div>
       <h3>{{ langService.t().step2Title }}</h3>
       <p>{{ langService.t().step2Desc }}</p>
     </div>
-
     <div class="modern-step-card">
       <div class="step-number">03</div>
       <h3>{{ langService.t().step3Title }}</h3>
@@ -146,11 +166,9 @@
         <ng-container *ngIf="barber.photoUrl; else barberAvatar">
           <p-avatar [image]="barber.photoUrl" shape="circle" size="xlarge"></p-avatar>
         </ng-container>
-
         <ng-template #barberAvatar>
           <p-avatar [label]="getInitials(barber.name)" shape="circle" size="xlarge"></p-avatar>
         </ng-template>
-
         <div>
           <h3>{{ barber.name }}</h3>
           <p>{{ barber.shopName || 'CutCut' }}</p>
@@ -158,19 +176,14 @@
       </div>
 
       <div class="barber-meta">
-        <p-tag
-          [value]="barber.bio || ((barber.price ?? 0) + ' MAD')"
-          severity="contrast">
-        </p-tag>
+        <p-tag [value]="barber.bio || ((barber.price ?? 0) + ' MAD')" severity="contrast"></p-tag>
+        <span *ngIf="barber.averageRating" style="font-size:0.9rem; color:#64748b; margin-left:0.5rem;">
+          ⭐ {{ barber.averageRating }}
+        </span>
       </div>
 
-      <button
-        pButton
-        type="button"
-        [label]="langService.t().bookThisBarber"
-        icon="pi pi-arrow-right"
-        class="navy-btn"
-        [routerLink]="['/barbers', barber.id]">
+      <button pButton type="button" [label]="langService.t().bookThisBarber"
+        icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
       </button>
     </div>
   </div>

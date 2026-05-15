@@ -11,6 +11,7 @@ import { AvailabilityService } from '../../../core/services/availability.service
 import { AvailabilitySlot } from '../../../core/models/availability.models';
 import { BarberListItem } from '../../../core/models/barber.models';
 import { SessionService } from '../../../core/services/session.service';
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -25,10 +26,19 @@ export class HomeComponent {
   sessionService = inject(SessionService);
 
   isLoading = signal(true);
-  featuredBarbers = signal<BarberListItem[]>([]);
+  allBarbers = signal<BarberListItem[]>([]);
   previewSlots = signal<AvailabilitySlot[]>([]);
 
-  previewBarber = computed(() => this.featuredBarbers()[0] ?? null);
+  featuredBarbers = computed(() => this.allBarbers().slice(0, 3));
+
+  topBarbers = computed(() =>
+    [...this.allBarbers()]
+      .filter(b => b.averageRating && b.averageRating > 0)
+      .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0))
+      .slice(0, 3)
+  );
+
+  previewBarber = computed(() => this.allBarbers()[0] ?? null);
 
   constructor() {
     this.loadHomeData();
@@ -36,25 +46,19 @@ export class HomeComponent {
 
   loadHomeData() {
     this.isLoading.set(true);
-
     this.barberService.getAllBarbers().subscribe({
       next: (barbers) => {
-        console.log('Home barbers response:', barbers);
-
-        this.featuredBarbers.set(barbers.slice(0, 3));
+        this.allBarbers.set(barbers);
         this.isLoading.set(false);
-
         const firstBarber = barbers[0];
         if (!firstBarber) {
           this.previewSlots.set([]);
           return;
         }
-
         this.loadPreviewSlots(firstBarber.id);
       },
       error: (error) => {
-        console.error('Error loading barbers for home:', error);
-        this.featuredBarbers.set([]);
+        this.allBarbers.set([]);
         this.previewSlots.set([]);
         this.isLoading.set(false);
       }
@@ -64,35 +68,29 @@ export class HomeComponent {
   loadPreviewSlots(barberId: number) {
     this.availabilityService.getAvailableSlotsByBarber(barberId).subscribe({
       next: (slots) => {
-        console.log('Home preview slots response:', slots);
-
         const available = slots
           .filter(slot => !slot.booked)
           .sort((a, b) => a.startTime.localeCompare(b.startTime))
           .slice(0, 3);
-
         this.previewSlots.set(available);
       },
-      error: (error) => {
-        console.error('Error loading preview slots:', error);
+      error: () => {
         this.previewSlots.set([]);
       }
     });
   }
 
+  getStars(rating: number): string {
+    const full = Math.floor(rating);
+    return '⭐'.repeat(full);
+  }
+
   getInitials(name: string): string {
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(part => part[0]?.toUpperCase() ?? '')
-      .join('');
+    return name.split(' ').filter(Boolean).slice(0, 2)
+      .map(part => part[0]?.toUpperCase() ?? '').join('');
   }
 
   formatTime(dateTime: string): string {
-    return new Date(dateTime).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return new Date(dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 }
