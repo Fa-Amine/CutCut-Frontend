@@ -6,8 +6,7 @@
       </a>
 
       <nav class="nav-center desktop-only">
-        <a
-          *ngFor="let link of navLinks()"
+        <a *ngFor="let link of navLinks()"
           [routerLink]="link.path"
           routerLinkActive="active-link"
           [routerLinkActiveOptions]="{ exact: link.path === '/' }">
@@ -17,68 +16,83 @@
 
       <div class="nav-right desktop-only">
         <div class="lang-switch">
-          <button
-            type="button"
-            class="lang-btn"
+          <button type="button" class="lang-btn"
             [class.active]="langService.lang() === 'fr'"
-            (click)="setLanguage('fr')">
-            FR
+            (click)="setLanguage('fr')">FR</button>
+          <button type="button" class="lang-btn"
+            [class.active]="langService.lang() === 'ar'"
+            (click)="setLanguage('ar')">AR</button>
+        </div>
+
+        <div *ngIf="!sessionService.isGuest()" style="position:relative;">
+          <button type="button" (click)="toggleNotifications()"
+            style="background:none; border:none; cursor:pointer; font-size:1.3rem; position:relative; padding:4px;">
+            🔔
+            <span *ngIf="wsService.unreadCount() > 0"
+              style="position:absolute; top:-4px; right:-4px; background:#ef4444; color:white;
+                border-radius:50%; width:18px; height:18px; font-size:0.7rem;
+                display:flex; align-items:center; justify-content:center; font-weight:700;">
+              {{ wsService.unreadCount() }}
+            </span>
           </button>
 
-          <button
-            type="button"
-            class="lang-btn"
-            [class.active]="langService.lang() === 'ar'"
-            (click)="setLanguage('ar')">
-            AR
-          </button>
+          <div *ngIf="showNotifications()"
+            style="position:absolute; right:0; top:40px; width:300px; background:white;
+              border:1px solid #e5edf5; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);
+              z-index:9999; overflow:hidden;">
+            <div style="padding:0.75rem 1rem; border-bottom:1px solid #e5edf5;
+              display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#0f172a;">🔔 Notifications</strong>
+              <button (click)="clearNotifications()"
+                style="background:none; border:none; cursor:pointer; color:#64748b; font-size:0.85rem;">
+                Tout effacer
+              </button>
+            </div>
+
+            <div *ngIf="wsService.notifications().length === 0"
+              style="padding:1rem; text-align:center; color:#64748b;">
+              Aucune notification
+            </div>
+
+            <div *ngFor="let notif of wsService.notifications()"
+              style="padding:0.75rem 1rem; border-bottom:1px solid #f1f5f9; color:#0f172a; font-size:0.9rem;">
+              {{ notif }}
+            </div>
+          </div>
         </div>
 
         <ng-container *ngIf="sessionService.isGuest(); else authActions">
-          <button
-            pButton
-            type="button"
-            [label]="langService.t().login"
-            class="login-btn p-button-text"
-            routerLink="/login">
-          </button>
-
-          <button
-            pButton
-            type="button"
-            [label]="langService.t().register"
-            class="register-btn"
-            routerLink="/register">
-          </button>
+          <button pButton type="button" [label]="langService.t().login"
+            class="login-btn p-button-text" routerLink="/login"></button>
+          <button pButton type="button" [label]="langService.t().register"
+            class="register-btn" routerLink="/register"></button>
         </ng-container>
-
         <ng-template #authActions>
-          <button
-            pButton
-            type="button"
-            [label]="langService.t().logout"
-            class="login-btn p-button-text"
-            (click)="logout()">
-          </button>
+          <button pButton type="button" [label]="langService.t().logout"
+            class="login-btn p-button-text" (click)="logout()"></button>
         </ng-template>
       </div>
 
       <div class="mobile-actions mobile-only">
         <div class="lang-switch compact-lang">
-          <button
-            type="button"
-            class="lang-btn"
+          <button type="button" class="lang-btn"
             [class.active]="langService.lang() === 'fr'"
-            (click)="setLanguage('fr')">
-            FR
-          </button>
-
-          <button
-            type="button"
-            class="lang-btn"
+            (click)="setLanguage('fr')">FR</button>
+          <button type="button" class="lang-btn"
             [class.active]="langService.lang() === 'ar'"
-            (click)="setLanguage('ar')">
-            AR
+            (click)="setLanguage('ar')">AR</button>
+        </div>
+
+        <div *ngIf="!sessionService.isGuest()" style="position:relative; display:inline-block;">
+          <button type="button" (click)="toggleNotifications()"
+            style="background:none; border:none; cursor:pointer; font-size:1.3rem; position:relative; padding:4px;">
+            🔔
+            <span *ngIf="wsService.unreadCount() > 0"
+              style="position:absolute; top:-4px; right:-4px; background:#ef4444; color:white;
+                border-radius:50%; width:18px; height:18px; font-size:0.7rem;
+                display:flex; align-items:center; justify-content:center; font-weight:700;">
+              {{ wsService.unreadCount() }}
+            </span>
           </button>
         </div>
 
@@ -92,22 +106,16 @@
   </div>
 
   <div class="mobile-menu" *ngIf="mobileMenuOpen()">
-    <a
-      *ngFor="let link of navLinks()"
-      [routerLink]="link.path"
-      (click)="closeMobileMenu()">
+    <a *ngFor="let link of navLinks()"
+      [routerLink]="link.path" (click)="closeMobileMenu()">
       {{ link.label }}
     </a>
-
     <ng-container *ngIf="sessionService.isGuest(); else mobileAuthActions">
       <a routerLink="/login" (click)="closeMobileMenu()">{{ langService.t().login }}</a>
       <a routerLink="/register" (click)="closeMobileMenu()">{{ langService.t().register }}</a>
     </ng-container>
-
     <ng-template #mobileAuthActions>
       <a href="#" (click)="logout(); $event.preventDefault()">{{ langService.t().logout }}</a>
     </ng-template>
   </div>
-
-  
 </header>
