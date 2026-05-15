@@ -1,21 +1,94 @@
-@import "primeicons/primeicons.css";/* You can add global styles to this file, and also import other style files */
-html,
+@import "primeicons/primeicons.css";
 
-
-
-:root {
-    --p-primary-color: #2563eb;
-    --p-primary-500: #2563eb;
-    --p-primary-600: #1d4ed8;
-  }
+html, :root {
+  --p-primary-color: #2563eb;
+  --p-primary-500: #2563eb;
+  --p-primary-600: #1d4ed8;
+}
 
 body {
   margin: 0;
   padding: 0;
   background: #ffffff;
-}
-
-body {
   font-family: Arial, Helvetica, sans-serif;
   color: #111827;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* MODE SOMBRE */
+body.dark-mode {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode .p-card,
+body.dark-mode .barber-card,
+body.dark-mode .reservation-card,
+body.dark-mode .booking-preview-card,
+body.dark-mode .modern-barber-card,
+body.dark-mode .modern-step-card,
+body.dark-mode .filters-card,
+body.dark-mode .profile-card,
+body.dark-mode .gallery-section {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode strong {
+  color: #f1f5f9 !important;
+}
+
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode label {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode input,
+body.dark-mode textarea {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .page-header h1 {
+  color: #f1f5f9 !important;
+}
+
+body.dark-mode .barber-details-page,
+body.dark-mode .barbers-page,
+body.dark-mode .reservations-page,
+body.dark-mode .barber-profile-page,
+body.dark-mode .hero-section,
+body.dark-mode .how-section,
+body.dark-mode .barbers-section {
+  background: #0f172a !important;
+}
+
+body.dark-mode .info-box {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .booking-summary {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode .view-toggle {
+  background: #1e293b !important;
+}
+
+body.dark-mode .view-toggle button {
+  color: #94a3b8 !important;
+}
+
+body.dark-mode .view-toggle button.active {
+  background: #334155 !important;
+  color: #f1f5f9 !important;
 }
