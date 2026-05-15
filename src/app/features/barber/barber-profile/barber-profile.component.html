@@ -15,12 +15,26 @@
     <p-card *ngIf="!isLoading() && !errorMessage() && profile()">
       <div class="profile-card">
         <div class="profile-top">
-          <ng-container *ngIf="profile()!.photoUrl; else barberAvatar">
-            <img [src]="profile()!.photoUrl!" [alt]="profile()!.name" class="barber-photo-large" />
-          </ng-container>
-          <ng-template #barberAvatar>
-            <p-avatar [label]="getInitials(profile()!.name)" shape="circle" size="xlarge"></p-avatar>
-          </ng-template>
+
+          <!-- PHOTO DE PROFIL -->
+          <div class="photo-container">
+            <ng-container *ngIf="profile()!.photoUrl; else barberAvatar">
+              <img [src]="profileForm.value.photoUrl || profile()!.photoUrl!" [alt]="profile()!.name" class="barber-photo-large" />
+            </ng-container>
+            <ng-template #barberAvatar>
+              <p-avatar [label]="getInitials(profile()!.name)" shape="circle" size="xlarge"></p-avatar>
+            </ng-template>
+
+            <!-- BOUTON UPLOAD PHOTO -->
+            <div *ngIf="isEditMode()" class="photo-upload-btn">
+              <label for="photoInput" style="cursor:pointer; background:#2563eb; color:white; padding:6px 12px; border-radius:8px; font-size:0.85rem;">
+                📷 Changer la photo
+              </label>
+              <input id="photoInput" type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)" />
+              <span *ngIf="isUploadingPhoto()" style="color:#64748b; font-size:0.85rem;">Envoi en cours...</span>
+            </div>
+          </div>
+
           <div>
             <h2>{{ profile()!.name }}</h2>
             <p>{{ profile()!.shopName || 'CutCut' }}</p>
@@ -65,11 +79,6 @@
             <strong>{{ profile()!.walletBalance ?? 0 }} MAD</strong>
           </div>
           <div class="info-box full-width">
-            <span>Photo URL</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.photoUrl || '-' }}</strong>
-            <input *ngIf="isEditMode()" pInputText formControlName="photoUrl" class="w-full" />
-          </div>
-          <div class="info-box full-width">
             <span>Bio</span>
             <strong *ngIf="!isEditMode()">{{ profile()!.bio || '-' }}</strong>
             <textarea *ngIf="isEditMode()" pTextarea rows="4" formControlName="bio" class="w-full"></textarea>
@@ -102,7 +111,7 @@
         <div class="profile-actions">
           <button *ngIf="!isEditMode()" pButton type="button" label="Modifier" (click)="startEdit()"></button>
           <ng-container *ngIf="isEditMode()">
-            <button pButton type="button" label="Enregistrer" [disabled]="isSaving()" (click)="saveProfile()"></button>
+            <button pButton type="button" label="Enregistrer" [disabled]="isSaving() || isUploadingPhoto()" (click)="saveProfile()"></button>
             <button pButton type="button" label="Annuler" severity="secondary" [outlined]="true" (click)="cancelEdit()"></button>
           </ng-container>
         </div>

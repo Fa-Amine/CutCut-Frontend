@@ -52,6 +52,7 @@ export class BarberProfileComponent implements AfterViewChecked {
   isLoading = signal(true);
   isSaving = signal(false);
   isEditMode = signal(false);
+  isUploadingPhoto = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
   profile = signal<BarberProfile | null>(null);
@@ -60,6 +61,9 @@ export class BarberProfileComponent implements AfterViewChecked {
   private editMap: any = null;
   private editMarker: any = null;
   private mapInitialized = false;
+
+  private readonly CLOUDINARY_CLOUD_NAME = 'delf4ovww';
+  private readonly CLOUDINARY_UPLOAD_PRESET = 'barbergo_upload';
 
   profileForm = this.fb.group({
     name: ['', [Validators.required]],
@@ -144,6 +148,34 @@ export class BarberProfileComponent implements AfterViewChecked {
           }
         }
       });
+    });
+  }
+
+  onPhotoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    this.isUploadingPhoto.set(true);
+    this.errorMessage.set('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+
+    this.http.post<any>(
+      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      formData
+    ).subscribe({
+      next: (response) => {
+        this.profileForm.patchValue({ photoUrl: response.secure_url });
+        this.isUploadingPhoto.set(false);
+        this.successMessage.set('Photo uploadée avec succès !');
+      },
+      error: () => {
+        this.isUploadingPhoto.set(false);
+        this.errorMessage.set('Impossible d\'uploader la photo.');
+      }
     });
   }
 
