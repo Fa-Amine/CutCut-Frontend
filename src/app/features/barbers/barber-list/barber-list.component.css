@@ -179,3 +179,30 @@
       width: 100%;
     }
   }
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 16px;
+  width: fit-content;
+}
+
+.view-toggle button {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: transparent;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.view-toggle button.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+}
