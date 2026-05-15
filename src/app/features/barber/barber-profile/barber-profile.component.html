@@ -7,34 +7,29 @@
     </div>
 
     <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
-
     <app-loading-spinner *ngIf="isLoading()" message="Chargement du profil barbier..."></app-loading-spinner>
-
     <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
 
     <p-card *ngIf="!isLoading() && !errorMessage() && profile()">
       <div class="profile-card">
-        <div class="profile-top">
 
-          <!-- PHOTO DE PROFIL -->
+        <!-- PHOTO DE PROFIL -->
+        <div class="profile-top">
           <div class="photo-container">
-            <ng-container *ngIf="profile()!.photoUrl; else barberAvatar">
+            <ng-container *ngIf="profileForm.value.photoUrl || profile()!.photoUrl; else barberAvatar">
               <img [src]="profileForm.value.photoUrl || profile()!.photoUrl!" [alt]="profile()!.name" class="barber-photo-large" />
             </ng-container>
             <ng-template #barberAvatar>
               <p-avatar [label]="getInitials(profile()!.name)" shape="circle" size="xlarge"></p-avatar>
             </ng-template>
-
-            <!-- BOUTON UPLOAD PHOTO -->
-            <div *ngIf="isEditMode()" class="photo-upload-btn">
+            <div *ngIf="isEditMode()" class="photo-upload-btn" style="margin-top:8px;">
               <label for="photoInput" style="cursor:pointer; background:#2563eb; color:white; padding:6px 12px; border-radius:8px; font-size:0.85rem;">
                 📷 Changer la photo
               </label>
               <input id="photoInput" type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)" />
-              <span *ngIf="isUploadingPhoto()" style="color:#64748b; font-size:0.85rem;">Envoi en cours...</span>
+              <span *ngIf="isUploadingPhoto()" style="color:#64748b; font-size:0.85rem; margin-left:8px;">Envoi en cours...</span>
             </div>
           </div>
-
           <div>
             <h2>{{ profile()!.name }}</h2>
             <p>{{ profile()!.shopName || 'CutCut' }}</p>
@@ -99,13 +94,8 @@
         <!-- CARTE AFFICHAGE EN MODE VIEW -->
         <div class="info-box full-width" *ngIf="!isEditMode() && mapUrl()">
           <span>📍 Localisation sur la carte</span>
-          <iframe
-            [src]="mapUrl() | safeUrl"
-            width="100%"
-            height="300"
-            style="border:1px solid #ccc; border-radius:8px; margin-top:8px"
-            loading="lazy">
-          </iframe>
+          <iframe [src]="mapUrl() | safeUrl" width="100%" height="300"
+            style="border:1px solid #ccc; border-radius:8px; margin-top:8px" loading="lazy"></iframe>
         </div>
 
         <div class="profile-actions">
@@ -115,6 +105,45 @@
             <button pButton type="button" label="Annuler" severity="secondary" [outlined]="true" (click)="cancelEdit()"></button>
           </ng-container>
         </div>
+
+        <!-- GALERIE PHOTOS -->
+        <div class="gallery-section">
+          <h3>📸 Galerie du salon</h3>
+
+          <!-- AJOUTER UNE PHOTO -->
+          <div class="gallery-upload">
+            <input
+              type="text"
+              placeholder="Description de la photo (optionnel)"
+              [value]="newCaption()"
+              (input)="newCaption.set($any($event.target).value)"
+              style="padding:8px; border:1px solid #e5edf5; border-radius:8px; width:100%; margin-bottom:8px;" />
+            <label for="galleryInput" style="cursor:pointer; background:#2563eb; color:white; padding:8px 16px; border-radius:8px; font-size:0.9rem; display:inline-block;">
+              📷 Ajouter une photo au salon
+            </label>
+            <input id="galleryInput" type="file" accept="image/*" style="display:none" (change)="onGalleryPhotoSelected($event)" />
+            <span *ngIf="isUploadingGallery()" style="color:#64748b; font-size:0.85rem; margin-left:8px;">Envoi en cours...</span>
+          </div>
+
+          <!-- PHOTOS DE LA GALERIE -->
+          <div class="gallery-grid" *ngIf="photos().length > 0">
+            <div class="gallery-item" *ngFor="let photo of photos()">
+              <img [src]="photo.imageUrl" [alt]="photo.caption || 'Photo salon'" />
+              <div class="gallery-overlay">
+                <span *ngIf="photo.caption">{{ photo.caption }}</span>
+                <button (click)="deletePhoto(photo.id)"
+                  style="background:rgba(239,68,68,0.9); color:white; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem;">
+                  🗑️ Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p *ngIf="photos().length === 0" style="color:#64748b; text-align:center; padding:2rem;">
+            Aucune photo dans la galerie. Ajoutez des photos de votre salon !
+          </p>
+        </div>
+
       </div>
     </p-card>
   </div>

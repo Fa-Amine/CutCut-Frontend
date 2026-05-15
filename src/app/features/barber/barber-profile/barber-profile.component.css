@@ -122,3 +122,51 @@
         flex-wrap: wrap;
       }
   }
+.gallery-section {
+  margin-top: 2rem;
+  border-top: 1px solid #e5edf5;
+  padding-top: 1.5rem;
+}
+
+.gallery-section h3 {
+  color: #0f172a;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.gallery-upload {
+  margin-bottom: 1.5rem;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.gallery-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}

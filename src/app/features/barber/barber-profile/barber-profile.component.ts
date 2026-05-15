@@ -17,6 +17,7 @@ import { BarberProfile } from '../../../core/models/profile.models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
+import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-photo.service';
 
 declare const L: any;
 
@@ -44,6 +45,7 @@ declare const L: any;
 export class BarberProfileComponent implements AfterViewChecked {
   private sessionService = inject(SessionService);
   private profileService = inject(ProfileService);
+  private barberPhotoService = inject(BarberPhotoService);
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
 
@@ -53,10 +55,13 @@ export class BarberProfileComponent implements AfterViewChecked {
   isSaving = signal(false);
   isEditMode = signal(false);
   isUploadingPhoto = signal(false);
+  isUploadingGallery = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
   profile = signal<BarberProfile | null>(null);
   mapUrl = signal('');
+  photos = signal<BarberPhoto[]>([]);
+  newCaption = signal('');
 
   private editMap: any = null;
   private editMarker: any = null;
@@ -89,7 +94,6 @@ export class BarberProfileComponent implements AfterViewChecked {
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
       document.head.appendChild(link);
-
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       document.head.appendChild(script);
@@ -117,28 +121,21 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.mapInitialized = true;
     const lat = this.profileForm.value.latitude || 33.5731;
     const lng = this.profileForm.value.longitude || -7.5898;
-
     this.editMap = L.map('edit-map').setView([lat, lng], 13);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(this.editMap);
-
     if (this.profileForm.value.latitude && this.profileForm.value.longitude) {
       this.editMarker = L.marker([lat, lng]).addTo(this.editMap);
     }
-
     this.editMap.on('click', (e: any) => {
       const { lat, lng } = e.latlng;
-
       if (this.editMarker) {
         this.editMarker.setLatLng([lat, lng]);
       } else {
         this.editMarker = L.marker([lat, lng]).addTo(this.editMap);
       }
-
       this.profileForm.patchValue({ latitude: lat, longitude: lng });
-
       this.http.get<any>(
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
       ).subscribe({
@@ -154,15 +151,12 @@ export class BarberProfileComponent implements AfterViewChecked {
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-
     const file = input.files[0];
     this.isUploadingPhoto.set(true);
     this.errorMessage.set('');
-
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
-
     this.http.post<any>(
       `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData
@@ -175,6 +169,56 @@ export class BarberProfileComponent implements AfterViewChecked {
       error: () => {
         this.isUploadingPhoto.set(false);
         this.errorMessage.set('Impossible d\'uploader la photo.');
+      }
+    });
+  }
+
+  onGalleryPhotoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingGallery.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+    this.http.post<any>(
+      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      formData
+    ).subscribe({
+      next: (response) => {
+        const barberId = this.sessionService.userId();
+        if (!barberId) return;
+        this.barberPhotoService.addBarberPhoto(
+          barberId,
+          response.secure_url,
+          this.newCaption()
+        ).subscribe({
+          next: (photo) => {
+            this.photos.update(photos => [photo, ...photos]);
+            this.newCaption.set('');
+            this.isUploadingGallery.set(false);
+            this.successMessage.set('Photo ajoutée à la galerie !');
+          },
+          error: () => {
+            this.isUploadingGallery.set(false);
+            this.errorMessage.set('Impossible d\'ajouter la photo.');
+          }
+        });
+      },
+      error: () => {
+        this.isUploadingGallery.set(false);
+        this.errorMessage.set('Impossible d\'uploader la photo.');
+      }
+    });
+  }
+
+  deletePhoto(photoId: number) {
+    const barberId = this.sessionService.userId();
+    if (!barberId) return;
+    this.barberPhotoService.deleteBarberPhoto(barberId, photoId).subscribe({
+      next: () => {
+        this.photos.update(photos => photos.filter(p => p.id !== photoId));
+        this.successMessage.set('Photo supprimée !');
       }
     });
   }
@@ -205,11 +249,19 @@ export class BarberProfileComponent implements AfterViewChecked {
         });
         this.updateMapUrl(response.latitude, response.longitude);
         this.isLoading.set(false);
+        this.loadPhotos(barberId);
       },
       error: (error) => {
         this.errorMessage.set(error?.error?.message || 'Impossible de charger le profil barbier.');
         this.isLoading.set(false);
       }
+    });
+  }
+
+  loadPhotos(barberId: number) {
+    this.barberPhotoService.getBarberPhotos(barberId).subscribe({
+      next: (photos) => this.photos.set(photos),
+      error: () => {}
     });
   }
 
