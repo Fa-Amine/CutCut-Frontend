@@ -65,6 +65,11 @@
               <div>
                 <h3>{{ booking.client.name }}</h3>
                 <p>{{ langService.t().serviceLabel }} • {{ booking.servicePrice }} MAD</p>
+                <a *ngIf="booking.client.phone"
+                  [href]="'tel:' + booking.client.phone"
+                  style="color:#2563eb; font-size:0.9rem; font-weight:600; text-decoration:none;">
+                  📞 {{ booking.client.phone }}
+                </a>
               </div>
             </div>
   
@@ -108,15 +113,15 @@
             </button>
   
             <button
-            *ngIf="booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED'"
-            pButton
-            type="button"
-            severity="success"
-            [label]="langService.t().completed"
-            (click)="completeBooking(booking.id)">
-          </button>
+              *ngIf="booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED'"
+              pButton
+              type="button"
+              severity="success"
+              [label]="langService.t().completed"
+              (click)="completeBooking(booking.id)">
+            </button>
           </div>
         </div>
       </div>
     </div>
-  </section>
+</section>

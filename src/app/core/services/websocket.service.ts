@@ -13,23 +13,34 @@ export class WebSocketService {
 
   connect() {
     const userId = this.sessionService.userId();
+    console.log('WebSocket connecting with userId:', userId);
     if (!userId || this.client?.active) return;
 
+    const isBarber = this.sessionService.isBarber();
+    const isClient = this.sessionService.isClient();
+
     this.client = new Client({
-      brokerURL: 'ws://localhost:8080/ws/websocket',
+      webSocketFactory: () => {
+        const SockJS = (window as any).SockJS;
+        return new SockJS('http://localhost:8080/ws');
+      },
       reconnectDelay: 5000,
       onConnect: () => {
-        console.log('WebSocket connecté !');
+        console.log('WebSocket connecté ! userId:', userId, 'isBarber:', isBarber, 'isClient:', isClient);
 
-        if (this.sessionService.isBarber()) {
+        if (isBarber) {
+          console.log('Subscribing to /topic/barber/' + userId);
           this.client!.subscribe(`/topic/barber/${userId}`, (message) => {
+            console.log('Notification reçue barber:', message.body);
             this.addNotification(message.body);
             this.showBrowserNotification(message.body);
           });
         }
 
-        if (this.sessionService.isClient()) {
+        if (isClient) {
+          console.log('Subscribing to /topic/client/' + userId);
           this.client!.subscribe(`/topic/client/${userId}`, (message) => {
+            console.log('Notification reçue client:', message.body);
             this.addNotification(message.body);
             this.showBrowserNotification(message.body);
           });

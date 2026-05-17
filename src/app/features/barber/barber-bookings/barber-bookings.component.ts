@@ -4,12 +4,10 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { AvatarModule } from 'primeng/avatar';
 import { MessageModule } from 'primeng/message';
-
 import { LanguageService } from '../../../core/services/language.service';
 import { BookingService } from '../../../core/services/booking.service';
 import { SessionService } from '../../../core/services/session.service';
 import { BookingResponse } from '../../../core/models/booking.models';
-
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
@@ -42,7 +40,6 @@ export class BarberBookingsComponent {
 
   todayBookings = computed(() => {
     const today = new Date().toISOString().slice(0, 10);
-
     return this.bookings().filter(
       (booking) => booking.slot.startTime.slice(0, 10) === today
     );
@@ -61,16 +58,13 @@ export class BarberBookingsComponent {
 
   loadBookings() {
     const barberId = this.sessionService.userId();
-
     if (!barberId) {
       this.errorMessage.set('Barbier introuvable.');
       this.isLoading.set(false);
       return;
     }
-
     this.isLoading.set(true);
     this.errorMessage.set('');
-
     this.bookingService.getBarberBookings(barberId).subscribe({
       next: (response) => {
         this.bookings.set(response);
@@ -94,10 +88,11 @@ export class BarberBookingsComponent {
         this.errorMessage.set('');
         this.successMessage.set('Réservation acceptée.');
         setTimeout(() => this.successMessage.set(''), 2500);
+        this.loadBookings();
       },
       error: (error) => {
         this.errorMessage.set(
-          error?.error?.message || 'Impossible d’accepter la réservation.'
+          error?.error?.message || 'Impossible d\'accepter la réservation.'
         );
       }
     });
@@ -112,6 +107,7 @@ export class BarberBookingsComponent {
         this.errorMessage.set('');
         this.successMessage.set('Réservation rejetée.');
         setTimeout(() => this.successMessage.set(''), 2500);
+        this.loadBookings();
       },
       error: (error) => {
         this.errorMessage.set(
@@ -123,12 +119,10 @@ export class BarberBookingsComponent {
 
   completeBooking(bookingId: number) {
     const barberId = this.sessionService.userId();
-
     if (!barberId) {
       this.errorMessage.set('Barbier introuvable.');
       return;
     }
-
     this.bookingService.completeBookingByBarber(bookingId, {
       barberId: Number(barberId)
     }).subscribe({
@@ -139,6 +133,7 @@ export class BarberBookingsComponent {
         this.errorMessage.set('');
         this.successMessage.set('Réservation marquée comme terminée.');
         setTimeout(() => this.successMessage.set(''), 2500);
+        this.loadBookings();
       },
       error: (error) => {
         this.errorMessage.set(
@@ -192,11 +187,7 @@ export class BarberBookingsComponent {
   }
 
   getInitials(name: string): string {
-    return name
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase() ?? '')
-      .join('');
+    return name.split(' ').filter(Boolean).slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '').join('');
   }
 }

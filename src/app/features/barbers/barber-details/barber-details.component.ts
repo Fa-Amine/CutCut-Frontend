@@ -67,13 +67,22 @@ export class BarberDetailsComponent {
   selectedSlot = signal<AvailabilitySlot | null>(null);
 
   dayGroups = computed<DayGroup[]>(() => {
+    const now = new Date();
+    const todayKey = now.toISOString().slice(0, 10);
+
     const map = new Map<string, AvailabilitySlot[]>();
     for (const slot of this.slots()) {
       if (slot.booked) continue;
       const dateKey = slot.startTime.slice(0, 10);
+      if (dateKey < todayKey) continue;
+      if (dateKey === todayKey) {
+        const slotTime = new Date(slot.startTime);
+        if (slotTime <= now) continue;
+      }
       if (!map.has(dateKey)) map.set(dateKey, []);
       map.get(dateKey)!.push(slot);
     }
+
     return Array.from(map.entries())
       .map(([dateKey, slots]) => ({
         dateKey,
@@ -140,8 +149,7 @@ export class BarberDetailsComponent {
   private reloadSlots(barberId: number, onDone?: () => void) {
     this.availabilityService.getAvailableSlotsByBarber(barberId).subscribe({
       next: (slotsResponse) => {
-        const onlyAvailable = slotsResponse.filter((slot) => !slot.booked);
-        this.slots.set(onlyAvailable);
+        this.slots.set(slotsResponse);
         const stillValidSelectedDay = this.selectedDay()
           && this.dayGroups().some((g) => g.dateKey === this.selectedDay());
         if (!stillValidSelectedDay) {
@@ -149,7 +157,7 @@ export class BarberDetailsComponent {
         }
         const currentSelectedSlot = this.selectedSlot();
         if (currentSelectedSlot) {
-          const stillExists = onlyAvailable.some((slot) => slot.id === currentSelectedSlot.id);
+          const stillExists = slotsResponse.some((slot) => slot.id === currentSelectedSlot.id && !slot.booked);
           if (!stillExists) this.selectedSlot.set(null);
         }
         onDone?.();
@@ -210,17 +218,24 @@ export class BarberDetailsComponent {
     });
   }
 
-  formatTime(dateTime: string): string {
-    return new Date(dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+ formatTime(dateTime: string): string {
+    const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
+    return new Date(dateTime).toLocaleTimeString(locale, { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true
+    });
   }
 
   formatDateLabel(dateKey: string): string {
     const date = new Date(dateKey);
-    return date.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' });
+    const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
+    return date.toLocaleDateString(locale, { weekday: 'short', day: '2-digit', month: 'short' });
   }
 
   formatDate(dateTime: string): string {
-    return new Date(dateTime).toLocaleDateString();
+    const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
+    return new Date(dateTime).toLocaleDateString(locale);
   }
 
   getInitials(name: string): string {

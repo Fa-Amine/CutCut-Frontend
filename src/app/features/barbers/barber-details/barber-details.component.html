@@ -42,7 +42,7 @@
             </div>
 
             <div class="barber-location" *ngIf="barber()!.address">
-              <h3>📍 Adresse</h3>
+              <h3>📍 {{ langService.t().address }}</h3>
               <p>{{ barber()!.address }}</p>
             </div>
 
@@ -54,14 +54,13 @@
               <a [href]="'https://www.google.com/maps?q=' + barber()!.latitude + ',' + barber()!.longitude"
                 target="_blank"
                 style="display:block; text-align:center; margin-top:8px; color:#2563eb; font-size:0.9rem;">
-                📍 Ouvrir dans Google Maps
+                📍 {{ langService.t().openGoogleMaps }}
               </a>
             </div>
 
-            <!-- PHOTOS -->
             <div *ngIf="photos().length > 0"
               style="margin-top:1.5rem; border-top:1px solid #e5edf5; padding-top:1rem;">
-              <h3 style="color:#0f172a; font-size:1.1rem; margin-bottom:1rem;">📸 Photos</h3>
+              <h3 style="color:#0f172a; font-size:1.1rem; margin-bottom:1rem;">📸 {{ langService.t().photosLabel }}</h3>
               <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem;">
                 <div *ngFor="let photo of photos()"
                   style="border-radius:8px; overflow:hidden; aspect-ratio:1;">
@@ -71,15 +70,14 @@
               </div>
             </div>
 
-            <!-- AVIS -->
             <div style="margin-top:1.5rem; border-top:1px solid #e5edf5; padding-top:1rem;">
               <h3 style="color:#0f172a; font-size:1.1rem; margin-bottom:1rem;">
-                ⭐ Avis clients ({{ reviews().length }})
+                ⭐ {{ langService.t().reviewsLabel }} ({{ reviews().length }})
               </h3>
 
               <div *ngIf="reviews().length === 0"
                 style="color:#64748b; text-align:center; padding:1rem;">
-                Aucun avis pour le moment.
+                {{ langService.t().noReviews }}
               </div>
 
               <div *ngFor="let review of reviews()"
@@ -141,8 +139,8 @@
             </ng-container>
             <ng-template #noAvailability>
               <div class="no-availability-state">
-                <h3>Aucune disponibilité</h3>
-                <p>Ce barbier n'a actuellement aucun créneau disponible.</p>
+                <h3>{{ langService.t().noAvailabilityTitle }}</h3>
+                <p>{{ langService.t().noAvailabilityDesc }}</p>
               </div>
             </ng-template>
           </div>
