@@ -65,9 +65,16 @@
             <p class="preview-empty">Aucun créneau disponible pour le moment.</p>
           </ng-template>
 
-          <button pButton type="button" [label]="langService.t().confirmBooking"
+          <button *ngIf="!sessionService.isGuest()" pButton type="button"
+            [label]="langService.t().confirmBooking"
             class="confirm-btn navy-btn block-btn" [routerLink]="['/barbers', barber.id]">
           </button>
+
+          <button *ngIf="sessionService.isGuest()" pButton type="button"
+            label="Se connecter pour réserver"
+            class="confirm-btn navy-btn block-btn" routerLink="/login">
+          </button>
+
         </ng-container>
         <ng-template #noPreviewBarber>
           <p class="preview-empty">Aucun barbier disponible pour le moment.</p>
@@ -88,7 +95,6 @@
     <div class="modern-barber-card" *ngFor="let barber of topBarbers(); let i = index"
       style="position:relative;">
 
-      <!-- BADGE POSITION -->
       <div style="position:absolute; top:-10px; left:-10px; width:36px; height:36px;
         border-radius:50%; display:flex; align-items:center; justify-content:center;
         font-weight:900; font-size:1rem; color:white;"
