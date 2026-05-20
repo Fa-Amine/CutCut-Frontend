@@ -11,7 +11,8 @@
         </button>
         <button *ngIf="sessionService.isGuest()" pButton type="button"
           [label]="langService.t().becomeBarber" icon="pi pi-user-plus"
-          class="hero-secondary-btn" routerLink="/register">
+          class="hero-secondary-btn" routerLink="/register"
+          [queryParams]="{role: 'barber'}">
         </button>
       </div>
 

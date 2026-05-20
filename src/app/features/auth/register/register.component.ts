@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   AbstractControl,
@@ -8,7 +8,7 @@ import {
   ValidationErrors,
   Validators
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
@@ -25,11 +25,7 @@ type RegisterRole = 'CLIENT' | 'BARBER';
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
   const confirmPassword = control.get('confirmPassword')?.value;
-
-  if (!password || !confirmPassword) {
-    return null;
-  }
-
+  if (!password || !confirmPassword) return null;
   return password === confirmPassword ? null : { passwordMismatch: true };
 }
 
@@ -53,16 +49,18 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   langService = inject(LanguageService);
 
   selectedRole = signal<RegisterRole>('CLIENT');
   isLoading = signal(false);
   errorMessage = signal('');
+  fromBarberButton = signal(false);
 
   registerForm = this.fb.group(
     {
@@ -71,7 +69,6 @@ export class RegisterComponent {
       phone: ['', [Validators.required]],
       password: ['', [Validators.required]],
       confirmPassword: ['', [Validators.required]],
-
       shopName: [''],
       bio: [''],
       photoUrl: [''],
@@ -85,8 +82,15 @@ export class RegisterComponent {
     { label: this.langService.t().barber, value: 'BARBER' as RegisterRole }
   ]);
 
-  constructor() {
-    this.applyRoleValidators(this.selectedRole());
+  ngOnInit() {
+    const role = this.route.snapshot.queryParamMap.get('role');
+    if (role === 'barber') {
+      this.selectedRole.set('BARBER');
+      this.fromBarberButton.set(true);
+      this.applyRoleValidators('BARBER');
+    } else {
+      this.applyRoleValidators('CLIENT');
+    }
   }
 
   setRole(role: RegisterRole) {
@@ -96,9 +100,9 @@ export class RegisterComponent {
 
   private applyRoleValidators(role: RegisterRole) {
     const shopName = this.registerForm.get('shopName');
+    const price = this.registerForm.get('price');
     const bio = this.registerForm.get('bio');
     const photoUrl = this.registerForm.get('photoUrl');
-    const price = this.registerForm.get('price');
 
     if (role === 'BARBER') {
       shopName?.setValidators([Validators.required]);
@@ -110,7 +114,6 @@ export class RegisterComponent {
       bio?.clearValidators();
       photoUrl?.clearValidators();
       price?.clearValidators();
-
       shopName?.setValue('');
       bio?.setValue('');
       photoUrl?.setValue('');
@@ -123,37 +126,14 @@ export class RegisterComponent {
     price?.updateValueAndValidity();
   }
 
-  get nameControl() {
-    return this.registerForm.get('name');
-  }
-
-  get emailControl() {
-    return this.registerForm.get('email');
-  }
-
-  get phoneControl() {
-    return this.registerForm.get('phone');
-  }
-
-  get passwordControl() {
-    return this.registerForm.get('password');
-  }
-
-  get confirmPasswordControl() {
-    return this.registerForm.get('confirmPassword');
-  }
-
-  get shopNameControl() {
-    return this.registerForm.get('shopName');
-  }
-
-  get bioControl() {
-    return this.registerForm.get('bio');
-  }
-
-  get priceControl() {
-    return this.registerForm.get('price');
-  }
+  get nameControl() { return this.registerForm.get('name'); }
+  get emailControl() { return this.registerForm.get('email'); }
+  get phoneControl() { return this.registerForm.get('phone'); }
+  get passwordControl() { return this.registerForm.get('password'); }
+  get confirmPasswordControl() { return this.registerForm.get('confirmPassword'); }
+  get shopNameControl() { return this.registerForm.get('shopName'); }
+  get bioControl() { return this.registerForm.get('bio'); }
+  get priceControl() { return this.registerForm.get('price'); }
 
   get passwordMismatch() {
     return this.registerForm.hasError('passwordMismatch') &&
@@ -169,7 +149,6 @@ export class RegisterComponent {
   onSubmit() {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
-      console.log('Register form invalid:', this.registerForm.getRawValue(), this.registerForm.errors);
       return;
     }
 
@@ -195,12 +174,9 @@ export class RegisterComponent {
         },
         error: (error) => {
           this.isLoading.set(false);
-          this.errorMessage.set(
-            error?.error?.message || 'Inscription barbier impossible.'
-          );
+          this.errorMessage.set(error?.error?.message || 'Inscription barbier impossible.');
         }
       });
-
       return;
     }
 
@@ -216,9 +192,7 @@ export class RegisterComponent {
       },
       error: (error) => {
         this.isLoading.set(false);
-        this.errorMessage.set(
-          error?.error?.message || 'Inscription client impossible.'
-        );
+        this.errorMessage.set(error?.error?.message || 'Inscription client impossible.');
       }
     });
   }

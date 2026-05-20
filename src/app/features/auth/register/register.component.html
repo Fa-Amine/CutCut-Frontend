@@ -11,6 +11,7 @@
     <div class="auth-right">
       <p-card>
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+
           <div class="form-header">
             <h2>{{ selectedRole() === 'CLIENT' ? 'Inscription Client' : 'Inscription Barbier' }}</h2>
             <p>{{ currentSubtitle }}</p>
@@ -22,16 +23,24 @@
             [message]="errorMessage()">
           </app-error-alert>
 
-          <div class="form-group">
-            <label>Client ou Barbier</label>
-            <p-selectButton
-              [options]="translatedRoleOptions()"
-              [ngModel]="selectedRole()"
-              (onOptionClick)="setRole($event.option.value)"
-              [ngModelOptions]="{ standalone: true }"
-              optionLabel="label"
-              optionValue="value">
-            </p-selectButton>
+          <!-- TOGGLE — caché si vient du bouton barbier -->
+          <div class="role-toggle" *ngIf="!fromBarberButton()">
+            <button type="button"
+              [style.background]="selectedRole() === 'CLIENT' ? '#1A1A1A' : 'transparent'"
+              [style.color]="selectedRole() === 'CLIENT' ? '#FAFAF7' : '#1A1A1A'"
+              [style.border]="selectedRole() === 'CLIENT' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
+              style="padding:0.75rem 2rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
+              (click)="setRole('CLIENT')">
+              👤 Client
+            </button>
+            <button type="button"
+              [style.background]="selectedRole() === 'BARBER' ? '#1A1A1A' : 'transparent'"
+              [style.color]="selectedRole() === 'BARBER' ? '#FAFAF7' : '#1A1A1A'"
+              [style.border]="selectedRole() === 'BARBER' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
+              style="padding:0.75rem 2rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
+              (click)="setRole('BARBER')">
+              ✂ Barbier
+            </button>
           </div>
 
           <!-- CHAMPS COMMUNS -->
@@ -128,6 +137,7 @@
             <span>{{ langService.t().haveAccount }}</span>
             <a routerLink="/login">{{ langService.t().signIn }}</a>
           </div>
+
         </form>
       </p-card>
     </div>
