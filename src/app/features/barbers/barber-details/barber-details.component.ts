@@ -1,11 +1,13 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
 import { TagModule } from 'primeng/tag';
 import { MessageModule } from 'primeng/message';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { LanguageService } from '../../../core/services/language.service';
 import { BarberService } from '../../../core/services/barber.service';
 import { BarberDetails } from '../../../core/models/barber.models';
@@ -30,15 +32,18 @@ interface DayGroup {
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     ButtonModule,
     CardModule,
     AvatarModule,
     TagModule,
     MessageModule,
+    ToastModule,
     LoadingSpinnerComponent,
     ErrorAlertComponent,
     SafeUrlPipe
   ],
+  providers: [MessageService],
   templateUrl: './barber-details.component.html',
   styleUrl: './barber-details.component.css'
 })
@@ -47,7 +52,8 @@ export class BarberDetailsComponent {
   private barberService = inject(BarberService);
   private availabilityService = inject(AvailabilityService);
   private bookingService = inject(BookingService);
-  private sessionService = inject(SessionService);
+  private messageService = inject(MessageService);
+  sessionService = inject(SessionService);
   private barberPhotoService = inject(BarberPhotoService);
   private reviewService = inject(ReviewService);
 
@@ -200,6 +206,12 @@ export class BarberDetailsComponent {
         this.successMessage.set(true);
         this.reloadSlots(barber.id);
         this.selectedSlot.set(null);
+        this.messageService.add({
+          severity: 'success',
+          summary: '✅ Réservation confirmée !',
+          detail: 'Votre rendez-vous a été enregistré avec succès.',
+          life: 4000
+        });
         setTimeout(() => this.successMessage.set(false), 2500);
       },
       error: (error) => {
@@ -218,10 +230,10 @@ export class BarberDetailsComponent {
     });
   }
 
- formatTime(dateTime: string): string {
+  formatTime(dateTime: string): string {
     const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
-    return new Date(dateTime).toLocaleTimeString(locale, { 
-      hour: '2-digit', 
+    return new Date(dateTime).toLocaleTimeString(locale, {
+      hour: '2-digit',
       minute: '2-digit',
       hour12: true
     });
