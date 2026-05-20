@@ -164,7 +164,8 @@ export class BarberListComponent implements AfterViewChecked {
     this.map = L.map('barbers-map').setView([centerLat, centerLng], 12);
 
     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-      attribution: '© Google Maps'
+      attribution: '© Google Maps',
+      maxZoom: 19
     }).addTo(this.map);
 
     if (this.userLat() && this.userLng()) {
