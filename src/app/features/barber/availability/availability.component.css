@@ -1,7 +1,7 @@
 :host { display: block; }
 
 .availability-page {
-  background: #f8fafc;
+  background: #FAFAF7;
   min-height: 100vh;
   padding: 2.5rem 1.25rem;
 }
@@ -11,24 +11,26 @@
   margin: 0 auto;
 }
 
-/* Header Fix: Removed the border-bottom/line */
 .schedule-header {
   margin-bottom: 2rem;
-  padding-bottom: 0; /* Removed padding */
-  border-bottom: none; /* Removed the line */
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .schedule-header h2 {
-  font-size: 1.5rem;
-  color: #0f172a;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: #1A1A1A;
   margin: 0;
+  font-family: Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.04em;
 }
 
 .schedule-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #F0EDE8;
+  border: 1px solid rgba(26,26,26,0.08);
   border-radius: 24px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 10px 30px rgba(26,26,26,0.04);
   padding: 2.5rem;
 }
 
@@ -43,10 +45,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 2rem;
-  background: #ffffff;
-  border: 1px solid #f1f5f9;
+  background: rgba(26,26,26,0.03);
+  border: 1px solid rgba(26,26,26,0.06);
   border-radius: 20px;
+  transition: background 0.2s;
 }
+
+.day-item:hover { background: rgba(26,26,26,0.06); }
 
 .day-info-col {
   display: flex;
@@ -55,9 +60,10 @@
 }
 
 .day-name {
-  font-weight: 700;
-  font-size: 1.15rem;
-  color: #1e293b;
+  font-weight: 800;
+  font-size: 1rem;
+  color: #1A1A1A;
+  font-family: Georgia, serif;
 }
 
 .schedule-inputs-col {
@@ -74,13 +80,14 @@
 }
 
 .row-label {
-  font-size: 0.75rem;
-  font-weight: 800;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  color: #94a3b8;
-  letter-spacing: 0.05em;
+  color: rgba(26,26,26,0.35);
+  letter-spacing: 0.08em;
   min-width: 75px;
   text-align: right;
+  font-family: 'Courier New', monospace;
 }
 
 .controls-wrapper {
@@ -90,20 +97,26 @@
 }
 
 .modern-input {
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
+  border: 1px solid rgba(26,26,26,0.12);
+  background: #FAFAF7;
   border-radius: 10px;
   padding: 0.5rem 0.8rem;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #0f172a !important;
+  color: #1A1A1A !important;
   outline: none;
 }
 
-.pause-style { background: #f8fafc; color: #64748b; }
-.arrow-sep { color: #cbd5e1; font-weight: bold; }
+.pause-style {
+  background: rgba(26,26,26,0.05);
+  color: rgba(26,26,26,0.5);
+}
 
-/* Footer & Button Fixes */
+.arrow-sep {
+  color: rgba(26,26,26,0.2);
+  font-weight: bold;
+}
+
 .footer-actions {
   margin-top: 3rem;
   display: flex;
@@ -111,24 +124,32 @@
 }
 
 :host ::ng-deep .save-schedule-btn.p-button {
-  background: #0f172a !important; /* Dark Navy */
-  color: #ffffff !important; /* Forces White text */
+  background: #1A1A1A !important;
+  color: #FAFAF7 !important;
   border: none;
   padding: 1.2rem 3.5rem;
-  border-radius: 14px;
+  border-radius: 999px;
   font-weight: 700;
   font-size: 1rem;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
   transition: all 0.2s ease;
 }
 
 :host ::ng-deep .save-schedule-btn.p-button:hover {
-  background: #1e293b !important;
+  background: #333333 !important;
   transform: translateY(-2px);
 }
 
 :host ::ng-deep .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
-  background: #2563eb;
+  background: #1A1A1A;
 }
 
 .inactive-day { opacity: 0.5; }
+
+html[dir='rtl'] .input-row { flex-direction: row-reverse; }
+html[dir='rtl'] .row-label { text-align: left; }
+
+@media (max-width: 640px) {
+  .availability-page { padding: 2rem 1rem 3rem; }
+  .day-item { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1rem; }
+  .input-row { justify-content: flex-start; }
+}

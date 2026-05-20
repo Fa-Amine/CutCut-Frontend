@@ -1,24 +1,46 @@
 @import "primeicons/primeicons.css";
 
-html, :root {
-  --p-primary-color: #2563eb;
-  --p-primary-500: #2563eb;
-  --p-primary-600: #1d4ed8;
+:root {
+  color-scheme: light only;
+  --p-primary-color: #1A1A1A;
+  --p-primary-500: #1A1A1A;
+  --p-primary-600: #333333;
+}
+
+* {
+  color-scheme: light only;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background: #ffffff;
+  background: #FAFAF7 !important;
   font-family: Arial, Helvetica, sans-serif;
-  color: #111827;
+  color: #1A1A1A !important;
   transition: background 0.3s, color 0.3s;
+  color-scheme: light only;
 }
 
-/* MODE SOMBRE */
+.p-button {
+  border-radius: 999px !important;
+}
+
+.p-button-primary,
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary) {
+  background: #1A1A1A !important;
+  border-color: #1A1A1A !important;
+  color: #FAFAF7 !important;
+}
+
+.p-button-primary:hover,
+.p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary):hover {
+  background: #333333 !important;
+  border-color: #333333 !important;
+}
+
 body.dark-mode {
-  background: #0f172a !important;
-  color: #e2e8f0 !important;
+  background: #FAFAF7 !important;
+  color: #1A1A1A !important;
 }
 
 body.dark-mode .p-card,
@@ -30,9 +52,9 @@ body.dark-mode .modern-step-card,
 body.dark-mode .filters-card,
 body.dark-mode .profile-card,
 body.dark-mode .gallery-section {
-  background: #1e293b !important;
-  border-color: #334155 !important;
-  color: #e2e8f0 !important;
+  background: #F0EDE8 !important;
+  border-color: rgba(26,26,26,0.08) !important;
+  color: #1A1A1A !important;
 }
 
 body.dark-mode h1,
@@ -40,24 +62,20 @@ body.dark-mode h2,
 body.dark-mode h3,
 body.dark-mode h4,
 body.dark-mode strong {
-  color: #f1f5f9 !important;
+  color: #1A1A1A !important;
 }
 
 body.dark-mode p,
 body.dark-mode span,
 body.dark-mode label {
-  color: #94a3b8 !important;
+  color: rgba(26,26,26,0.6) !important;
 }
 
 body.dark-mode input,
 body.dark-mode textarea {
-  background: #1e293b !important;
-  color: #e2e8f0 !important;
-  border-color: #334155 !important;
-}
-
-body.dark-mode .page-header h1 {
-  color: #f1f5f9 !important;
+  background: #F0EDE8 !important;
+  color: #1A1A1A !important;
+  border-color: rgba(26,26,26,0.12) !important;
 }
 
 body.dark-mode .barber-details-page,
@@ -66,29 +84,33 @@ body.dark-mode .reservations-page,
 body.dark-mode .barber-profile-page,
 body.dark-mode .hero-section,
 body.dark-mode .how-section,
-body.dark-mode .barbers-section {
-  background: #0f172a !important;
+body.dark-mode .barbers-section,
+body.dark-mode .dashboard-page,
+body.dark-mode .availability-page,
+body.dark-mode .barber-bookings-page,
+body.dark-mode .profile-page {
+  background: #FAFAF7 !important;
 }
 
 body.dark-mode .info-box {
-  background: #1e293b !important;
-  border-color: #334155 !important;
+  background: #F0EDE8 !important;
+  border-color: rgba(26,26,26,0.08) !important;
 }
 
 body.dark-mode .booking-summary {
-  background: #1e293b !important;
-  border-color: #334155 !important;
+  background: #F0EDE8 !important;
+  border-color: rgba(26,26,26,0.08) !important;
 }
 
 body.dark-mode .view-toggle {
-  background: #1e293b !important;
+  background: #F0EDE8 !important;
 }
 
 body.dark-mode .view-toggle button {
-  color: #94a3b8 !important;
+  color: rgba(26,26,26,0.5) !important;
 }
 
 body.dark-mode .view-toggle button.active {
-  background: #334155 !important;
-  color: #f1f5f9 !important;
+  background: #1A1A1A !important;
+  color: #FAFAF7 !important;
 }
