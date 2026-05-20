@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
@@ -49,6 +49,7 @@ interface DayGroup {
 })
 export class BarberDetailsComponent {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private barberService = inject(BarberService);
   private availabilityService = inject(AvailabilityService);
   private bookingService = inject(BookingService);
@@ -189,11 +190,20 @@ export class BarberDetailsComponent {
   confirmBooking() {
     const barber = this.barber();
     const slot = this.selectedSlot();
+
+    if (this.sessionService.isGuest()) {
+      this.router.navigate(['/login'], {
+        queryParams: { redirect: '/barbers/' + barber?.id }
+      });
+      return;
+    }
+
     const clientId = this.sessionService.userId();
     if (!barber || !slot || !clientId) {
       this.errorMessage.set('Impossible de confirmer la réservation.');
       return;
     }
+
     this.isBooking.set(true);
     this.errorMessage.set('');
     this.bookingService.createBooking({
