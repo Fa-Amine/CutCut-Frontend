@@ -138,3 +138,9 @@
     grid-template-columns: 1fr;
   }
 }
+.footer {
+  background: #1A1A1A;
+  color: #FAFAF7;
+  padding: 4rem 1.5rem 6rem;
+  margin-top: auto;
+}
