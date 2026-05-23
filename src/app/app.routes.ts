@@ -24,6 +24,7 @@ import { barberGuard } from './core/guards/barber.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { DashboardComponent as AdminDashboardComponent } from './features/admin/dashboard/dashboard.component';
 import { adminGuard } from './core/guards/admin.guard';
+import { AboutComponent } from './features/about/about.component';
 
 
 export const routes: Routes = [
@@ -46,7 +47,8 @@ export const routes: Routes = [
 
       { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
       { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
-      { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },   
+      { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },  
+{ path: 'about', component: AboutComponent }, 
     ] 
   },
   { path: '**', component: NotFoundComponent }
