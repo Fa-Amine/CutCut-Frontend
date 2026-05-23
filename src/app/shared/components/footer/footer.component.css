@@ -1,8 +1,11 @@
+:host { display: block; }
+
 .footer {
-  background: #1A1A1A;
+  background: #0D0D0D;
   color: #FAFAF7;
-  padding: 4rem 1.5rem 2rem;
+  padding: 4rem 1.5rem 6rem;
   margin-top: auto;
+  border-top: 3px solid rgba(255,255,255,0.15);
 }
 
 .footer-shell {
@@ -137,10 +140,4 @@
   .footer-links {
     grid-template-columns: 1fr;
   }
-}
-.footer {
-  background: #1A1A1A;
-  color: #FAFAF7;
-  padding: 4rem 1.5rem 6rem;
-  margin-top: auto;
 }
