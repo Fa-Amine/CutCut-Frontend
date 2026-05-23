@@ -12,6 +12,9 @@
           [routerLinkActiveOptions]="{ exact: link.path === '/' }">
           {{ link.label }}
         </a>
+        <a routerLink="/about" routerLinkActive="active-link">
+          À propos
+        </a>
       </nav>
 
       <div class="nav-right desktop-only">
@@ -110,6 +113,7 @@
       [routerLink]="link.path" (click)="closeMobileMenu()">
       {{ link.label }}
     </a>
+    <a routerLink="/about" (click)="closeMobileMenu()">À propos</a>
     <ng-container *ngIf="sessionService.isGuest(); else mobileAuthActions">
       <a routerLink="/login" (click)="closeMobileMenu()">{{ langService.t().login }}</a>
       <a routerLink="/register" (click)="closeMobileMenu()">{{ langService.t().register }}</a>
