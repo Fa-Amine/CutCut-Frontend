@@ -4,7 +4,6 @@
       <span class="eyebrow">{{ langService.t().heroBadge }}</span>
       <h1>{{ langService.t().heroTitle }}</h1>
       <p>{{ langService.t().heroSubtitle }}</p>
-
       <div class="hero-actions">
         <button pButton type="button" [label]="langService.t().bookNow"
           icon="pi pi-calendar-plus" class="hero-primary-btn" routerLink="/barbers">
@@ -15,7 +14,6 @@
           [queryParams]="{role: 'barber'}">
         </button>
       </div>
-
       <div class="hero-stats">
         <div class="stat-box">
           <strong>{{ langService.t().fast }}</strong>
@@ -40,18 +38,15 @@
     <span class="section-kicker">🏆 CLASSEMENT</span>
     <h2>Meilleurs coiffeurs</h2>
   </div>
-
   <div class="barbers-grid">
     <div class="modern-barber-card" *ngFor="let barber of topBarbers(); let i = index"
       style="position:relative;">
-
       <div style="position:absolute; top:-10px; left:-10px; width:36px; height:36px;
         border-radius:50%; display:flex; align-items:center; justify-content:center;
         font-weight:900; font-size:1rem; color:white;"
         [style.background]="i === 0 ? '#f59e0b' : i === 1 ? '#94a3b8' : '#b45309'">
         {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
       </div>
-
       <div class="barber-top">
         <ng-container *ngIf="barber.photoUrl; else topAvatar">
           <p-avatar [image]="barber.photoUrl" shape="circle" size="xlarge"></p-avatar>
@@ -64,18 +59,15 @@
           <p>{{ barber.shopName || 'CutCut' }}</p>
         </div>
       </div>
-
       <div style="margin:0.5rem 0; font-size:1.1rem;">
         {{ getStars(barber.averageRating ?? 0) }}
         <span style="color:#64748b; font-size:0.9rem;">
           {{ barber.averageRating }} / 5 ({{ barber.reviewCount }} avis)
         </span>
       </div>
-
       <div class="barber-meta">
         <p-tag [value]="(barber.price ?? 0) + ' MAD'" severity="info"></p-tag>
       </div>
-
       <button pButton type="button" [label]="langService.t().bookThisBarber"
         icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
       </button>
@@ -88,7 +80,6 @@
     <span class="section-kicker">{{ langService.t().howItWorks }}</span>
     <h2>{{ langService.t().howTitle }}</h2>
   </div>
-
   <div class="steps-grid">
     <div class="modern-step-card">
       <div class="step-number">01</div>
@@ -114,9 +105,7 @@
     <h2>{{ langService.t().featuredTitle }}</h2>
   </div>
 
-  <p *ngIf="!featuredBarbers().length">Aucun barbier à afficher pour le moment.</p>
-
-  <div class="barbers-grid" *ngIf="featuredBarbers().length">
+  <div *ngIf="featuredBarbers().length; else noBarbers" class="barbers-grid">
     <div class="modern-barber-card" *ngFor="let barber of featuredBarbers()">
       <div class="barber-top">
         <ng-container *ngIf="barber.photoUrl; else barberAvatar">
@@ -130,17 +119,21 @@
           <p>{{ barber.shopName || 'CutCut' }}</p>
         </div>
       </div>
-
       <div class="barber-meta">
         <p-tag [value]="barber.bio || ((barber.price ?? 0) + ' MAD')" severity="contrast"></p-tag>
         <span *ngIf="barber.averageRating" style="font-size:0.9rem; color:#64748b; margin-left:0.5rem;">
           ⭐ {{ barber.averageRating }}
         </span>
       </div>
-
       <button pButton type="button" [label]="langService.t().bookThisBarber"
         icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
       </button>
     </div>
   </div>
+
+  <ng-template #noBarbers>
+    <p style="color:rgba(255,255,255,0.4); text-align:center; padding:2rem;">
+      Aucun barbier à afficher pour le moment.
+    </p>
+  </ng-template>
 </section>
