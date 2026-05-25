@@ -5,24 +5,52 @@
   --p-primary-color: #1A1A1A;
   --p-primary-500: #1A1A1A;
   --p-primary-600: #333333;
+
+  /* FONTS */
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', Arial, sans-serif;
+
+  /* COLORS */
+  --color-black: #1A1A1A;
+  --color-white: #FAFAF7;
+  --color-cream: #F4EFE8;
+  --color-cream-dark: #F0EDE8;
+  --color-border: rgba(26,26,26,0.08);
 }
 
 * {
   color-scheme: light only;
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   padding: 0;
   background: #FAFAF7 !important;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   color: #1A1A1A !important;
   transition: background 0.3s, color 0.3s;
   color-scheme: light only;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin: 0;
+}
+
+p {
+  font-family: var(--font-body);
+  margin: 0;
+}
+
+/* BUTTONS GLOBAL */
 .p-button {
   border-radius: 999px !important;
+  font-family: var(--font-body) !important;
+  font-weight: 600 !important;
 }
 
 .p-button-primary,

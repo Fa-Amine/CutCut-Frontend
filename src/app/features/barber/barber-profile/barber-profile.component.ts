@@ -56,8 +56,10 @@ export class BarberProfileComponent implements AfterViewChecked {
   isEditMode = signal(false);
   isUploadingPhoto = signal(false);
   isUploadingGallery = signal(false);
+  isLocating = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
+  locationError = signal('');
   profile = signal<BarberProfile | null>(null);
   mapUrl = signal('');
   photos = signal<BarberPhoto[]>([]);
@@ -148,6 +150,52 @@ export class BarberProfileComponent implements AfterViewChecked {
     });
   }
 
+  useMyLocation() {
+    this.locationError.set('');
+    if (!navigator.geolocation) {
+      this.locationError.set('La geolocalisation n\'est pas supportee par votre navigateur.');
+      return;
+    }
+    this.isLocating.set(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        this.profileForm.patchValue({ latitude: lat, longitude: lng });
+        if (this.editMap) {
+          this.editMap.setView([lat, lng], 17);
+          if (this.editMarker) {
+            this.editMarker.setLatLng([lat, lng]);
+          } else {
+            this.editMarker = L.marker([lat, lng]).addTo(this.editMap);
+          }
+        }
+        this.http.get<any>(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+        ).subscribe({
+          next: (result) => {
+            if (result?.display_name) {
+              this.profileForm.patchValue({ address: result.display_name });
+            }
+          }
+        });
+        this.isLocating.set(false);
+        this.successMessage.set('Position detectee !');
+      },
+      (error) => {
+        this.isLocating.set(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            this.locationError.set('Acces a la localisation refuse.');
+            break;
+          default:
+            this.locationError.set('Impossible de detecter la position.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
+
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -164,7 +212,7 @@ export class BarberProfileComponent implements AfterViewChecked {
       next: (response) => {
         this.profileForm.patchValue({ photoUrl: response.secure_url });
         this.isUploadingPhoto.set(false);
-        this.successMessage.set('Photo uploadée avec succès !');
+        this.successMessage.set('Photo uploadee avec succes !');
       },
       error: () => {
         this.isUploadingPhoto.set(false);
@@ -178,11 +226,9 @@ export class BarberProfileComponent implements AfterViewChecked {
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
     this.isUploadingGallery.set(true);
-
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
-
     this.http.post<any>(
       `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
       formData
@@ -197,16 +243,12 @@ export class BarberProfileComponent implements AfterViewChecked {
             this.photos.update(photos => [photo, ...photos]);
             this.newCaption.set('');
             this.isUploadingGallery.set(false);
-            this.successMessage.set('Photo ajoutée !');
+            this.successMessage.set('Photo ajoutee !');
           },
-          error: () => {
-            this.isUploadingGallery.set(false);
-          }
+          error: () => { this.isUploadingGallery.set(false); }
         });
       },
-      error: () => {
-        this.isUploadingGallery.set(false);
-      }
+      error: () => { this.isUploadingGallery.set(false); }
     });
   }
 
@@ -216,7 +258,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.barberPhotoService.deleteBarberPhoto(barberId, photoId).subscribe({
       next: () => {
         this.photos.update(photos => photos.filter(p => p.id !== photoId));
-        this.successMessage.set('Photo supprimée !');
+        this.successMessage.set('Photo supprimee !');
       }
     });
   }
@@ -278,6 +320,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.mapInitialized = false;
     this.successMessage.set('');
     this.errorMessage.set('');
+    this.locationError.set('');
   }
 
   cancelEdit() {
@@ -299,6 +342,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     }
     this.isEditMode.set(false);
     this.errorMessage.set('');
+    this.locationError.set('');
   }
 
   saveProfile() {
@@ -331,11 +375,11 @@ export class BarberProfileComponent implements AfterViewChecked {
         this.updateMapUrl(response.latitude, response.longitude);
         this.isSaving.set(false);
         this.isEditMode.set(false);
-        this.successMessage.set('Profil barbier mis à jour avec succès.');
+        this.successMessage.set('Profil barbier mis a jour avec succes.');
       },
       error: (error) => {
         this.isSaving.set(false);
-        this.errorMessage.set(error?.error?.message || 'Impossible de mettre à jour le profil barbier.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de mettre a jour le profil barbier.');
       }
     });
   }
