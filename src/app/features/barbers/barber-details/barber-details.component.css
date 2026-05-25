@@ -1,7 +1,7 @@
 :host { display: block; }
 
 .barber-details-page {
-  background: #FAFAF7;
+  background: #ffffff;
   min-height: calc(100vh - 76px);
   padding: 2rem 1.25rem 3rem;
 }
@@ -15,10 +15,10 @@
 
 .page-kicker {
   display: inline-block;
-  color: rgba(26,26,26,0.45);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  color: #a3a3a3;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   margin-bottom: 0.75rem;
   font-family: 'Courier New', monospace;
@@ -26,12 +26,12 @@
 
 .page-header h1 {
   margin: 0;
-  font-size: clamp(2.4rem, 5vw, 4rem);
-  line-height: 1.02;
-  letter-spacing: -0.05em;
-  color: #1A1A1A;
-  font-family: Georgia, serif;
-  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #171717;
+  font-family: var(--font-heading);
+  font-weight: 800;
 }
 
 .details-layout {
@@ -42,10 +42,10 @@
 }
 
 :host ::ng-deep .p-card {
-  background: #F0EDE8;
-  border: 1px solid rgba(26,26,26,0.08);
-  border-radius: 28px;
-  box-shadow: 0 12px 30px rgba(26,26,26,0.05);
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
 
 :host ::ng-deep .p-card .p-card-body { padding: 1.5rem; }
@@ -65,18 +65,18 @@
 
 .barber-top h2 {
   margin: 0 0 0.3rem;
-  color: #1A1A1A;
-  font-size: 2rem;
+  color: #171717;
+  font-size: 1.75rem;
   line-height: 1.1;
-  letter-spacing: -0.04em;
-  font-family: Georgia, serif;
-  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-family: var(--font-heading);
+  font-weight: 800;
 }
 
 .barber-top p {
   margin: 0;
-  color: rgba(26,26,26,0.5);
-  font-size: 1rem;
+  color: #a3a3a3;
+  font-size: 0.9rem;
 }
 
 .barber-photo-large {
@@ -88,7 +88,7 @@
   max-height: 72px;
   border-radius: 999px;
   object-fit: cover;
-  border: 2px solid rgba(26,26,26,0.1);
+  border: 2px solid #e5e5e5;
   flex-shrink: 0;
 }
 
@@ -98,34 +98,22 @@
   flex-wrap: wrap;
 }
 
-.barber-bio h3 {
-  margin: 0 0 0.5rem;
-  color: #1A1A1A;
-  font-size: 1.15rem;
-  font-family: Georgia, serif;
-}
-
-.barber-bio p {
-  margin: 0;
-  color: rgba(26,26,26,0.5);
-  line-height: 1.7;
-  font-size: 1.02rem;
-}
-
+.barber-bio h3,
 .barber-location h3 {
   margin: 0 0 0.5rem;
-  color: #1A1A1A;
-  font-size: 1.15rem;
+  color: #171717;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
 }
 
+.barber-bio p,
 .barber-location p {
   margin: 0;
-  color: rgba(26,26,26,0.5);
+  color: #737373;
   line-height: 1.7;
-  font-size: 1.02rem;
+  font-size: 0.95rem;
 }
-
-.barber-map { width: 100%; }
 
 .section-block {
   display: flex;
@@ -136,14 +124,13 @@
 .section-block h3,
 .booking-summary h3 {
   margin: 0;
-  color: #1A1A1A;
-  font-size: 1.2rem;
-  font-family: Georgia, serif;
-  font-weight: 800;
+  color: #171717;
+  font-size: 1.1rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
 }
 
-.day-list,
-.slot-list {
+.day-list, .slot-list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
@@ -151,38 +138,40 @@
 
 :host ::ng-deep .day-btn.p-button,
 :host ::ng-deep .slot-btn.p-button {
-  border-radius: 16px;
-  border: 1.5px solid rgba(26,26,26,0.15);
-  background: #FAFAF7;
-  color: #1A1A1A;
+  border-radius: 12px;
+  border: 1.5px solid #e5e5e5;
+  background: #ffffff;
+  color: #171717;
   box-shadow: none;
-  padding: 0.8rem 1rem;
+  padding: 0.75rem 1rem;
+  font-family: 'Inter', sans-serif;
 }
 
 :host ::ng-deep .day-btn.p-button:hover,
 :host ::ng-deep .slot-btn.p-button:hover {
-  background: #EDE8E0;
-  border-color: rgba(26,26,26,0.3);
-  color: #1A1A1A;
+  background: #f5f5f5;
+  border-color: #d4d4d4;
+  color: #171717;
 }
 
 :host ::ng-deep .day-btn.day-active.p-button,
 :host ::ng-deep .slot-btn.slot-active.p-button {
-  background: #1A1A1A !important;
-  border-color: #1A1A1A !important;
-  color: #FAFAF7 !important;
+  background: #171717 !important;
+  border-color: #171717 !important;
+  color: #ffffff !important;
 }
 
 .helper-text {
   margin: 0;
-  color: rgba(26,26,26,0.5);
+  color: #a3a3a3;
   line-height: 1.6;
+  font-size: 0.9rem;
 }
 
 .booking-summary {
-  background: rgba(26,26,26,0.04);
-  border: 1px solid rgba(26,26,26,0.08);
-  border-radius: 20px;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
   padding: 1.1rem 1.2rem;
   display: flex;
   flex-direction: column;
@@ -196,85 +185,32 @@
   gap: 1rem;
 }
 
-.summary-row span { color: rgba(26,26,26,0.5); }
-.summary-row strong { color: #1A1A1A; }
+.summary-row span { color: #a3a3a3; font-size: 0.9rem; }
+.summary-row strong { color: #171717; font-weight: 600; }
 
 :host ::ng-deep .confirm-btn.p-button {
   width: 100%;
-  border-radius: 18px;
+  border-radius: 12px;
   padding: 1rem 1.2rem;
   font-weight: 700;
-  background: #1A1A1A !important;
-  border-color: #1A1A1A !important;
-  color: #FAFAF7 !important;
-}
-
-:host ::ng-deep .confirm-btn.p-button .p-button-label {
-  color: #FAFAF7 !important;
+  background: #171717 !important;
+  border-color: #171717 !important;
+  color: #ffffff !important;
 }
 
 :host ::ng-deep .confirm-btn.p-button:hover {
-  background: #333333 !important;
-  border-color: #333333 !important;
+  background: #404040 !important;
+  border-color: #404040 !important;
 }
 
-:host ::ng-deep .confirm-btn.p-button:disabled { opacity: 0.6; }
-
-.booking-column .booking-card { color: #1A1A1A; }
-.booking-column .booking-card * { box-sizing: border-box; }
-
-.booking-column .booking-card .no-availability-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 220px;
-  padding: 1.5rem;
-  border: 1px dashed rgba(26,26,26,0.15);
-  border-radius: 20px;
-  background: rgba(26,26,26,0.03);
-  text-align: center;
-  color: #1A1A1A !important;
-}
-
-.booking-column .booking-card .no-availability-state h3 {
-  margin: 0 0 0.6rem;
-  color: #1A1A1A !important;
-  font-size: 1.3rem;
-  font-weight: 800;
-  line-height: 1.2;
-  background: transparent !important;
-}
-
-.booking-column .booking-card .no-availability-state p {
-  margin: 0;
-  color: rgba(26,26,26,0.5) !important;
-  font-size: 1rem;
-  line-height: 1.6;
-  max-width: 340px;
-  background: transparent !important;
-}
-
-html[dir='rtl'] .page-header,
-html[dir='rtl'] .barber-profile-card,
-html[dir='rtl'] .booking-card,
-html[dir='rtl'] .barber-bio,
-html[dir='rtl'] .barber-location,
-html[dir='rtl'] .booking-summary,
-html[dir='rtl'] .no-availability-state { text-align: right; }
-
-html[dir='rtl'] .barber-top { flex-direction: row-reverse; }
+:host ::ng-deep .confirm-btn.p-button:disabled { opacity: 0.5; }
 
 @media (max-width: 960px) {
   .details-layout { grid-template-columns: 1fr; }
-  .page-header h1 { font-size: clamp(2.1rem, 10vw, 3.4rem); }
 }
 
 @media (max-width: 640px) {
   .barber-details-page { padding: 1.25rem 1rem 2rem; }
-  :host ::ng-deep .p-card .p-card-body { padding: 1.1rem; }
-  .barber-top { align-items: flex-start; }
-  .barber-top h2 { font-size: 1.7rem; }
-  .summary-row { align-items: flex-start; flex-direction: column; gap: 0.35rem; }
-  .booking-column .booking-card .no-availability-state { min-height: 180px; padding: 1.1rem; }
+  .barber-top h2 { font-size: 1.5rem; }
+  .summary-row { flex-direction: column; gap: 0.35rem; }
 }
