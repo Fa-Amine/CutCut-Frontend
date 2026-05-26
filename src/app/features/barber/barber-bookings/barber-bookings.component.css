@@ -1,7 +1,7 @@
 :host { display: block; }
 
 .barber-bookings-page {
-  background: #FAFAF7;
+  background: #ffffff;
   min-height: calc(100vh - 76px);
   padding: 2rem 1.25rem 3rem;
 }
@@ -15,10 +15,10 @@
 
 .page-kicker {
   display: inline-block;
-  color: rgba(26,26,26,0.45);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  color: #a3a3a3;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   margin-bottom: 0.75rem;
   font-family: 'Courier New', monospace;
@@ -29,15 +29,15 @@
   font-size: clamp(2rem, 4vw, 3.1rem);
   line-height: 1.05;
   letter-spacing: -0.04em;
-  color: #1A1A1A;
-  font-family: Georgia, serif;
-  font-weight: 900;
+  color: #171717;
+  font-family: var(--font-heading);
+  font-weight: 800;
 }
 
 .page-header p {
   margin: 0;
-  color: rgba(26,26,26,0.5);
-  font-size: 1.02rem;
+  color: #737373;
+  font-size: 1rem;
   line-height: 1.7;
   max-width: 720px;
 }
@@ -50,44 +50,74 @@
 }
 
 .summary-box {
-  background: #F0EDE8;
-  border: 1px solid rgba(26,26,26,0.08);
-  border-radius: 22px;
-  padding: 1rem 1.1rem;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s;
+}
+
+.summary-box:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
 .summary-box span {
   display: block;
-  color: rgba(26,26,26,0.45);
-  font-size: 0.78rem;
-  margin-bottom: 0.35rem;
+  color: #a3a3a3;
+  font-size: 0.72rem;
+  margin-bottom: 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   font-family: 'Courier New', monospace;
 }
 
 .summary-box strong {
-  color: #1A1A1A;
-  font-size: 1.45rem;
-  letter-spacing: -0.03em;
-  font-family: Georgia, serif;
-  font-weight: 900;
+  color: #171717;
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  line-height: 1;
 }
 
 .bookings-list { display: grid; gap: 1rem; }
 
 .booking-card {
-  background: #F0EDE8;
-  border: 1px solid rgba(26,26,26,0.08);
-  border-radius: 24px;
-  padding: 1.2rem;
-  box-shadow: 0 12px 30px rgba(26,26,26,0.05);
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   display: grid;
   gap: 1rem;
-  transition: transform 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 
-.booking-card:hover { transform: translateY(-3px); }
+.booking-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* Status border left */
+.booking-card.status-pending {
+  border-left: 4px solid #f59e0b;
+}
+
+.booking-card.status-confirmed {
+  border-left: 4px solid #16a34a;
+}
+
+.booking-card.status-rejected,
+.booking-card.status-cancelled {
+  border-left: 4px solid #dc2626;
+  opacity: 0.8;
+}
+
+.booking-card.status-completed {
+  border-left: 4px solid #a3a3a3;
+  opacity: 0.75;
+}
 
 .booking-main {
   display: grid;
@@ -104,17 +134,16 @@
 
 .booking-ident h3 {
   margin: 0;
-  color: #1A1A1A;
-  font-size: 1.1rem;
-  font-family: Georgia, serif;
-  font-weight: 800;
+  color: #171717;
+  font-size: 1rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
 }
 
 .booking-ident p {
   margin: 0.25rem 0 0;
-  color: rgba(26,26,26,0.45);
+  color: #a3a3a3;
   font-size: 0.82rem;
-  font-family: 'Courier New', monospace;
 }
 
 .booking-meta {
@@ -124,25 +153,37 @@
 }
 
 .meta-item {
-  background: rgba(26,26,26,0.04);
-  border: 1px solid rgba(26,26,26,0.05);
-  border-radius: 16px;
-  padding: 0.8rem 0.9rem;
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
 }
 
 .meta-item span {
   display: block;
-  color: rgba(26,26,26,0.4);
-  font-size: 0.75rem;
+  color: #a3a3a3;
+  font-size: 0.72rem;
   margin-bottom: 0.3rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-family: 'Courier New', monospace;
 }
 
-.meta-item strong { color: #1A1A1A; font-weight: 700; }
+.meta-item strong {
+  color: #171717;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
 
-.booking-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.booking-status { display: flex; align-items: center; }
+
+.booking-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f5f5f5;
+}
 
 html[dir='rtl'] .page-header,
 html[dir='rtl'] .booking-card,
@@ -151,10 +192,13 @@ html[dir='rtl'] .booking-ident { text-align: right; }
 html[dir='rtl'] .booking-ident { flex-direction: row-reverse; }
 
 @media (max-width: 980px) {
-  .summary-strip, .booking-main, .booking-meta { grid-template-columns: 1fr; }
+  .summary-strip { grid-template-columns: 1fr; }
+  .booking-main { grid-template-columns: 1fr; }
+  .booking-meta { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 640px) {
   .barber-bookings-page { padding: 1.25rem 1rem 2rem; }
   .booking-actions .p-button { width: 100%; }
+  .booking-meta { grid-template-columns: 1fr; }
 }

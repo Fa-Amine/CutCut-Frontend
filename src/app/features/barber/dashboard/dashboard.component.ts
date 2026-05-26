@@ -7,7 +7,7 @@ import { TagModule } from 'primeng/tag';
 import { LanguageService } from '../../../core/services/language.service';
 import { SessionService } from '../../../core/services/session.service';
 import { BarberService } from '../../../core/services/barber.service';
-import { BookingService } from '../../../core/services/booking.service';
+import { BookingService, WalletTransaction } from '../../../core/services/booking.service';
 import { BarberDashboardResponse } from '../../../core/models/dashboard.models';
 import { BookingResponse } from '../../../core/models/booking.models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -40,6 +40,7 @@ export class DashboardComponent {
   errorMessage = signal('');
   dashboard = signal<BarberDashboardResponse | null>(null);
   recentBookings = signal<BookingResponse[]>([]);
+  walletTransactions = signal<WalletTransaction[]>([]);
 
   upcomingBookings = computed(() =>
     this.recentBookings()
@@ -55,13 +56,20 @@ export class DashboardComponent {
       .slice(0, 3)
   );
 
+  pendingBookings = computed(() =>
+    this.recentBookings().filter(b => b.status === 'PENDING').length
+  );
+
+  confirmedBookings = computed(() =>
+    this.recentBookings().filter(b => b.status === 'CONFIRMED' || b.status === 'ACCEPTED').length
+  );
+
   constructor() {
     this.loadDashboard();
   }
 
   loadDashboard() {
     const barberId = this.sessionService.userId();
-
     if (!barberId) {
       this.errorMessage.set('Barbier introuvable.');
       this.isLoading.set(false);
@@ -85,56 +93,66 @@ export class DashboardComponent {
             this.isLoading.set(false);
           }
         });
+
+        this.bookingService.getWalletTransactions(barberId).subscribe({
+          next: (transactions) => this.walletTransactions.set(transactions),
+          error: () => this.walletTransactions.set([])
+        });
       },
       error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Impossible de charger le tableau de bord.'
-        );
+        this.errorMessage.set(error?.error?.message || 'Impossible de charger le tableau de bord.');
         this.isLoading.set(false);
       }
     });
   }
 
   formatDate(dateTime: string): string {
-    return new Date(dateTime).toLocaleDateString();
+    return new Date(dateTime).toLocaleDateString('fr-FR');
   }
 
   formatTime(dateTime: string): string {
-    return new Date(dateTime).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return new Date(dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  getTransactionIcon(type: string): string {
+    switch (type) {
+      case 'COMMISSION': return '💰';
+      case 'REFUND': return '↩️';
+      case 'WITHDRAWAL': return '💸';
+      default: return '💳';
+    }
+  }
+
+  getTransactionLabel(type: string): string {
+    switch (type) {
+      case 'COMMISSION': return 'Commission reservation';
+      case 'REFUND': return 'Remboursement';
+      case 'WITHDRAWAL': return 'Retrait';
+      default: return type;
+    }
   }
 
   getStatusSeverity(status: string): 'success' | 'warn' | 'danger' | 'contrast' {
     switch (status) {
       case 'ACCEPTED':
-      case 'CONFIRMED':
-        return 'success';
-      case 'COMPLETED':
-        return 'contrast';
+      case 'CONFIRMED': return 'success';
+      case 'COMPLETED': return 'contrast';
       case 'REJECTED':
       case 'CANCELLED':
-      case 'CANCELLED_BY_CLIENT':
-        return 'danger';
-      default:
-        return 'warn';
+      case 'CANCELLED_BY_CLIENT': return 'danger';
+      default: return 'warn';
     }
   }
 
   getStatusLabel(status: string): string {
     switch (status) {
       case 'ACCEPTED':
-      case 'CONFIRMED':
-        return this.langService.t().confirmed;
-      case 'COMPLETED':
-        return this.langService.t().completed;
+      case 'CONFIRMED': return this.langService.t().confirmed;
+      case 'COMPLETED': return this.langService.t().completed;
       case 'REJECTED':
       case 'CANCELLED':
-      case 'CANCELLED_BY_CLIENT':
-        return this.langService.t().cancelled;
-      default:
-        return this.langService.t().pending;
+      case 'CANCELLED_BY_CLIENT': return this.langService.t().cancelled;
+      default: return this.langService.t().pending;
     }
   }
 }

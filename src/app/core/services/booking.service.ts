@@ -9,6 +9,15 @@ import {
   BookingResponse
 } from '../models/booking.models';
 
+export interface WalletTransaction {
+  id: number;
+  type: 'COMMISSION' | 'REFUND' | 'WITHDRAWAL';
+  amount: number;
+  description: string;
+  createdAt: string;
+  bookingId?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -36,17 +45,15 @@ export class BookingService {
     return this.http.put<BookingResponse>(`${this.baseUrl}/bookings/${bookingId}/reject`, {});
   }
 
-  completeBookingByBarber(
-    bookingId: number,
-    payload: CompleteBookingRequest
-  ): Observable<BookingResponse> {
+  completeBookingByBarber(bookingId: number, payload: CompleteBookingRequest): Observable<BookingResponse> {
     return this.http.put<BookingResponse>(`${this.baseUrl}/bookings/${bookingId}/complete`, payload);
   }
 
-  cancelBookingByClient(
-    bookingId: number,
-    payload: CancelBookingRequest
-  ): Observable<BookingResponse> {
+  cancelBookingByClient(bookingId: number, payload: CancelBookingRequest): Observable<BookingResponse> {
     return this.http.put<BookingResponse>(`${this.baseUrl}/bookings/${bookingId}/cancel`, payload);
+  }
+
+  getWalletTransactions(barberId: number): Observable<WalletTransaction[]> {
+    return this.http.get<WalletTransaction[]>(`${this.baseUrl}/barbers/${barberId}/wallet/transactions`);
   }
 }
