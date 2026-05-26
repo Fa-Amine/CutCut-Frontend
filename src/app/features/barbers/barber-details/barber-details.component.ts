@@ -129,7 +129,8 @@ export class BarberDetailsComponent {
         this.loadReviews(barberId);
       },
       error: (error) => {
-        this.errorMessage.set(error?.error?.message || 'Impossible de charger les détails du barbier.');
+        console.error('[CutCut]', error?.error?.message || error?.message);
+        this.errorMessage.set('Veuillez rafraichir la page.');
         this.isLoading.set(false);
       }
     });
@@ -170,7 +171,7 @@ export class BarberDetailsComponent {
         onDone?.();
       },
       error: () => {
-        this.errorMessage.set('Impossible de recharger les disponibilités.');
+        this.errorMessage.set('Veuillez rafraichir la page.');
         onDone?.();
       }
     });
@@ -200,7 +201,7 @@ export class BarberDetailsComponent {
 
     const clientId = this.sessionService.userId();
     if (!barber || !slot || !clientId) {
-      this.errorMessage.set('Impossible de confirmer la réservation.');
+      this.errorMessage.set('Veuillez rafraichir la page.');
       return;
     }
 
@@ -218,8 +219,8 @@ export class BarberDetailsComponent {
         this.selectedSlot.set(null);
         this.messageService.add({
           severity: 'success',
-          summary: '✅ Réservation confirmée !',
-          detail: 'Votre rendez-vous a été enregistré avec succès.',
+          summary: 'Reservation confirmee !',
+          detail: 'Votre rendez-vous a ete enregistre avec succes.',
           life: 4000
         });
         setTimeout(() => this.successMessage.set(false), 2500);
@@ -228,14 +229,15 @@ export class BarberDetailsComponent {
         this.isBooking.set(false);
         const rawMessage = error?.error?.message || error?.error?.error || error?.message || '';
         const normalized = String(rawMessage).toLowerCase();
+        console.error('[CutCut]', rawMessage);
         if (normalized.includes('slot') || normalized.includes('booked') ||
             normalized.includes('invalid') || normalized.includes('missing')) {
-          this.errorMessage.set('Ce créneau n\'est plus disponible. Veuillez en choisir un autre.');
+          this.errorMessage.set('Ce creneau n\'est plus disponible. Veuillez en choisir un autre.');
           this.selectedSlot.set(null);
           this.reloadSlots(barber.id);
           return;
         }
-        this.errorMessage.set(error?.error?.message || 'Impossible de créer la réservation.');
+        this.errorMessage.set('Veuillez rafraichir la page.');
       }
     });
   }

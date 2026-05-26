@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,7 +8,18 @@ import { CommonModule } from '@angular/common';
   templateUrl: './error-alert.component.html',
   styleUrl: './error-alert.component.css'
 })
-export class ErrorAlertComponent {
-  @Input() title = 'Something went wrong';
-  @Input() message = 'Please try again.';
+export class ErrorAlertComponent implements OnInit {
+  @Input() title = 'Une erreur est survenue';
+  @Input() message = 'Veuillez rafraichir la page.';
+  @Input() technical = '';
+
+  ngOnInit() {
+    if (this.technical) {
+      console.error('[CutCut Error]', this.technical);
+    }
+  }
+
+  reload() {
+    window.location.reload();
+  }
 }

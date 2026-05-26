@@ -59,7 +59,7 @@ export class BarberBookingsComponent {
   loadBookings() {
     const barberId = this.sessionService.userId();
     if (!barberId) {
-      this.errorMessage.set('Barbier introuvable.');
+      this.errorMessage.set('Veuillez rafraichir la page.');
       this.isLoading.set(false);
       return;
     }
@@ -71,9 +71,8 @@ export class BarberBookingsComponent {
         this.isLoading.set(false);
       },
       error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Impossible de charger les réservations du barbier.'
-        );
+        console.error('[CutCut]', error?.error?.message || error?.message);
+        this.errorMessage.set('Veuillez rafraichir la page.');
         this.isLoading.set(false);
       }
     });
@@ -86,14 +85,13 @@ export class BarberBookingsComponent {
           items.map((item) => (item.id === bookingId ? updatedBooking : item))
         );
         this.errorMessage.set('');
-        this.successMessage.set('Réservation acceptée.');
+        this.successMessage.set('Reservation acceptee.');
         setTimeout(() => this.successMessage.set(''), 2500);
         this.loadBookings();
       },
       error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Impossible d\'accepter la réservation.'
-        );
+        console.error('[CutCut]', error?.error?.message || error?.message);
+        this.errorMessage.set('Veuillez rafraichir la page.');
       }
     });
   }
@@ -105,24 +103,20 @@ export class BarberBookingsComponent {
           items.map((item) => (item.id === bookingId ? updatedBooking : item))
         );
         this.errorMessage.set('');
-        this.successMessage.set('Réservation rejetée.');
+        this.successMessage.set('Reservation rejetee.');
         setTimeout(() => this.successMessage.set(''), 2500);
         this.loadBookings();
       },
       error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Impossible de rejeter la réservation.'
-        );
+        console.error('[CutCut]', error?.error?.message || error?.message);
+        this.errorMessage.set('Veuillez rafraichir la page.');
       }
     });
   }
 
   completeBooking(bookingId: number) {
     const barberId = this.sessionService.userId();
-    if (!barberId) {
-      this.errorMessage.set('Barbier introuvable.');
-      return;
-    }
+    if (!barberId) return;
     this.bookingService.completeBookingByBarber(bookingId, {
       barberId: Number(barberId)
     }).subscribe({
@@ -131,14 +125,13 @@ export class BarberBookingsComponent {
           items.map((item) => (item.id === bookingId ? updatedBooking : item))
         );
         this.errorMessage.set('');
-        this.successMessage.set('Réservation marquée comme terminée.');
+        this.successMessage.set('Reservation marquee comme terminee.');
         setTimeout(() => this.successMessage.set(''), 2500);
         this.loadBookings();
       },
       error: (error) => {
-        this.errorMessage.set(
-          error?.error?.message || 'Impossible de terminer la réservation.'
-        );
+        console.error('[CutCut]', error?.error?.message || error?.message);
+        this.errorMessage.set('Veuillez rafraichir la page.');
       }
     });
   }
@@ -146,32 +139,24 @@ export class BarberBookingsComponent {
   getStatusLabel(status: BookingResponse['status']) {
     switch (status) {
       case 'ACCEPTED':
-      case 'CONFIRMED':
-        return this.langService.t().confirmed;
+      case 'CONFIRMED': return this.langService.t().confirmed;
       case 'REJECTED':
       case 'CANCELLED':
-      case 'CANCELLED_BY_CLIENT':
-        return this.langService.t().cancelled;
-      case 'COMPLETED':
-        return this.langService.t().completed;
-      default:
-        return this.langService.t().pending;
+      case 'CANCELLED_BY_CLIENT': return this.langService.t().cancelled;
+      case 'COMPLETED': return this.langService.t().completed;
+      default: return this.langService.t().pending;
     }
   }
 
   getStatusSeverity(status: BookingResponse['status']): 'warn' | 'success' | 'contrast' | 'danger' {
     switch (status) {
       case 'ACCEPTED':
-      case 'CONFIRMED':
-        return 'success';
+      case 'CONFIRMED': return 'success';
       case 'REJECTED':
       case 'CANCELLED':
-      case 'CANCELLED_BY_CLIENT':
-        return 'danger';
-      case 'COMPLETED':
-        return 'contrast';
-      default:
-        return 'warn';
+      case 'CANCELLED_BY_CLIENT': return 'danger';
+      case 'COMPLETED': return 'contrast';
+      default: return 'warn';
     }
   }
 

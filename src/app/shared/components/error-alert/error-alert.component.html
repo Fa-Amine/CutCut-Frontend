@@ -1,8 +1,10 @@
 <div class="error-alert" role="alert">
-    <div class="error-icon">!</div>
-  
-    <div class="error-content">
-      <h3>{{ title }}</h3>
-      <p>{{ message }}</p>
-    </div>
+  <div class="error-icon">!</div>
+  <div class="error-content">
+    <h3>{{ title }}</h3>
+    <p>Veuillez rafraichir la page.</p>
+    <button class="retry-btn" (click)="reload()">
+      🔄 Rafraichir la page
+    </button>
   </div>
+</div>

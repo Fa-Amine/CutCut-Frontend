@@ -106,7 +106,8 @@ export class MyBookingsComponent {
         });
       },
       error: (error) => {
-        this.errorMessage.set(error?.error?.message || 'Impossible de charger les réservations.');
+        console.error('[CutCut]', error?.error?.message || error?.message);
+        this.errorMessage.set('Veuillez rafraichir la page.');
         this.isLoading.set(false);
       }
     });
@@ -114,10 +115,7 @@ export class MyBookingsComponent {
 
   cancelBooking(bookingId: number) {
     const clientId = this.sessionService.userId();
-    if (!clientId) {
-      this.errorMessage.set('Utilisateur introuvable.');
-      return;
-    }
+    if (!clientId) return;
     this.errorMessage.set('');
     this.successMessage.set('');
     this.bookingService.cancelBookingByClient(bookingId, { clientId }).subscribe({
@@ -125,11 +123,12 @@ export class MyBookingsComponent {
         this.bookings.update((items) =>
           items.map((item) => (item.id === bookingId ? updatedBooking : item))
         );
-        this.successMessage.set('Réservation annulée avec succès.');
+        this.successMessage.set('Reservation annulee avec succes.');
         setTimeout(() => this.successMessage.set(''), 2500);
       },
       error: (error) => {
-        this.errorMessage.set(error?.error?.message || 'Impossible d\'annuler la réservation.');
+        console.error('[CutCut]', error?.error?.message || error?.message);
+        this.errorMessage.set('Veuillez rafraichir la page.');
       }
     });
   }
@@ -154,11 +153,12 @@ export class MyBookingsComponent {
       next: () => {
         this.reviewedBookings.update(s => new Set([...s, bookingId]));
         this.reviewingBookingId.set(null);
-        this.successMessage.set('Merci pour votre avis ! ⭐');
+        this.successMessage.set('Merci pour votre avis !');
         setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: (error) => {
-        this.errorMessage.set(error?.error?.message || 'Impossible d\'envoyer l\'avis.');
+        console.error('[CutCut]', error?.error?.message || error?.message);
+        this.errorMessage.set('Veuillez rafraichir la page.');
       }
     });
   }
