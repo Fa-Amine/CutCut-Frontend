@@ -26,14 +26,12 @@
 .error-content h3 {
   margin: 0 0 0.25rem;
   font-size: 1rem;
-  color: #991b1b;
 }
 
 .error-content p {
   margin: 0 0 0.75rem;
   line-height: 1.55;
   color: #7f1d1d;
-  font-size: 0.9rem;
 }
 
 .retry-btn {

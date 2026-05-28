@@ -33,7 +33,7 @@
 
     <div class="bookings-list" *ngIf="!isLoading() && bookings().length">
       <div class="booking-card"
-        *ngFor="let booking of bookings()"
+        *ngFor="let booking of sortedBookings()"
         [class.status-pending]="booking.status === 'PENDING'"
         [class.status-confirmed]="booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED'"
         [class.status-rejected]="booking.status === 'REJECTED'"
@@ -89,14 +89,22 @@
             (click)="acceptBooking(booking.id)">
           </button>
 
-          <button
-            *ngIf="booking.status === 'PENDING' || booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED'"
-            pButton type="button"
-            severity="danger"
-            [outlined]="true"
-            [label]="langService.t().cancelReservation"
-            (click)="rejectBooking(booking.id)">
-          </button>
+          <ng-container *ngIf="canCancelBooking(booking)">
+            <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+              <button
+                pButton type="button"
+                severity="danger"
+                [outlined]="true"
+                [label]="langService.t().cancelReservation"
+                (click)="rejectBooking(booking.id, booking)">
+              </button>
+              <span
+                *ngIf="(booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED') && getRemainingTime(booking)"
+                style="font-size:0.72rem; color:#ef4444; font-family:'Courier New',monospace;">
+                ⏱ {{ getRemainingTime(booking) }}
+              </span>
+            </div>
+          </ng-container>
 
           <button
             *ngIf="booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED'"
@@ -105,8 +113,8 @@
             [label]="langService.t().completed"
             (click)="completeBooking(booking.id)">
           </button>
-        </div>
 
+        </div>
       </div>
     </div>
   </div>

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -28,7 +28,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
   templateUrl: './barber-bookings.component.html',
   styleUrl: './barber-bookings.component.css'
 })
-export class BarberBookingsComponent {
+export class BarberBookingsComponent implements OnDestroy {
   private bookingService = inject(BookingService);
   private sessionService = inject(SessionService);
   langService = inject(LanguageService);
@@ -37,6 +37,24 @@ export class BarberBookingsComponent {
   errorMessage = signal('');
   successMessage = signal('');
   bookings = signal<BookingResponse[]>([]);
+  now = signal(Date.now());
+
+  private timer: any;
+
+  sortedBookings = computed(() => {
+    const order: Record<string, number> = {
+      'PENDING': 0,
+      'CONFIRMED': 1,
+      'ACCEPTED': 1,
+      'COMPLETED': 2,
+      'REJECTED': 3,
+      'CANCELLED': 3,
+      'CANCELLED_BY_CLIENT': 3
+    };
+    return [...this.bookings()].sort((a, b) =>
+      (order[a.status] ?? 9) - (order[b.status] ?? 9)
+    );
+  });
 
   todayBookings = computed(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -54,6 +72,33 @@ export class BarberBookingsComponent {
 
   constructor() {
     this.loadBookings();
+    this.timer = setInterval(() => {
+      this.now.set(Date.now());
+    }, 30000);
+  }
+
+  ngOnDestroy() {
+    if (this.timer) clearInterval(this.timer);
+  }
+
+  canCancelBooking(booking: BookingResponse): boolean {
+    if (booking.status === 'PENDING') return true;
+    if (booking.status !== 'CONFIRMED' && booking.status !== 'ACCEPTED') return false;
+    if (!booking.confirmedAt) return true;
+    const confirmedAt = new Date(booking.confirmedAt).getTime();
+    const tenMinutes = 10 * 60 * 1000;
+    return (this.now() - confirmedAt) < tenMinutes;
+  }
+
+  getRemainingTime(booking: BookingResponse): string {
+    if (!booking.confirmedAt) return '';
+    const confirmedAt = new Date(booking.confirmedAt).getTime();
+    const tenMinutes = 10 * 60 * 1000;
+    const remaining = tenMinutes - (this.now() - confirmedAt);
+    if (remaining <= 0) return '';
+    const minutes = Math.floor(remaining / 60000);
+    const seconds = Math.floor((remaining % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
   loadBookings() {
@@ -94,21 +139,41 @@ export class BarberBookingsComponent {
     });
   }
 
-  rejectBooking(bookingId: number) {
-    this.bookingService.rejectBooking(bookingId).subscribe({
-      next: (updatedBooking) => {
-        this.bookings.update((items) =>
-          items.map((item) => (item.id === bookingId ? updatedBooking : item))
-        );
-        this.errorMessage.set('');
-        this.successMessage.set('Reservation rejetee.');
-        setTimeout(() => this.successMessage.set(''), 2500);
-        this.loadBookings();
-      },
-      error: (error) => {
-        this.errorMessage.set(error?.error?.message || 'Impossible de rejeter la reservation.');
-      }
-    });
+  rejectBooking(bookingId: number, booking: BookingResponse) {
+    const barberId = this.sessionService.userId();
+    if (!barberId) return;
+
+    if (booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED') {
+      this.bookingService.cancelBookingByBarber(bookingId, Number(barberId)).subscribe({
+        next: (updatedBooking) => {
+          this.bookings.update((items) =>
+            items.map((item) => (item.id === bookingId ? updatedBooking : item))
+          );
+          this.errorMessage.set('');
+          this.successMessage.set('Reservation annulee.');
+          setTimeout(() => this.successMessage.set(''), 2500);
+          this.loadBookings();
+        },
+        error: (error) => {
+          this.errorMessage.set(error?.error?.message || 'Impossible d\'annuler la reservation.');
+        }
+      });
+    } else {
+      this.bookingService.rejectBooking(bookingId).subscribe({
+        next: (updatedBooking) => {
+          this.bookings.update((items) =>
+            items.map((item) => (item.id === bookingId ? updatedBooking : item))
+          );
+          this.errorMessage.set('');
+          this.successMessage.set('Reservation rejetee.');
+          setTimeout(() => this.successMessage.set(''), 2500);
+          this.loadBookings();
+        },
+        error: (error) => {
+          this.errorMessage.set(error?.error?.message || 'Impossible de rejeter la reservation.');
+        }
+      });
+    }
   }
 
   completeBooking(bookingId: number) {

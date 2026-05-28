@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ErrorAlertComponent implements OnInit {
   @Input() title = 'Une erreur est survenue';
-  @Input() message = 'Veuillez rafraichir la page.';
+  @Input() message = 'Une erreur est survenue.';
   @Input() technical = '';
 
   ngOnInit() {

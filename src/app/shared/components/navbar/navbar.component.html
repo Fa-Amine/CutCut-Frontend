@@ -12,9 +12,7 @@
           [routerLinkActiveOptions]="{ exact: link.path === '/' }">
           {{ link.label }}
         </a>
-        <a routerLink="/about" routerLinkActive="active-link">
-          À propos
-        </a>
+        <a routerLink="/about" routerLinkActive="active-link">A propos</a>
       </nav>
 
       <div class="nav-right desktop-only">
@@ -27,39 +25,33 @@
             (click)="setLanguage('ar')">AR</button>
         </div>
 
-        <div *ngIf="!sessionService.isGuest()" style="position:relative;">
-          <button type="button" (click)="toggleNotifications()"
-            style="background:none; border:none; cursor:pointer; font-size:1.3rem; position:relative; padding:4px;">
+        <!-- NOTIFICATIONS DESKTOP -->
+        <div *ngIf="!sessionService.isGuest()" class="notif-wrapper">
+          <button type="button" class="notif-btn" (click)="toggleNotifications()">
             🔔
-            <span *ngIf="wsService.unreadCount() > 0"
-              style="position:absolute; top:-4px; right:-4px; background:#ef4444; color:white;
-                border-radius:50%; width:18px; height:18px; font-size:0.7rem;
-                display:flex; align-items:center; justify-content:center; font-weight:700;">
+            <span *ngIf="wsService.unreadCount() > 0" class="notif-badge">
               {{ wsService.unreadCount() }}
             </span>
           </button>
 
-          <div *ngIf="showNotifications()"
-            style="position:absolute; right:0; top:40px; width:300px; background:white;
-              border:1px solid #e5edf5; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.1);
-              z-index:9999; overflow:hidden;">
-            <div style="padding:0.75rem 1rem; border-bottom:1px solid #e5edf5;
-              display:flex; justify-content:space-between; align-items:center;">
-              <strong style="color:#0f172a;">🔔 Notifications</strong>
-              <button (click)="clearNotifications()"
-                style="background:none; border:none; cursor:pointer; color:#64748b; font-size:0.85rem;">
+          <div *ngIf="showNotifications()" class="notif-panel">
+            <div class="notif-header">
+              <strong>🔔 Notifications</strong>
+              <button (click)="clearNotifications()" class="notif-clear">
                 Tout effacer
               </button>
             </div>
 
-            <div *ngIf="wsService.notifications().length === 0"
-              style="padding:1rem; text-align:center; color:#64748b;">
-              Aucune notification
+            <div *ngIf="wsService.notifications().length === 0" class="notif-empty">
+              <div class="notif-empty-icon">🔕</div>
+              <p>Aucune notification</p>
             </div>
 
-            <div *ngFor="let notif of wsService.notifications()"
-              style="padding:0.75rem 1rem; border-bottom:1px solid #f1f5f9; color:#0f172a; font-size:0.9rem;">
-              {{ notif }}
+            <div class="notif-list" *ngIf="wsService.notifications().length > 0">
+              <div *ngFor="let notif of wsService.notifications()" class="notif-item">
+                <div class="notif-dot"></div>
+                <div class="notif-text">{{ notif }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -86,17 +78,35 @@
             (click)="setLanguage('ar')">AR</button>
         </div>
 
-        <div *ngIf="!sessionService.isGuest()" style="position:relative; display:inline-block;">
-          <button type="button" (click)="toggleNotifications()"
-            style="background:none; border:none; cursor:pointer; font-size:1.3rem; position:relative; padding:4px;">
+        <!-- NOTIFICATIONS MOBILE -->
+        <div *ngIf="!sessionService.isGuest()" class="notif-wrapper">
+          <button type="button" class="notif-btn" (click)="toggleNotifications()">
             🔔
-            <span *ngIf="wsService.unreadCount() > 0"
-              style="position:absolute; top:-4px; right:-4px; background:#ef4444; color:white;
-                border-radius:50%; width:18px; height:18px; font-size:0.7rem;
-                display:flex; align-items:center; justify-content:center; font-weight:700;">
+            <span *ngIf="wsService.unreadCount() > 0" class="notif-badge">
               {{ wsService.unreadCount() }}
             </span>
           </button>
+
+          <div *ngIf="showNotifications()" class="notif-panel notif-panel-mobile">
+            <div class="notif-header">
+              <strong>🔔 Notifications</strong>
+              <button (click)="clearNotifications()" class="notif-clear">
+                Tout effacer
+              </button>
+            </div>
+
+            <div *ngIf="wsService.notifications().length === 0" class="notif-empty">
+              <div class="notif-empty-icon">🔕</div>
+              <p>Aucune notification</p>
+            </div>
+
+            <div class="notif-list" *ngIf="wsService.notifications().length > 0">
+              <div *ngFor="let notif of wsService.notifications()" class="notif-item">
+                <div class="notif-dot"></div>
+                <div class="notif-text">{{ notif }}</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <button class="menu-toggle" type="button" (click)="toggleMobileMenu()">
@@ -113,7 +123,7 @@
       [routerLink]="link.path" (click)="closeMobileMenu()">
       {{ link.label }}
     </a>
-    <a routerLink="/about" (click)="closeMobileMenu()">À propos</a>
+    <a routerLink="/about" (click)="closeMobileMenu()">A propos</a>
     <ng-container *ngIf="sessionService.isGuest(); else mobileAuthActions">
       <a routerLink="/login" (click)="closeMobileMenu()">{{ langService.t().login }}</a>
       <a routerLink="/register" (click)="closeMobileMenu()">{{ langService.t().register }}</a>

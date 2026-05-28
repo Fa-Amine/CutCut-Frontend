@@ -45,6 +45,10 @@ export class BookingService {
     return this.http.put<BookingResponse>(`${this.baseUrl}/bookings/${bookingId}/reject`, {});
   }
 
+  cancelBookingByBarber(bookingId: number, barberId: number): Observable<BookingResponse> {
+    return this.http.put<BookingResponse>(`${this.baseUrl}/bookings/${bookingId}/cancel-by-barber`, { barberId });
+  }
+
   completeBookingByBarber(bookingId: number, payload: CompleteBookingRequest): Observable<BookingResponse> {
     return this.http.put<BookingResponse>(`${this.baseUrl}/bookings/${bookingId}/complete`, payload);
   }
