@@ -59,7 +59,7 @@ export class BarberBookingsComponent {
   loadBookings() {
     const barberId = this.sessionService.userId();
     if (!barberId) {
-      this.errorMessage.set('Veuillez rafraichir la page.');
+      this.errorMessage.set('Barbier introuvable.');
       this.isLoading.set(false);
       return;
     }
@@ -71,8 +71,7 @@ export class BarberBookingsComponent {
         this.isLoading.set(false);
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de charger les reservations.');
         this.isLoading.set(false);
       }
     });
@@ -90,8 +89,7 @@ export class BarberBookingsComponent {
         this.loadBookings();
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible d\'accepter la reservation.');
       }
     });
   }
@@ -108,8 +106,7 @@ export class BarberBookingsComponent {
         this.loadBookings();
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de rejeter la reservation.');
       }
     });
   }
@@ -130,8 +127,7 @@ export class BarberBookingsComponent {
         this.loadBookings();
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de terminer la reservation.');
       }
     });
   }

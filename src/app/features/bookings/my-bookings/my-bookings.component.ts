@@ -106,8 +106,7 @@ export class MyBookingsComponent {
         });
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de charger les reservations.');
         this.isLoading.set(false);
       }
     });
@@ -127,8 +126,7 @@ export class MyBookingsComponent {
         setTimeout(() => this.successMessage.set(''), 2500);
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible d\'annuler la reservation.');
       }
     });
   }
@@ -157,8 +155,7 @@ export class MyBookingsComponent {
         setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible d\'envoyer l\'avis.');
       }
     });
   }

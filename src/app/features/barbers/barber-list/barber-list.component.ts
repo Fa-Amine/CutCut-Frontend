@@ -100,7 +100,7 @@ export class BarberListComponent implements AfterViewChecked {
 
   locateMe() {
     if (!navigator.geolocation) {
-      this.errorMessage.set('La géolocalisation n\'est pas supportée par votre navigateur.');
+      this.errorMessage.set('La geolocalisation n\'est pas supportee par votre navigateur.');
       return;
     }
     this.isLocating.set(true);
@@ -117,13 +117,13 @@ export class BarberListComponent implements AfterViewChecked {
             [position.coords.latitude, position.coords.longitude],
             { title: 'Votre position' }
           ).addTo(this.map);
-          this.userMarker.bindPopup('📍 Vous êtes ici').openPopup();
+          this.userMarker.bindPopup('Vous etes ici').openPopup();
           this.map.setView([position.coords.latitude, position.coords.longitude], 13);
         }
       },
       () => {
         this.isLocating.set(false);
-        this.errorMessage.set('Impossible de récupérer votre position.');
+        this.errorMessage.set('Impossible de recuperer votre position.');
       }
     );
   }
@@ -171,7 +171,7 @@ export class BarberListComponent implements AfterViewChecked {
     if (this.userLat() && this.userLng()) {
       this.userMarker = L.marker([this.userLat()!, this.userLng()!])
         .addTo(this.map);
-      this.userMarker.bindPopup('📍 Vous êtes ici').openPopup();
+      this.userMarker.bindPopup('Vous etes ici').openPopup();
     }
 
     const barbersWithLocation = this.filteredBarbers().filter(b => b.latitude && b.longitude);
@@ -186,16 +186,16 @@ export class BarberListComponent implements AfterViewChecked {
         <div style="text-align:center; min-width:150px;">
           ${barber.photoUrl
             ? `<img src="${barber.photoUrl}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px;" />`
-            : `<div style="width:60px;height:60px;border-radius:50%;background:#2563eb;color:white;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin:0 auto 8px;">${this.getInitials(barber.name)}</div>`
+            : `<div style="width:60px;height:60px;border-radius:50%;background:#171717;color:white;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin:0 auto 8px;">${this.getInitials(barber.name)}</div>`
           }
-          <strong style="display:block;color:#0f172a;">${barber.name}</strong>
-          <span style="color:#64748b;font-size:0.85rem;">${barber.shopName || 'CutCut'}</span>
+          <strong style="display:block;color:#171717;">${barber.name}</strong>
+          <span style="color:#737373;font-size:0.85rem;">${barber.shopName || 'CutCut'}</span>
           <br/>
-          <span style="color:#2563eb;font-weight:700;">${barber.price ?? 0} MAD</span>
-          ${dist ? `<br/><span style="color:#16a34a;font-size:0.85rem;">📍 ${dist} km</span>` : ''}
+          <span style="color:#171717;font-weight:700;">${barber.price ?? 0} MAD</span>
+          ${dist ? `<br/><span style="color:#16a34a;font-size:0.85rem;">${dist} km</span>` : ''}
           <br/>
           <button onclick="window.location.href='/barbers/${barber.id}'"
-            style="margin-top:8px;background:#2563eb;color:white;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;">
+            style="margin-top:8px;background:#171717;color:white;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;">
             Voir le profil
           </button>
         </div>

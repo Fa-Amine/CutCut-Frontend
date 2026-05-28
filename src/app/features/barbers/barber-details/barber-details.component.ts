@@ -129,8 +129,7 @@ export class BarberDetailsComponent {
         this.loadReviews(barberId);
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de charger les details du barbier.');
         this.isLoading.set(false);
       }
     });
@@ -170,8 +169,8 @@ export class BarberDetailsComponent {
         }
         onDone?.();
       },
-      error: () => {
-        this.errorMessage.set('Veuillez rafraichir la page.');
+      error: (error) => {
+        this.errorMessage.set(error?.error?.message || 'Impossible de recharger les disponibilites.');
         onDone?.();
       }
     });
@@ -201,7 +200,7 @@ export class BarberDetailsComponent {
 
     const clientId = this.sessionService.userId();
     if (!barber || !slot || !clientId) {
-      this.errorMessage.set('Veuillez rafraichir la page.');
+      this.errorMessage.set('Impossible de confirmer la reservation.');
       return;
     }
 
@@ -229,7 +228,6 @@ export class BarberDetailsComponent {
         this.isBooking.set(false);
         const rawMessage = error?.error?.message || error?.error?.error || error?.message || '';
         const normalized = String(rawMessage).toLowerCase();
-        console.error('[CutCut]', rawMessage);
         if (normalized.includes('slot') || normalized.includes('booked') ||
             normalized.includes('invalid') || normalized.includes('missing')) {
           this.errorMessage.set('Ce creneau n\'est plus disponible. Veuillez en choisir un autre.');
@@ -237,7 +235,7 @@ export class BarberDetailsComponent {
           this.reloadSlots(barber.id);
           return;
         }
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de creer la reservation.');
       }
     });
   }

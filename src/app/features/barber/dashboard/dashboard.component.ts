@@ -71,7 +71,7 @@ export class DashboardComponent {
   loadDashboard() {
     const barberId = this.sessionService.userId();
     if (!barberId) {
-      this.errorMessage.set('Veuillez rafraichir la page.');
+      this.errorMessage.set('Barbier introuvable.');
       this.isLoading.set(false);
       return;
     }
@@ -100,8 +100,7 @@ export class DashboardComponent {
         });
       },
       error: (error) => {
-        console.error('[CutCut]', error?.error?.message || error?.message);
-        this.errorMessage.set('Veuillez rafraichir la page.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de charger le tableau de bord.');
         this.isLoading.set(false);
       }
     });
