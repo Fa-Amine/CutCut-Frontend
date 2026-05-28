@@ -4,15 +4,15 @@ import { SessionService } from '../services/session.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const sessionService = inject(SessionService);
-  const token = sessionService.user()?.token;
+  const userId = sessionService.userId();
 
-  if (!token || req.url.startsWith('/assets')) {
+  if (!userId || req.url.startsWith('/assets')) {
     return next(req);
   }
 
   const authReq = req.clone({
     setHeaders: {
-      Authorization: `Bearer ${token}`
+      'X-User-Id': String(userId)
     }
   });
   return next(authReq);
