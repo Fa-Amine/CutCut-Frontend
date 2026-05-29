@@ -49,6 +49,7 @@ export class BarberListComponent implements AfterViewChecked {
   private mapInitialized = false;
   private userMarker: any = null;
   private markers: any[] = [];
+  private currentRoute: any = null; // ✅ Route actuelle sur la carte
 
   isFavorite = computed(() => (barberId: number) => {
     return this.favoriteService.favoriteIds().includes(barberId);
@@ -87,6 +88,11 @@ export class BarberListComponent implements AfterViewChecked {
     this.loadLeaflet();
     this.loadBarbers();
     this.favoriteService.loadFavorites();
+
+    // ✅ Expose showRoute pour les boutons dans les popups
+    (window as any).showRoute = (destLat: number, destLng: number) => {
+      this.showRouteOnMap(destLat, destLng);
+    };
   }
 
   calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -97,6 +103,58 @@ export class BarberListComponent implements AfterViewChecked {
               Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
               Math.sin(dLng/2) * Math.sin(dLng/2);
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  // ✅ Dessine le chemin sur la carte via OSRM (gratuit, sans clé)
+  showRouteOnMap(destLat: number, destLng: number) {
+    const userLat = this.userLat();
+    const userLng = this.userLng();
+
+    if (!userLat || !userLng) {
+      alert('📍 Activez votre localisation d\'abord !');
+      return;
+    }
+
+    // Supprime l'ancien chemin
+    if (this.currentRoute) {
+      this.map.removeLayer(this.currentRoute);
+      this.currentRoute = null;
+    }
+
+    // Appel OSRM API
+    const url = `https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${destLng},${destLat}?overview=full&geometries=geojson`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.routes && data.routes.length > 0) {
+          const coords = data.routes[0].geometry.coordinates.map(
+            (c: number[]) => [c[1], c[0]]
+          );
+
+          this.currentRoute = L.polyline(coords, {
+            color: '#171717',
+            weight: 5,
+            opacity: 0.8,
+            lineJoin: 'round',
+            lineCap: 'round',
+            dashArray: '10, 5'
+          }).addTo(this.map);
+
+          this.map.fitBounds(this.currentRoute.getBounds(), { padding: [40, 40] });
+
+          // Durée estimée
+          const duration = Math.round(data.routes[0].duration / 60);
+          const distance = (data.routes[0].distance / 1000).toFixed(1);
+          L.popup()
+            .setLatLng([destLat, destLng])
+            .setContent(`<strong>🗺️ Itinéraire</strong><br>📏 ${distance} km · ⏱ ~${duration} min`)
+            .openOn(this.map);
+        }
+      })
+      .catch(() => {
+        alert('Impossible de calculer l\'itinéraire.');
+      });
   }
 
   locateMe() {
@@ -164,6 +222,7 @@ export class BarberListComponent implements AfterViewChecked {
         this.map = null;
         this.userMarker = null;
         this.markers = [];
+        this.currentRoute = null;
       }
     }
   }
@@ -216,10 +275,10 @@ export class BarberListComponent implements AfterViewChecked {
       attributionControl: true
     }).setView([centerLat, centerLng], 12);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap © CARTO',
-      maxZoom: 19,
-      subdomains: 'abcd'
+    // ✅ Ancienne carte Google Maps
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      attribution: '© Google Maps',
+      maxZoom: 19
     }).addTo(this.map);
 
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
@@ -246,11 +305,6 @@ export class BarberListComponent implements AfterViewChecked {
       const dist = this.userLat() && this.userLng() && barber.latitude && barber.longitude
         ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude).toFixed(1)
         : null;
-
-      // ✅ URL itinéraire Google Maps
-      const directionsUrl = this.userLat() && this.userLng()
-        ? `https://www.google.com/maps/dir/?api=1&origin=${this.userLat()},${this.userLng()}&destination=${barber.latitude},${barber.longitude}&travelmode=driving`
-        : `https://www.google.com/maps/dir/?api=1&destination=${barber.latitude},${barber.longitude}&travelmode=driving`;
 
       const icon = this.createBarberIcon(barber);
       const marker = L.marker([barber.latitude!, barber.longitude!], { icon });
@@ -283,10 +337,10 @@ export class BarberListComponent implements AfterViewChecked {
             ✂️ Réserver
           </button>
 
-          <a href="${directionsUrl}" target="_blank"
-            style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;padding:8px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;text-decoration:none;box-sizing:border-box;">
-            🗺️ Itinéraire
-          </a>
+          <button onclick="window.showRoute(${barber.latitude}, ${barber.longitude})"
+            style="width:100%;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;padding:8px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;">
+            🗺️ Itinéraire sur la carte
+          </button>
         </div>
       `);
 
