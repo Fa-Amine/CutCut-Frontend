@@ -48,8 +48,8 @@ export class BarberListComponent implements AfterViewChecked {
   private map: any = null;
   private mapInitialized = false;
   private userMarker: any = null;
+  private markers: any[] = [];
 
-  // ✅ Computed réactif pour les favoris
   isFavorite = computed(() => (barberId: number) => {
     return this.favoriteService.favoriteIds().includes(barberId);
   });
@@ -101,7 +101,7 @@ export class BarberListComponent implements AfterViewChecked {
 
   locateMe() {
     if (!navigator.geolocation) {
-      this.errorMessage.set('La geolocalisation n\'est pas supportee par votre navigateur.');
+      this.errorMessage.set('La geolocalisation n\'est pas supportee.');
       return;
     }
     this.isLocating.set(true);
@@ -113,15 +113,29 @@ export class BarberListComponent implements AfterViewChecked {
         this.isLocating.set(false);
         if (this.map && this.viewMode() === 'map') {
           if (this.userMarker) this.userMarker.remove();
-          this.userMarker = L.marker([position.coords.latitude, position.coords.longitude])
-            .addTo(this.map);
-          this.userMarker.bindPopup('Vous etes ici').openPopup();
-          this.map.setView([position.coords.latitude, position.coords.longitude], 13);
+          const userIcon = L.divIcon({
+            html: `<div style="
+              width:18px; height:18px; background:#3b82f6;
+              border:3px solid white; border-radius:50%;
+              box-shadow:0 0 0 4px rgba(59,130,246,0.3);">
+            </div>`,
+            className: '',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9]
+          });
+          this.userMarker = L.marker(
+            [position.coords.latitude, position.coords.longitude],
+            { icon: userIcon }
+          ).addTo(this.map);
+          this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>').openPopup();
+          this.map.flyTo([position.coords.latitude, position.coords.longitude], 13, {
+            animate: true, duration: 1.5
+          });
         }
       },
       () => {
         this.isLocating.set(false);
-        this.errorMessage.set('Impossible de recuperer votre position.');
+        this.errorMessage.set('Impossible de récupérer votre position.');
       }
     );
   }
@@ -149,51 +163,132 @@ export class BarberListComponent implements AfterViewChecked {
         this.map.remove();
         this.map = null;
         this.userMarker = null;
+        this.markers = [];
       }
     }
+  }
+
+  createBarberIcon(barber: BarberListItem): any {
+    const initials = this.getInitials(barber.name);
+    const photo = barber.photoUrl
+      ? `<img src="${barber.photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
+      : `<span style="color:white;font-weight:700;font-size:0.85rem;">${initials}</span>`;
+
+    return L.divIcon({
+      html: `
+        <div style="
+          width:44px; height:44px;
+          background:#171717;
+          border:3px solid white;
+          border-radius:50%;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          box-shadow:0 4px 12px rgba(0,0,0,0.3);
+          overflow:hidden;
+          cursor:pointer;
+        ">
+          ${photo}
+        </div>
+        <div style="
+          width:0; height:0;
+          border-left:6px solid transparent;
+          border-right:6px solid transparent;
+          border-top:8px solid white;
+          margin:0 auto;
+          margin-top:-2px;
+        "></div>
+      `,
+      className: '',
+      iconSize: [44, 52],
+      iconAnchor: [22, 52],
+      popupAnchor: [0, -54]
+    });
   }
 
   initMap() {
     this.mapInitialized = true;
     const centerLat = this.userLat() || 33.9716;
     const centerLng = this.userLng() || -6.8498;
-    this.map = L.map('barbers-map').setView([centerLat, centerLng], 12);
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-      attribution: '© Google Maps', maxZoom: 19
+
+    this.map = L.map('barbers-map', {
+      zoomControl: false,
+      attributionControl: true
+    }).setView([centerLat, centerLng], 12);
+
+    // ✅ Tiles OpenStreetMap haute qualité
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap © CARTO',
+      maxZoom: 19,
+      subdomains: 'abcd'
     }).addTo(this.map);
+
+    // ✅ Contrôles zoom en bas à droite
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+
+    // ✅ Marqueur utilisateur
     if (this.userLat() && this.userLng()) {
-      this.userMarker = L.marker([this.userLat()!, this.userLng()!]).addTo(this.map);
-      this.userMarker.bindPopup('Vous etes ici').openPopup();
+      const userIcon = L.divIcon({
+        html: `<div style="
+          width:18px; height:18px; background:#3b82f6;
+          border:3px solid white; border-radius:50%;
+          box-shadow:0 0 0 4px rgba(59,130,246,0.3);">
+        </div>`,
+        className: '',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9]
+      });
+      this.userMarker = L.marker([this.userLat()!, this.userLng()!], { icon: userIcon })
+        .addTo(this.map);
+      this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>');
     }
+
+    // ✅ Marqueurs barbiers
     const barbersWithLocation = this.filteredBarbers().filter(b => b.latitude && b.longitude);
+
     barbersWithLocation.forEach(barber => {
       const dist = this.userLat() && this.userLng() && barber.latitude && barber.longitude
         ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude).toFixed(1)
         : null;
-      const marker = L.marker([barber.latitude!, barber.longitude!]);
-      const popup = `
-        <div style="text-align:center; min-width:150px;">
-          ${barber.photoUrl
-            ? `<img src="${barber.photoUrl}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px;" />`
-            : `<div style="width:60px;height:60px;border-radius:50%;background:#171717;color:white;display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin:0 auto 8px;">${this.getInitials(barber.name)}</div>`
-          }
-          <strong style="display:block;color:#171717;">${barber.name}</strong>
-          <span style="color:#737373;font-size:0.85rem;">${barber.shopName || 'CutCut'}</span>
-          <br/>
-          <span style="color:#171717;font-weight:700;">${barber.price ?? 0} MAD</span>
-          ${dist ? `<br/><span style="color:#16a34a;font-size:0.85rem;">${dist} km</span>` : ''}
-          <br/>
+
+      const icon = this.createBarberIcon(barber);
+      const marker = L.marker([barber.latitude!, barber.longitude!], { icon });
+
+      const popup = L.popup({
+        maxWidth: 220,
+        className: 'custom-popup'
+      }).setContent(`
+        <div style="padding:4px; text-align:center; min-width:180px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            ${barber.photoUrl
+              ? `<img src="${barber.photoUrl}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #e5e5e5;" />`
+              : `<div style="width:48px;height:48px;border-radius:50%;background:#171717;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;">${this.getInitials(barber.name)}</div>`
+            }
+            <div style="text-align:left;">
+              <strong style="display:block;color:#171717;font-size:0.95rem;">${barber.name}</strong>
+              <span style="color:#737373;font-size:0.8rem;">${barber.shopName || 'CutCut'}</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="background:#f5f5f5;padding:3px 10px;border-radius:20px;font-size:0.82rem;font-weight:700;color:#171717;">${barber.price ?? 0} MAD</span>
+            ${dist ? `<span style="color:#16a34a;font-size:0.82rem;font-weight:600;">📍 ${dist} km</span>` : ''}
+          </div>
           <button onclick="window.location.href='/barbers/${barber.id}'"
-            style="margin-top:8px;background:#171717;color:white;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.85rem;">
-            Voir le profil
+            style="width:100%;background:#171717;color:white;border:none;padding:8px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;">
+            Réserver →
           </button>
         </div>
-      `;
-      marker.bindPopup(popup).addTo(this.map);
+      `);
+
+      marker.bindPopup(popup);
+      marker.addTo(this.map);
+      this.markers.push(marker);
     });
+
+    // ✅ Zoom pour voir tous les barbiers
     if (barbersWithLocation.length > 0) {
       const bounds = L.latLngBounds(barbersWithLocation.map(b => [b.latitude!, b.longitude!]));
-      this.map.fitBounds(bounds, { padding: [50, 50] });
+      this.map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
     }
   }
 

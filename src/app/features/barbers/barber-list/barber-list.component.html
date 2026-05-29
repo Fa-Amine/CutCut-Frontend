@@ -40,12 +40,12 @@
     <app-loading-spinner *ngIf="isLoading()" message="Chargement des barbiers..."></app-loading-spinner>
     <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
 
-    <!-- VUE CARTE -->
-    <div *ngIf="!isLoading() && !errorMessage() && viewMode() === 'map'">
-      <div id="barbers-map" style="width:100%; height:calc(100vh - 320px); min-height:550px; border-radius:24px; overflow:hidden; border:1px solid rgba(26,26,26,0.1);"></div>
-      <p style="text-align:center; color:rgba(26,26,26,0.4); margin-top:1rem; font-size:0.9rem;">
-        📍 Cliquez sur un marqueur pour voir le profil du barbier
-      </p>
+    <!-- ✅ VUE CARTE -->
+    <div *ngIf="!isLoading() && !errorMessage() && viewMode() === 'map'" class="map-wrapper">
+      <div id="barbers-map"></div>
+      <div class="map-hint">
+        ✂️ Cliquez sur un barbier pour voir son profil
+      </div>
     </div>
 
     <!-- VUE LISTE -->
@@ -59,7 +59,6 @@
       <div class="barbers-grid" *ngIf="!isLoading() && !errorMessage() && barbersWithDistance().length">
         <div class="barber-card" *ngFor="let barber of barbersWithDistance()">
 
-          <!-- ✅ Bouton Favori corrigé -->
           <button
             *ngIf="sessionService.isClient()"
             class="fav-btn"

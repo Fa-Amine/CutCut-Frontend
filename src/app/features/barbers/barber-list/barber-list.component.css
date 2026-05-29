@@ -61,6 +61,62 @@
 .w-full { width: 100%; }
 
 /* ===========================
+   🗺️ MAP
+=========================== */
+.map-wrapper {
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+#barbers-map {
+  width: 100%;
+  height: calc(100vh - 280px);
+  min-height: 500px;
+}
+
+.map-hint {
+  text-align: center;
+  color: #a3a3a3;
+  font-size: 0.82rem;
+  padding: 0.6rem;
+  background: #fafafa;
+  border-top: 1px solid #e5e5e5;
+  font-family: 'Courier New', monospace;
+}
+
+/* Popup Leaflet custom */
+:host ::ng-deep .custom-popup .leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
+  border: 1px solid #e5e5e5 !important;
+  padding: 0 !important;
+}
+:host ::ng-deep .custom-popup .leaflet-popup-content {
+  margin: 12px !important;
+}
+:host ::ng-deep .custom-popup .leaflet-popup-tip {
+  background: white !important;
+}
+:host ::ng-deep .leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+:host ::ng-deep .leaflet-control-zoom a {
+  background: white !important;
+  color: #171717 !important;
+  font-weight: 700 !important;
+}
+:host ::ng-deep .leaflet-control-zoom a:hover {
+  background: #f5f5f5 !important;
+}
+
+/* ===========================
    GRID
 =========================== */
 .barbers-grid {
@@ -113,9 +169,7 @@
   width: 56px;
   height: 56px;
   min-width: 56px;
-  min-height: 56px;
   max-width: 56px;
-  max-height: 56px;
   border-radius: 999px;
   object-fit: cover;
   border: 1.5px solid #e5e5e5;
@@ -139,7 +193,7 @@
 }
 
 /* ===========================
-   ❤️ FAVORI BOUTON
+   ❤️ FAVORI
 =========================== */
 .fav-btn {
   position: absolute;
@@ -160,27 +214,6 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .fav-btn:hover {
-  transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-.fav-btn-home {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: white;
-  border: 1px solid #e5e5e5;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.fav-btn-home:hover {
   transform: scale(1.15);
   box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
@@ -221,9 +254,11 @@
 =========================== */
 @media (max-width: 900px) {
   .filters-grid, .barbers-grid { grid-template-columns: 1fr; }
+  #barbers-map { min-height: 400px; height: calc(100vh - 320px); }
 }
 @media (max-width: 640px) {
   .barbers-page { padding: 1.25rem 1rem 2rem; }
   .barber-actions { flex-direction: column; }
   .barber-actions .p-button { width: 100%; }
+  #barbers-map { min-height: 350px; }
 }
