@@ -1,3 +1,4 @@
+<div id="page-top"></div>
 <p-toast position="top-center"></p-toast>
 
 <section class="barber-details-page">
@@ -98,12 +99,12 @@
                 <small style="color:rgba(26,26,26,0.35); font-family:'Courier New',monospace;">{{ formatDate(review.createdAt) }}</small>
               </div>
             </div>
-
           </div>
         </p-card>
       </div>
 
-      <div class="booking-column">
+      <!-- ✅ Booking column avec id -->
+      <div class="booking-column" id="booking-section">
         <p-card>
           <div class="booking-card">
             <ng-container *ngIf="dayGroups().length; else noAvailability">
