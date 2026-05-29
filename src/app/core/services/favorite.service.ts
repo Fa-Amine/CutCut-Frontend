@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { SessionService } from './session.service';
@@ -10,17 +10,16 @@ export class FavoriteService {
   private sessionService = inject(SessionService);
   private readonly baseUrl = environment.apiBaseUrl;
 
-  favoriteIds = signal<Set<number>>(new Set());
+  favoriteIds = signal<number[]>([]);
   favorites = signal<BarberListItem[]>([]);
 
   loadFavorites() {
     const clientId = this.sessionService.userId();
     if (!clientId || !this.sessionService.isClient()) return;
-
     this.http.get<any[]>(`${this.baseUrl}/clients/${clientId}/favorites`).subscribe({
       next: (favs) => {
         this.favorites.set(favs);
-        this.favoriteIds.set(new Set(favs.map((f: any) => f.id)));
+        this.favoriteIds.set(favs.map((f: any) => f.id));
       },
       error: () => {}
     });
@@ -30,28 +29,24 @@ export class FavoriteService {
     const clientId = this.sessionService.userId();
     if (!clientId) return;
 
-    if (this.favoriteIds().has(barberId)) {
+    if (this.favoriteIds().includes(barberId)) {
       this.http.delete(`${this.baseUrl}/clients/${clientId}/favorites/${barberId}`).subscribe({
         next: () => {
-          this.favoriteIds.update(ids => {
-            const newIds = new Set(ids);
-            newIds.delete(barberId);
-            return newIds;
-          });
+          this.favoriteIds.update(ids => ids.filter(id => id !== barberId));
           this.favorites.update(favs => favs.filter((f: any) => f.id !== barberId));
         }
       });
     } else {
       this.http.post(`${this.baseUrl}/clients/${clientId}/favorites/${barberId}`, {}).subscribe({
         next: () => {
-          this.favoriteIds.update(ids => new Set([...ids, barberId]));
+          this.favoriteIds.update(ids => [...ids, barberId]);
           this.loadFavorites();
         }
       });
     }
   }
 
-  isFavorite(barberId: number): boolean {
-    return this.favoriteIds().has(barberId);
-  }
+  isFavorite = computed(() => (barberId: number) => {
+    return this.favoriteIds().includes(barberId);
+  });
 }

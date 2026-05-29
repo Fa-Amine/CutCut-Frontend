@@ -49,6 +49,11 @@ export class BarberListComponent implements AfterViewChecked {
   private mapInitialized = false;
   private userMarker: any = null;
 
+  // ✅ Computed réactif pour les favoris
+  isFavorite = computed(() => (barberId: number) => {
+    return this.favoriteService.favoriteIds().includes(barberId);
+  });
+
   filteredBarbers = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     let result = this.barbers().filter((barber) => {
@@ -59,7 +64,6 @@ export class BarberListComponent implements AfterViewChecked {
         (barber.bio ?? '').toLowerCase().includes(term)
       );
     });
-
     if (this.sortByDistance() && this.userLat() && this.userLng()) {
       result = [...result].sort((a, b) => {
         const distA = this.calculateDistance(this.userLat()!, this.userLng()!, a.latitude ?? 0, a.longitude ?? 0);

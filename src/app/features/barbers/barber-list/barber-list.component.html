@@ -59,13 +59,13 @@
       <div class="barbers-grid" *ngIf="!isLoading() && !errorMessage() && barbersWithDistance().length">
         <div class="barber-card" *ngFor="let barber of barbersWithDistance()">
 
-          <!-- ❤️ Bouton Favori -->
+          <!-- ✅ Bouton Favori corrigé -->
           <button
             *ngIf="sessionService.isClient()"
             class="fav-btn"
             (click)="favoriteService.toggleFavorite(barber.id)"
-            [title]="favoriteService.isFavorite(barber.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
-            {{ favoriteService.isFavorite(barber.id) ? '❤️' : '🤍' }}
+            [title]="isFavorite()(barber.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+            {{ isFavorite()(barber.id) ? '❤️' : '🤍' }}
           </button>
 
           <div class="barber-card-top">
