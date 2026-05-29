@@ -7,12 +7,10 @@
   margin-top: auto;
   border-top: 3px solid rgba(26,26,26,0.08);
 }
-
 .footer-shell {
   max-width: 1200px;
   margin: 0 auto;
 }
-
 .footer-top {
   display: grid;
   grid-template-columns: 1.2fr 2fr;
@@ -21,7 +19,6 @@
   padding-bottom: 3rem;
   border-bottom: 1px solid rgba(26,26,26,0.08);
 }
-
 .footer-brand p {
   color: rgba(26,26,26,0.5);
   font-size: 0.9rem;
@@ -29,17 +26,18 @@
   margin: 1rem 0 1.5rem;
   max-width: 280px;
 }
-
 .footer-logo {
   height: 48px;
   width: auto;
 }
-
 .footer-social {
   display: flex;
   gap: 0.75rem;
 }
 
+/* ===========================
+   SOCIAL BUTTONS
+=========================== */
 .social-btn {
   width: 40px;
   height: 40px;
@@ -50,20 +48,44 @@
   justify-content: center;
   text-decoration: none;
   font-size: 1.1rem;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.2s, color 0.2s;
   border: 1px solid rgba(26,26,26,0.08);
+  color: #1A1A1A;
 }
 
 .social-btn:hover {
-  background: rgba(26,26,26,0.12);
+  transform: translateY(-2px);
 }
 
+/* ✅ Instagram */
+.social-btn.instagram:hover {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  color: white;
+  border-color: transparent;
+}
+
+/* ✅ Facebook */
+.social-btn.facebook:hover {
+  background: #1877f2;
+  color: white;
+  border-color: transparent;
+}
+
+/* ✅ WhatsApp */
+.social-btn.whatsapp:hover {
+  background: #25d366;
+  color: white;
+  border-color: transparent;
+}
+
+/* ===========================
+   FOOTER LINKS
+=========================== */
 .footer-links {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
 }
-
 .footer-col h4 {
   color: #1A1A1A;
   font-weight: 800;
@@ -73,7 +95,6 @@
   margin: 0 0 1.25rem;
   font-family: 'Courier New', monospace;
 }
-
 .footer-col a {
   display: block;
   color: rgba(26,26,26,0.5);
@@ -83,11 +104,13 @@
   transition: color 0.2s;
   line-height: 1.4;
 }
-
 .footer-col a:hover {
   color: #1A1A1A;
 }
 
+/* ===========================
+   FOOTER BOTTOM
+=========================== */
 .footer-bottom {
   display: flex;
   align-items: center;
@@ -95,46 +118,42 @@
   gap: 1rem;
   flex-wrap: wrap;
 }
-
 .footer-bottom p {
   color: rgba(26,26,26,0.4);
   font-size: 0.82rem;
   margin: 0;
   font-family: 'Courier New', monospace;
 }
-
 .footer-bottom-links {
   display: flex;
   gap: 1.5rem;
 }
-
 .footer-bottom-links a {
   color: rgba(26,26,26,0.4);
   text-decoration: none;
   font-size: 0.82rem;
   transition: color 0.2s;
 }
-
 .footer-bottom-links a:hover {
   color: #1A1A1A;
 }
 
+/* ===========================
+   RESPONSIVE
+=========================== */
 @media (max-width: 768px) {
   .footer-top {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
-
   .footer-links {
     grid-template-columns: repeat(2, 1fr);
   }
-
   .footer-bottom {
     flex-direction: column;
     text-align: center;
   }
 }
-
 @media (max-width: 480px) {
   .footer-links {
     grid-template-columns: 1fr;
