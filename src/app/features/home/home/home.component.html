@@ -32,6 +32,40 @@
   </div>
 </section>
 
+<!-- ❤️ FAVORIS -->
+<section class="how-section" *ngIf="sessionService.isClient() && favoriteService.favorites().length > 0">
+  <div class="section-header">
+    <span class="section-kicker">❤️ VOS FAVORIS</span>
+    <h2>Vos barbiers préférés</h2>
+  </div>
+  <div class="barbers-grid">
+    <div class="modern-barber-card" *ngFor="let barber of favoriteService.favorites()" style="position:relative;">
+      <button class="fav-btn-home"
+        (click)="favoriteService.toggleFavorite(barber.id)">
+        ❤️
+      </button>
+      <div class="barber-top">
+        <ng-container *ngIf="barber.photoUrl; else favAvatar">
+          <p-avatar [image]="barber.photoUrl" shape="circle" size="xlarge"></p-avatar>
+        </ng-container>
+        <ng-template #favAvatar>
+          <p-avatar [label]="getInitials(barber.name)" shape="circle" size="xlarge"></p-avatar>
+        </ng-template>
+        <div>
+          <h3>{{ barber.name }}</h3>
+          <p>{{ barber.shopName || 'CutCut' }}</p>
+        </div>
+      </div>
+      <div class="barber-meta">
+        <p-tag [value]="(barber.price ?? 0) + ' MAD'" severity="info"></p-tag>
+      </div>
+      <button pButton type="button" [label]="langService.t().bookThisBarber"
+        icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
+      </button>
+    </div>
+  </div>
+</section>
+
 <!-- 🏆 TOP COIFFEURS -->
 <section class="how-section" *ngIf="topBarbers().length > 0">
   <div class="section-header">
@@ -39,8 +73,7 @@
     <h2>Meilleurs coiffeurs</h2>
   </div>
   <div class="barbers-grid">
-    <div class="modern-barber-card" *ngFor="let barber of topBarbers(); let i = index"
-      style="position:relative;">
+    <div class="modern-barber-card" *ngFor="let barber of topBarbers(); let i = index" style="position:relative;">
       <div style="position:absolute; top:-10px; left:-10px; width:36px; height:36px;
         border-radius:50%; display:flex; align-items:center; justify-content:center;
         font-weight:900; font-size:1rem; color:white;"
@@ -104,7 +137,6 @@
     <span class="section-kicker">{{ langService.t().featured }}</span>
     <h2>{{ langService.t().featuredTitle }}</h2>
   </div>
-
   <div *ngIf="featuredBarbers().length; else noBarbers" class="barbers-grid">
     <div class="modern-barber-card" *ngFor="let barber of featuredBarbers()">
       <div class="barber-top">
@@ -130,7 +162,6 @@
       </button>
     </div>
   </div>
-
   <ng-template #noBarbers>
     <p style="color:rgba(255,255,255,0.4); text-align:center; padding:2rem;">
       Aucun barbier à afficher pour le moment.

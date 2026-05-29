@@ -8,9 +8,10 @@ import { TagModule } from 'primeng/tag';
 import { LanguageService } from '../../../core/services/language.service';
 import { BarberService } from '../../../core/services/barber.service';
 import { AvailabilityService } from '../../../core/services/availability.service';
+import { FavoriteService } from '../../../core/services/favorite.service';
+import { SessionService } from '../../../core/services/session.service';
 import { AvailabilitySlot } from '../../../core/models/availability.models';
 import { BarberListItem } from '../../../core/models/barber.models';
-import { SessionService } from '../../../core/services/session.service';
 
 @Component({
   selector: 'app-home',
@@ -23,6 +24,7 @@ export class HomeComponent {
   langService = inject(LanguageService);
   private barberService = inject(BarberService);
   private availabilityService = inject(AvailabilityService);
+  favoriteService = inject(FavoriteService);
   sessionService = inject(SessionService);
 
   isLoading = signal(true);
@@ -42,6 +44,7 @@ export class HomeComponent {
 
   constructor() {
     this.loadHomeData();
+    this.favoriteService.loadFavorites();
   }
 
   loadHomeData() {
@@ -51,13 +54,10 @@ export class HomeComponent {
         this.allBarbers.set(barbers);
         this.isLoading.set(false);
         const firstBarber = barbers[0];
-        if (!firstBarber) {
-          this.previewSlots.set([]);
-          return;
-        }
+        if (!firstBarber) { this.previewSlots.set([]); return; }
         this.loadPreviewSlots(firstBarber.id);
       },
-      error: (error) => {
+      error: () => {
         this.allBarbers.set([]);
         this.previewSlots.set([]);
         this.isLoading.set(false);
@@ -74,15 +74,12 @@ export class HomeComponent {
           .slice(0, 3);
         this.previewSlots.set(available);
       },
-      error: () => {
-        this.previewSlots.set([]);
-      }
+      error: () => { this.previewSlots.set([]); }
     });
   }
 
   getStars(rating: number): string {
-    const full = Math.floor(rating);
-    return '⭐'.repeat(full);
+    return '⭐'.repeat(Math.floor(rating));
   }
 
   getInitials(name: string): string {

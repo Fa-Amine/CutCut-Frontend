@@ -8,6 +8,8 @@ import { AvatarModule } from 'primeng/avatar';
 import { TagModule } from 'primeng/tag';
 import { LanguageService } from '../../../core/services/language.service';
 import { BarberService } from '../../../core/services/barber.service';
+import { FavoriteService } from '../../../core/services/favorite.service';
+import { SessionService } from '../../../core/services/session.service';
 import { BarberListItem } from '../../../core/models/barber.models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
@@ -19,16 +21,9 @@ declare const L: any;
   selector: 'app-barber-list',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    RouterLink,
-    InputTextModule,
-    ButtonModule,
-    AvatarModule,
-    TagModule,
-    LoadingSpinnerComponent,
-    ErrorAlertComponent,
-    EmptyStateComponent
+    CommonModule, FormsModule, RouterLink,
+    InputTextModule, ButtonModule, AvatarModule, TagModule,
+    LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent
   ],
   templateUrl: './barber-list.component.html',
   styleUrl: './barber-list.component.css'
@@ -37,6 +32,8 @@ export class BarberListComponent implements AfterViewChecked {
   private barberService = inject(BarberService);
   private router = inject(Router);
   langService = inject(LanguageService);
+  favoriteService = inject(FavoriteService);
+  sessionService = inject(SessionService);
 
   searchTerm = signal('');
   isLoading = signal(true);
@@ -70,7 +67,6 @@ export class BarberListComponent implements AfterViewChecked {
         return distA - distB;
       });
     }
-
     return result;
   });
 
@@ -86,6 +82,7 @@ export class BarberListComponent implements AfterViewChecked {
   constructor() {
     this.loadLeaflet();
     this.loadBarbers();
+    this.favoriteService.loadFavorites();
   }
 
   calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -110,13 +107,10 @@ export class BarberListComponent implements AfterViewChecked {
         this.userLng.set(position.coords.longitude);
         this.sortByDistance.set(true);
         this.isLocating.set(false);
-
         if (this.map && this.viewMode() === 'map') {
           if (this.userMarker) this.userMarker.remove();
-          this.userMarker = L.marker(
-            [position.coords.latitude, position.coords.longitude],
-            { title: 'Votre position' }
-          ).addTo(this.map);
+          this.userMarker = L.marker([position.coords.latitude, position.coords.longitude])
+            .addTo(this.map);
           this.userMarker.bindPopup('Vous etes ici').openPopup();
           this.map.setView([position.coords.latitude, position.coords.longitude], 13);
         }
@@ -143,9 +137,7 @@ export class BarberListComponent implements AfterViewChecked {
   ngAfterViewChecked() {
     if (this.viewMode() === 'map' && !this.mapInitialized && !this.isLoading()) {
       const mapEl = document.getElementById('barbers-map');
-      if (mapEl && (window as any).L) {
-        this.initMap();
-      }
+      if (mapEl && (window as any).L) this.initMap();
     }
     if (this.viewMode() === 'list') {
       this.mapInitialized = false;
@@ -162,25 +154,18 @@ export class BarberListComponent implements AfterViewChecked {
     const centerLat = this.userLat() || 33.9716;
     const centerLng = this.userLng() || -6.8498;
     this.map = L.map('barbers-map').setView([centerLat, centerLng], 12);
-
     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-      attribution: '© Google Maps',
-      maxZoom: 19
+      attribution: '© Google Maps', maxZoom: 19
     }).addTo(this.map);
-
     if (this.userLat() && this.userLng()) {
-      this.userMarker = L.marker([this.userLat()!, this.userLng()!])
-        .addTo(this.map);
+      this.userMarker = L.marker([this.userLat()!, this.userLng()!]).addTo(this.map);
       this.userMarker.bindPopup('Vous etes ici').openPopup();
     }
-
     const barbersWithLocation = this.filteredBarbers().filter(b => b.latitude && b.longitude);
-
     barbersWithLocation.forEach(barber => {
       const dist = this.userLat() && this.userLng() && barber.latitude && barber.longitude
         ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude).toFixed(1)
         : null;
-
       const marker = L.marker([barber.latitude!, barber.longitude!]);
       const popup = `
         <div style="text-align:center; min-width:150px;">
@@ -202,7 +187,6 @@ export class BarberListComponent implements AfterViewChecked {
       `;
       marker.bindPopup(popup).addTo(this.map);
     });
-
     if (barbersWithLocation.length > 0) {
       const bounds = L.latLngBounds(barbersWithLocation.map(b => [b.latitude!, b.longitude!]));
       this.map.fitBounds(bounds, { padding: [50, 50] });
@@ -229,9 +213,7 @@ export class BarberListComponent implements AfterViewChecked {
     });
   }
 
-  setSearch(value: string) {
-    this.searchTerm.set(value);
-  }
+  setSearch(value: string) { this.searchTerm.set(value); }
 
   getInitials(name: string): string {
     return name.split(' ').filter(Boolean).slice(0, 2)
