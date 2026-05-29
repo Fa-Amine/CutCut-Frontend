@@ -30,17 +30,28 @@ export class FavoriteService {
     if (!clientId) return;
 
     if (this.favoriteIds().includes(barberId)) {
+      // ✅ Mise à jour immédiate AVANT la requête
+      this.favoriteIds.update(ids => ids.filter(id => id !== barberId));
+      this.favorites.update(favs => favs.filter((f: any) => f.id !== barberId));
+
       this.http.delete(`${this.baseUrl}/clients/${clientId}/favorites/${barberId}`).subscribe({
-        next: () => {
-          this.favoriteIds.update(ids => ids.filter(id => id !== barberId));
-          this.favorites.update(favs => favs.filter((f: any) => f.id !== barberId));
+        error: () => {
+          // ❌ Si erreur → on remet
+          this.favoriteIds.update(ids => [...ids, barberId]);
+          this.loadFavorites();
         }
       });
     } else {
+      // ✅ Mise à jour immédiate AVANT la requête
+      this.favoriteIds.update(ids => [...ids, barberId]);
+
       this.http.post(`${this.baseUrl}/clients/${clientId}/favorites/${barberId}`, {}).subscribe({
         next: () => {
-          this.favoriteIds.update(ids => [...ids, barberId]);
           this.loadFavorites();
+        },
+        error: () => {
+          // ❌ Si erreur → on remet
+          this.favoriteIds.update(ids => ids.filter(id => id !== barberId));
         }
       });
     }
