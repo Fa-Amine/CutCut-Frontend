@@ -216,17 +216,14 @@ export class BarberListComponent implements AfterViewChecked {
       attributionControl: true
     }).setView([centerLat, centerLng], 12);
 
-    // ✅ Tiles OpenStreetMap haute qualité
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '© OpenStreetMap © CARTO',
       maxZoom: 19,
       subdomains: 'abcd'
     }).addTo(this.map);
 
-    // ✅ Contrôles zoom en bas à droite
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-    // ✅ Marqueur utilisateur
     if (this.userLat() && this.userLng()) {
       const userIcon = L.divIcon({
         html: `<div style="
@@ -243,7 +240,6 @@ export class BarberListComponent implements AfterViewChecked {
       this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>');
     }
 
-    // ✅ Marqueurs barbiers
     const barbersWithLocation = this.filteredBarbers().filter(b => b.latitude && b.longitude);
 
     barbersWithLocation.forEach(barber => {
@@ -251,32 +247,46 @@ export class BarberListComponent implements AfterViewChecked {
         ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude).toFixed(1)
         : null;
 
+      // ✅ URL itinéraire Google Maps
+      const directionsUrl = this.userLat() && this.userLng()
+        ? `https://www.google.com/maps/dir/?api=1&origin=${this.userLat()},${this.userLng()}&destination=${barber.latitude},${barber.longitude}&travelmode=driving`
+        : `https://www.google.com/maps/dir/?api=1&destination=${barber.latitude},${barber.longitude}&travelmode=driving`;
+
       const icon = this.createBarberIcon(barber);
       const marker = L.marker([barber.latitude!, barber.longitude!], { icon });
 
       const popup = L.popup({
-        maxWidth: 220,
+        maxWidth: 230,
         className: 'custom-popup'
       }).setContent(`
-        <div style="padding:4px; text-align:center; min-width:180px;">
+        <div style="padding:4px; min-width:190px;">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
             ${barber.photoUrl
               ? `<img src="${barber.photoUrl}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #e5e5e5;" />`
-              : `<div style="width:48px;height:48px;border-radius:50%;background:#171717;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;">${this.getInitials(barber.name)}</div>`
+              : `<div style="width:48px;height:48px;border-radius:50%;background:#171717;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">${this.getInitials(barber.name)}</div>`
             }
             <div style="text-align:left;">
               <strong style="display:block;color:#171717;font-size:0.95rem;">${barber.name}</strong>
               <span style="color:#737373;font-size:0.8rem;">${barber.shopName || 'CutCut'}</span>
             </div>
           </div>
+
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span style="background:#f5f5f5;padding:3px 10px;border-radius:20px;font-size:0.82rem;font-weight:700;color:#171717;">${barber.price ?? 0} MAD</span>
+            <span style="background:#f5f5f5;padding:3px 10px;border-radius:20px;font-size:0.82rem;font-weight:700;color:#171717;">
+              ${barber.price ?? 0} MAD
+            </span>
             ${dist ? `<span style="color:#16a34a;font-size:0.82rem;font-weight:600;">📍 ${dist} km</span>` : ''}
           </div>
+
           <button onclick="window.location.href='/barbers/${barber.id}'"
-            style="width:100%;background:#171717;color:white;border:none;padding:8px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;">
-            Réserver →
+            style="width:100%;background:#171717;color:white;border:none;padding:9px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;margin-bottom:7px;">
+            ✂️ Réserver
           </button>
+
+          <a href="${directionsUrl}" target="_blank"
+            style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;padding:8px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;text-decoration:none;box-sizing:border-box;">
+            🗺️ Itinéraire
+          </a>
         </div>
       `);
 
@@ -285,7 +295,6 @@ export class BarberListComponent implements AfterViewChecked {
       this.markers.push(marker);
     });
 
-    // ✅ Zoom pour voir tous les barbiers
     if (barbersWithLocation.length > 0) {
       const bounds = L.latLngBounds(barbersWithLocation.map(b => [b.latitude!, b.longitude!]));
       this.map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
