@@ -103,11 +103,43 @@
         </p-card>
       </div>
 
-      <!-- ✅ Booking column avec id -->
       <div class="booking-column" id="booking-section">
         <p-card>
           <div class="booking-card">
             <ng-container *ngIf="dayGroups().length; else noAvailability">
+
+              <!-- ✅ SERVICES -->
+              <div class="section-block" *ngIf="services().length > 0">
+                <h3>✂️ Choisissez vos services</h3>
+                <div class="services-list">
+                  <div *ngFor="let service of services()"
+                    class="service-item"
+                    [class.selected]="isServiceSelected(service.id)"
+                    (click)="toggleService(service.id)">
+                    <div class="service-info">
+                      <span class="service-name">{{ service.name }}</span>
+                      <span *ngIf="service.description" class="service-desc">{{ service.description }}</span>
+                    </div>
+                    <div class="service-right">
+                      <span class="service-price">{{ service.price }} MAD</span>
+                      <span class="service-check">{{ isServiceSelected(service.id) ? '✅' : '⬜' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ✅ TOTAL EN TEMPS RÉEL -->
+                <div class="total-bar" *ngIf="selectedServiceIds().length > 0">
+                  <div *ngFor="let id of selectedServiceIds()" class="total-line">
+                    <span>{{ services() | serviceName:id }}</span>
+                    <span>{{ services() | servicePrice:id }} MAD</span>
+                  </div>
+                  <div class="total-sum">
+                    <strong>Total</strong>
+                    <strong style="color:#171717; font-size:1.1rem;">{{ totalPrice() }} MAD</strong>
+                  </div>
+                </div>
+              </div>
+
               <div class="section-block">
                 <h3>{{ langService.t().chooseDay }}</h3>
                 <div class="day-list">
@@ -145,6 +177,7 @@
                 </ng-template>
               </div>
 
+              <!-- ✅ RÉSUMÉ FINAL -->
               <div class="booking-summary">
                 <h3>{{ langService.t().bookingSummary }}</h3>
                 <div class="summary-row">
@@ -154,6 +187,14 @@
                 <div class="summary-row">
                   <span>{{ langService.t().selectedSlot }}</span>
                   <strong>{{ selectedSlot() ? formatTime(selectedSlot()!.startTime) : '-' }}</strong>
+                </div>
+                <div class="summary-row" *ngIf="selectedServiceIds().length > 0">
+                  <span>Services</span>
+                  <strong>{{ selectedServiceIds().length }} sélectionné(s)</strong>
+                </div>
+                <div class="summary-row total-final">
+                  <span>💰 Total</span>
+                  <strong style="font-size:1.1rem; color:#171717;">{{ totalPrice() }} MAD</strong>
                 </div>
               </div>
 

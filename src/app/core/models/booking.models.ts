@@ -2,6 +2,7 @@ export interface CreateBookingRequest {
   clientId: number;
   barberId: number;
   slotId: number;
+  serviceIds?: number[];
 }
 
 export interface CancelBookingRequest {
@@ -33,6 +34,14 @@ export interface BookingClient {
   phone?: string;
 }
 
+// ✅ Nouveau modèle service
+export interface BarberServiceItem {
+  id: number;
+  name: string;
+  price: number;
+  description?: string;
+}
+
 export interface BookingResponse {
   id: number;
   client: BookingClient;
@@ -50,4 +59,5 @@ export interface BookingResponse {
   commissionAmount: number;
   createdAt: string;
   confirmedAt?: string;
+  services?: BarberServiceItem[];
 }
