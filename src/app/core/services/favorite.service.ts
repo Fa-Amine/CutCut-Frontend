@@ -13,28 +13,43 @@ export class FavoriteService {
   favoriteIds = signal<number[]>([]);
   favorites = signal<BarberListItem[]>([]);
 
-  // ✅ Stockage en mémoire (fonctionne toujours)
-  private localIds: number[] = [];
+  private getKey(): string {
+    return `fav_${this.sessionService.userId()}`;
+  }
+
+  private loadFromStorage(): number[] {
+    try {
+      const s = localStorage.getItem(this.getKey());
+      return s ? JSON.parse(s) : [];
+    } catch { return []; }
+  }
+
+  private saveToStorage(ids: number[]) {
+    try {
+      localStorage.setItem(this.getKey(), JSON.stringify(ids));
+    } catch {}
+  }
 
   loadFavorites() {
     const clientId = this.sessionService.userId();
     if (!clientId || !this.sessionService.isClient()) return;
 
-    // ✅ Charge mémoire locale immédiatement
-    if (this.localIds.length > 0) {
-      this.favoriteIds.set([...this.localIds]);
+    // ✅ Charge localStorage immédiatement
+    const stored = this.loadFromStorage();
+    if (stored.length > 0) {
+      this.favoriteIds.set(stored);
     }
 
-    // Sync avec backend
+    // ✅ Sync avec backend
     this.http.get<any[]>(`${this.baseUrl}/clients/${clientId}/favorites`).subscribe({
       next: (favs) => {
         const ids = favs.map((f: any) => f.id);
         this.favorites.set(favs);
         this.favoriteIds.set(ids);
-        this.localIds = [...ids];
+        this.saveToStorage(ids);
       },
       error: () => {
-        // API down → garde mémoire locale
+        // API down → garde localStorage
       }
     });
   }
@@ -44,10 +59,10 @@ export class FavoriteService {
     if (!clientId) return;
 
     if (this.favoriteIds().includes(barberId)) {
-      // ✅ Supprime immédiatement en mémoire
+      // ✅ Supprime immédiatement
       const newIds = this.favoriteIds().filter(id => id !== barberId);
       this.favoriteIds.set(newIds);
-      this.localIds = [...newIds];
+      this.saveToStorage(newIds);
       this.favorites.update(favs => favs.filter((f: any) => f.id !== barberId));
 
       this.http.delete(`${this.baseUrl}/clients/${clientId}/favorites/${barberId}`).subscribe({
@@ -55,10 +70,10 @@ export class FavoriteService {
       });
 
     } else {
-      // ✅ Ajoute immédiatement en mémoire
+      // ✅ Ajoute immédiatement
       const newIds = [...this.favoriteIds(), barberId];
       this.favoriteIds.set(newIds);
-      this.localIds = [...newIds];
+      this.saveToStorage(newIds);
 
       this.http.post(`${this.baseUrl}/clients/${clientId}/favorites/${barberId}`, {}).subscribe({
         next: () => { this.loadFavorites(); },
