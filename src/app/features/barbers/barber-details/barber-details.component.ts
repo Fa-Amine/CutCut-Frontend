@@ -57,6 +57,7 @@ export class BarberDetailsComponent {
   sessionService = inject(SessionService);
   private barberPhotoService = inject(BarberPhotoService);
   private reviewService = inject(ReviewService);
+
   langService = inject(LanguageService);
 
   isLoading = signal(true);
@@ -75,6 +76,7 @@ export class BarberDetailsComponent {
   dayGroups = computed<DayGroup[]>(() => {
     const now = new Date();
     const todayKey = now.toISOString().slice(0, 10);
+
     const map = new Map<string, AvailabilitySlot[]>();
     for (const slot of this.slots()) {
       if (slot.booked) continue;
@@ -87,6 +89,7 @@ export class BarberDetailsComponent {
       if (!map.has(dateKey)) map.set(dateKey, []);
       map.get(dateKey)!.push(slot);
     }
+
     return Array.from(map.entries())
       .map(([dateKey, slots]) => ({
         dateKey,
@@ -104,9 +107,6 @@ export class BarberDetailsComponent {
   });
 
   constructor() {
-    // ✅ Scroll en haut de page automatiquement
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id || Number.isNaN(id)) {
       this.errorMessage.set('Barbier introuvable.');
@@ -192,6 +192,7 @@ export class BarberDetailsComponent {
     const slot = this.selectedSlot();
 
     if (this.sessionService.isGuest()) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       this.router.navigate(['/login'], {
         queryParams: { redirect: '/barbers/' + barber?.id }
       });
