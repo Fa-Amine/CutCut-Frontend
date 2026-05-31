@@ -88,25 +88,8 @@
         <div class="info-box full-width" *ngIf="isEditMode()">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
             <span>📍 Cliquez sur la carte pour choisir votre position</span>
-            <button
-              type="button"
-              (click)="useMyLocation()"
-              [disabled]="isLocating()"
-              style="
-                background: #1A1A1A;
-                color: #FAFAF7;
-                border: none;
-                padding: 8px 16px;
-                border-radius: 999px;
-                cursor: pointer;
-                font-size: 0.85rem;
-                font-weight: 600;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                transition: opacity 0.2s;
-                font-family: inherit;
-              ">
+            <button type="button" (click)="useMyLocation()" [disabled]="isLocating()"
+              style="background:#1A1A1A; color:#FAFAF7; border:none; padding:8px 16px; border-radius:999px; cursor:pointer; font-size:0.85rem; font-weight:600; font-family:inherit;">
               {{ isLocating() ? '⏳ Localisation...' : '📍 Utiliser ma position' }}
             </button>
           </div>
@@ -129,6 +112,68 @@
             <button pButton type="button" label="Enregistrer" [disabled]="isSaving() || isUploadingPhoto()" (click)="saveProfile()"></button>
             <button pButton type="button" label="Annuler" severity="secondary" [outlined]="true" (click)="cancelEdit()"></button>
           </ng-container>
+        </div>
+
+        <!-- ✅ SECTION SERVICES -->
+        <div class="services-section">
+          <div class="services-header">
+            <h3>✂️ Mes services</h3>
+            <button pButton type="button" label="➕ Ajouter un service"
+              severity="secondary" [outlined]="true"
+              (click)="showAddService.set(!showAddService())">
+            </button>
+          </div>
+
+          <!-- Formulaire ajout/modification -->
+          <div class="service-form" *ngIf="showAddService()">
+            <div class="service-form-grid">
+              <div>
+                <label>Nom du service *</label>
+                <input pInputText [(ngModel)]="newServiceName" placeholder="Ex: Coupe de cheveux" class="w-full" />
+              </div>
+              <div>
+                <label>Prix (MAD) *</label>
+                <input pInputText type="number" [(ngModel)]="newServicePrice" placeholder="Ex: 30" class="w-full" />
+              </div>
+              <div class="full-width">
+                <label>Description (optionnel)</label>
+                <input pInputText [(ngModel)]="newServiceDesc" placeholder="Ex: Coupe classique avec finitions" class="w-full" />
+              </div>
+            </div>
+            <div class="service-form-actions">
+              <button pButton type="button"
+                [label]="editingServiceId() ? 'Modifier' : 'Ajouter'"
+                [disabled]="!newServiceName || !newServicePrice"
+                (click)="saveService()">
+              </button>
+              <button pButton type="button" label="Annuler"
+                severity="secondary" [outlined]="true"
+                (click)="cancelServiceForm()">
+              </button>
+            </div>
+          </div>
+
+          <!-- Liste des services -->
+          <div class="services-list" *ngIf="barberServices().length > 0">
+            <div class="service-row" *ngFor="let service of barberServices()">
+              <div class="service-row-info">
+                <span class="service-row-name">{{ service.name }}</span>
+                <span *ngIf="service.description" class="service-row-desc">{{ service.description }}</span>
+              </div>
+              <div class="service-row-right">
+                <span class="service-row-price">{{ service.price }} MAD</span>
+                <button (click)="editService(service)"
+                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px;">✏️</button>
+                <button (click)="deleteService(service.id)"
+                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px;">🗑️</button>
+              </div>
+            </div>
+          </div>
+
+          <p *ngIf="barberServices().length === 0"
+            style="color:#a3a3a3; text-align:center; padding:1.5rem; font-size:0.9rem;">
+            Aucun service ajouté. Cliquez sur "Ajouter un service" !
+          </p>
         </div>
 
         <!-- PHOTOS -->

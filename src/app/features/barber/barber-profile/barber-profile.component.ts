@@ -1,6 +1,6 @@
 import { Component, inject, signal, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { AvatarModule } from 'primeng/avatar';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -18,6 +18,8 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
 import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-photo.service';
+import { BarberServiceService } from '../../../core/services/barber-service.service';
+import { BarberServiceItem } from '../../../core/models/booking.models';
 
 declare const L: any;
 
@@ -27,6 +29,7 @@ declare const L: any;
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     AvatarModule,
     CardModule,
     TagModule,
@@ -46,9 +49,9 @@ export class BarberProfileComponent implements AfterViewChecked {
   private sessionService = inject(SessionService);
   private profileService = inject(ProfileService);
   private barberPhotoService = inject(BarberPhotoService);
+  private barberServiceService = inject(BarberServiceService);
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
-
   langService = inject(LanguageService);
 
   isLoading = signal(true);
@@ -64,6 +67,14 @@ export class BarberProfileComponent implements AfterViewChecked {
   mapUrl = signal('');
   photos = signal<BarberPhoto[]>([]);
   newCaption = signal('');
+
+  // ✅ Services
+  barberServices = signal<BarberServiceItem[]>([]);
+  showAddService = signal(false);
+  editingServiceId = signal<number | null>(null);
+  newServiceName = '';
+  newServicePrice: number = 0;
+  newServiceDesc = '';
 
   private editMap: any = null;
   private editMarker: any = null;
@@ -105,9 +116,7 @@ export class BarberProfileComponent implements AfterViewChecked {
   ngAfterViewChecked() {
     if (this.isEditMode() && !this.mapInitialized) {
       const mapEl = document.getElementById('edit-map');
-      if (mapEl && (window as any).L) {
-        this.initEditMap();
-      }
+      if (mapEl && (window as any).L) this.initEditMap();
     }
     if (!this.isEditMode()) {
       this.mapInitialized = false;
@@ -153,7 +162,7 @@ export class BarberProfileComponent implements AfterViewChecked {
   useMyLocation() {
     this.locationError.set('');
     if (!navigator.geolocation) {
-      this.locationError.set('La geolocalisation n\'est pas supportee par votre navigateur.');
+      this.locationError.set('La geolocalisation n\'est pas supportee.');
       return;
     }
     this.isLocating.set(true);
@@ -196,6 +205,76 @@ export class BarberProfileComponent implements AfterViewChecked {
     );
   }
 
+  // ✅ Charger les services
+  loadServices(barberId: number) {
+    this.barberServiceService.getServices(barberId).subscribe({
+      next: (services) => this.barberServices.set(services),
+      error: () => {}
+    });
+  }
+
+  // ✅ Sauvegarder (ajouter ou modifier)
+  saveService() {
+    const barberId = this.sessionService.userId();
+    if (!barberId || !this.newServiceName || !this.newServicePrice) return;
+
+    const payload = {
+      name: this.newServiceName,
+      price: this.newServicePrice,
+      description: this.newServiceDesc
+    };
+
+    if (this.editingServiceId()) {
+      this.barberServiceService.updateService(barberId, this.editingServiceId()!, payload).subscribe({
+        next: (updated) => {
+          this.barberServices.update(services =>
+            services.map(s => s.id === updated.id ? updated : s)
+          );
+          this.cancelServiceForm();
+          this.successMessage.set('Service modifié !');
+        }
+      });
+    } else {
+      this.barberServiceService.addService(barberId, payload).subscribe({
+        next: (newService) => {
+          this.barberServices.update(services => [...services, newService]);
+          this.cancelServiceForm();
+          this.successMessage.set('Service ajouté !');
+        }
+      });
+    }
+  }
+
+  // ✅ Modifier un service
+  editService(service: BarberServiceItem) {
+    this.editingServiceId.set(service.id);
+    this.newServiceName = service.name;
+    this.newServicePrice = service.price;
+    this.newServiceDesc = service.description || '';
+    this.showAddService.set(true);
+  }
+
+  // ✅ Supprimer un service
+  deleteService(serviceId: number) {
+    const barberId = this.sessionService.userId();
+    if (!barberId) return;
+    this.barberServiceService.deleteService(barberId, serviceId).subscribe({
+      next: () => {
+        this.barberServices.update(services => services.filter(s => s.id !== serviceId));
+        this.successMessage.set('Service supprimé !');
+      }
+    });
+  }
+
+  // ✅ Annuler le formulaire
+  cancelServiceForm() {
+    this.showAddService.set(false);
+    this.editingServiceId.set(null);
+    this.newServiceName = '';
+    this.newServicePrice = 0;
+    this.newServiceDesc = '';
+  }
+
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -212,7 +291,7 @@ export class BarberProfileComponent implements AfterViewChecked {
       next: (response) => {
         this.profileForm.patchValue({ photoUrl: response.secure_url });
         this.isUploadingPhoto.set(false);
-        this.successMessage.set('Photo uploadee avec succes !');
+        this.successMessage.set('Photo uploadee !');
       },
       error: () => {
         this.isUploadingPhoto.set(false);
@@ -290,6 +369,7 @@ export class BarberProfileComponent implements AfterViewChecked {
         this.updateMapUrl(response.latitude, response.longitude);
         this.isLoading.set(false);
         this.loadPhotos(barberId);
+        this.loadServices(barberId);
       },
       error: (error) => {
         this.errorMessage.set(error?.error?.message || 'Impossible de charger le profil barbier.');
@@ -375,11 +455,11 @@ export class BarberProfileComponent implements AfterViewChecked {
         this.updateMapUrl(response.latitude, response.longitude);
         this.isSaving.set(false);
         this.isEditMode.set(false);
-        this.successMessage.set('Profil barbier mis a jour avec succes.');
+        this.successMessage.set('Profil mis a jour !');
       },
       error: (error) => {
         this.isSaving.set(false);
-        this.errorMessage.set(error?.error?.message || 'Impossible de mettre a jour le profil barbier.');
+        this.errorMessage.set(error?.error?.message || 'Impossible de mettre a jour le profil.');
       }
     });
   }
