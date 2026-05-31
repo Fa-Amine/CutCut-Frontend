@@ -129,10 +129,12 @@
 
                 <!-- ✅ TOTAL EN TEMPS RÉEL -->
                 <div class="total-bar" *ngIf="selectedServiceIds().length > 0">
-                  <div *ngFor="let id of selectedServiceIds()" class="total-line">
-                    <span>{{ services() | serviceName:id }}</span>
-                    <span>{{ services() | servicePrice:id }} MAD</span>
-                  </div>
+                  <ng-container *ngFor="let service of services()">
+                    <div class="total-line" *ngIf="isServiceSelected(service.id)">
+                      <span>{{ service.name }}</span>
+                      <span>{{ service.price }} MAD</span>
+                    </div>
+                  </ng-container>
                   <div class="total-sum">
                     <strong>Total</strong>
                     <strong style="color:#171717; font-size:1.1rem;">{{ totalPrice() }} MAD</strong>
