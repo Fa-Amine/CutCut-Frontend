@@ -13,76 +13,56 @@ export class FavoriteService {
   favoriteIds = signal<number[]>([]);
   favorites = signal<BarberListItem[]>([]);
 
-  private getStorageKey(): string {
-    return `favorites_${this.sessionService.userId()}`;
-  }
-
-  // ✅ Charge depuis localStorage d'abord
-  private loadFromStorage(): number[] {
-    try {
-      const stored = localStorage.getItem(this.getStorageKey());
-      return stored ? JSON.parse(stored) : [];
-    } catch { return []; }
-  }
-
-  // ✅ Sauvegarde dans localStorage
-  private saveToStorage(ids: number[]) {
-    try {
-      localStorage.setItem(this.getStorageKey(), JSON.stringify(ids));
-    } catch {}
-  }
+  // ✅ Stockage en mémoire (fonctionne toujours)
+  private localIds: number[] = [];
 
   loadFavorites() {
     const clientId = this.sessionService.userId();
     if (!clientId || !this.sessionService.isClient()) return;
 
-    // ✅ Charge localStorage immédiatement
-    const storedIds = this.loadFromStorage();
-    if (storedIds.length > 0) {
-      this.favoriteIds.set(storedIds);
+    // ✅ Charge mémoire locale immédiatement
+    if (this.localIds.length > 0) {
+      this.favoriteIds.set([...this.localIds]);
     }
 
-    // Puis sync avec le backend
+    // Sync avec backend
     this.http.get<any[]>(`${this.baseUrl}/clients/${clientId}/favorites`).subscribe({
       next: (favs) => {
         const ids = favs.map((f: any) => f.id);
         this.favorites.set(favs);
         this.favoriteIds.set(ids);
-        this.saveToStorage(ids);
+        this.localIds = [...ids];
       },
       error: () => {
-        // EC2 down → garde localStorage
+        // API down → garde mémoire locale
       }
     });
   }
 
-  toggleFavorite(barberId: number, barber?: BarberListItem) {
+  toggleFavorite(barberId: number) {
     const clientId = this.sessionService.userId();
     if (!clientId) return;
 
     if (this.favoriteIds().includes(barberId)) {
-      // ✅ Supprime immédiatement
+      // ✅ Supprime immédiatement en mémoire
       const newIds = this.favoriteIds().filter(id => id !== barberId);
       this.favoriteIds.set(newIds);
+      this.localIds = [...newIds];
       this.favorites.update(favs => favs.filter((f: any) => f.id !== barberId));
-      this.saveToStorage(newIds);
 
       this.http.delete(`${this.baseUrl}/clients/${clientId}/favorites/${barberId}`).subscribe({
-        error: () => {
-          // EC2 down → garde localStorage
-        }
+        error: () => {}
       });
+
     } else {
-      // ✅ Ajoute immédiatement
+      // ✅ Ajoute immédiatement en mémoire
       const newIds = [...this.favoriteIds(), barberId];
       this.favoriteIds.set(newIds);
-      this.saveToStorage(newIds);
+      this.localIds = [...newIds];
 
       this.http.post(`${this.baseUrl}/clients/${clientId}/favorites/${barberId}`, {}).subscribe({
         next: () => { this.loadFavorites(); },
-        error: () => {
-          // EC2 down → garde localStorage
-        }
+        error: () => {}
       });
     }
   }
