@@ -44,12 +44,22 @@ export class FavoriteService {
     this.http.get<any[]>(`${this.baseUrl}/clients/${clientId}/favorites`).subscribe({
       next: (favs) => {
         const ids = favs.map((f: any) => f.id);
-        this.favorites.set(favs);
-        this.favoriteIds.set(ids);
-        this.saveToStorage(ids);
+
+        // ✅ Ne pas écraser si backend vide mais localStorage a des données
+        if (ids.length > 0) {
+          this.favorites.set(favs);
+          this.favoriteIds.set(ids);
+          this.saveToStorage(ids);
+        } else if (stored.length > 0) {
+          // Backend vide mais localStorage a des données → garde localStorage
+          this.favoriteIds.set(stored);
+        }
       },
       error: () => {
         // API down → garde localStorage
+        if (stored.length > 0) {
+          this.favoriteIds.set(stored);
+        }
       }
     });
   }
@@ -59,7 +69,6 @@ export class FavoriteService {
     if (!clientId) return;
 
     if (this.favoriteIds().includes(barberId)) {
-      // ✅ Supprime immédiatement
       const newIds = this.favoriteIds().filter(id => id !== barberId);
       this.favoriteIds.set(newIds);
       this.saveToStorage(newIds);
@@ -70,7 +79,6 @@ export class FavoriteService {
       });
 
     } else {
-      // ✅ Ajoute immédiatement
       const newIds = [...this.favoriteIds(), barberId];
       this.favoriteIds.set(newIds);
       this.saveToStorage(newIds);
