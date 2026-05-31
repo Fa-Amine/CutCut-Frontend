@@ -41,7 +41,8 @@ export class LoginComponent implements OnInit {
   });
 
   ngOnInit() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   }
 
   get emailControl() {
