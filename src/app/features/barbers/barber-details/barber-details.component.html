@@ -114,6 +114,7 @@
           <div class="booking-card">
             <ng-container *ngIf="dayGroups().length; else noAvailability">
 
+              <!-- SERVICES -->
               <div class="section-block" *ngIf="services().length > 0">
                 <h3>✂️ Choisissez vos services</h3>
                 <div class="services-list">
@@ -146,6 +147,7 @@
                 </div>
               </div>
 
+              <!-- JOURS -->
               <div class="section-block">
                 <h3>{{ langService.t().chooseDay }}</h3>
                 <div class="day-list">
@@ -161,17 +163,25 @@
                 </div>
               </div>
 
+              <!-- ✅ SLOTS AVEC GRISAGE -->
               <div class="section-block">
                 <h3>{{ langService.t().chooseSlot }}</h3>
                 <div class="slot-list" *ngIf="selectedDay(); else chooseDayFirst">
-                  <button *ngFor="let slot of availableSlots()" type="button"
+                  <button
+                    *ngFor="let slot of availableSlots()"
+                    type="button"
                     (click)="chooseSlot(slot)"
-                    [style.background]="selectedSlot()?.id === slot.id ? '#1A1A1A' : '#FAFAF7'"
-                    [style.color]="selectedSlot()?.id === slot.id ? '#FAFAF7' : '#1A1A1A'"
-                    [style.border]="selectedSlot()?.id === slot.id ? '2px solid #1A1A1A' : '1.5px solid rgba(26,26,26,0.2)'"
+                    [disabled]="slot.booked"
+                    [style.background]="slot.booked ? '#f5f5f5' : selectedSlot()?.id === slot.id ? '#1A1A1A' : '#FAFAF7'"
+                    [style.color]="slot.booked ? '#a3a3a3' : selectedSlot()?.id === slot.id ? '#FAFAF7' : '#1A1A1A'"
+                    [style.border]="slot.booked ? '1.5px solid #e5e5e5' : selectedSlot()?.id === slot.id ? '2px solid #1A1A1A' : '1.5px solid rgba(26,26,26,0.2)'"
+                    [style.cursor]="slot.booked ? 'not-allowed' : 'pointer'"
+                    [style.opacity]="slot.booked ? '0.5' : '1'"
+                    [style.textDecoration]="slot.booked ? 'line-through' : 'none'"
                     [style.fontWeight]="selectedSlot()?.id === slot.id ? '800' : '600'"
-                    style="padding:0.7rem 0.9rem; border-radius:12px; cursor:pointer; font-size:0.88rem; font-family:inherit; transition:all 0.2s;">
+                    style="padding:0.7rem 0.9rem; border-radius:12px; font-size:0.88rem; font-family:inherit; transition:all 0.2s; min-width:90px; text-align:center;">
                     {{ formatTime(slot.startTime) }}
+                    <span *ngIf="slot.booked" style="font-size:0.65rem; display:block; color:#a3a3a3;">Réservé</span>
                   </button>
                 </div>
                 <ng-template #chooseDayFirst>
@@ -179,6 +189,7 @@
                 </ng-template>
               </div>
 
+              <!-- RÉSUMÉ -->
               <div class="booking-summary">
                 <h3>{{ langService.t().bookingSummary }}</h3>
                 <div class="summary-row">

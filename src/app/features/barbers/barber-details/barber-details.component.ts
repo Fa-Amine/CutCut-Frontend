@@ -72,13 +72,9 @@ export class BarberDetailsComponent {
   photos = signal<BarberPhoto[]>([]);
   reviews = signal<Review[]>([]);
 
-  // ✅ Services
   services = signal<BarberServiceItem[]>([]);
   selectedServiceIds = signal<number[]>([]);
-
-  // ✅ Lightbox
   lightboxPhoto = signal<string | null>(null);
-
   selectedDay = signal<string | null>(null);
   selectedSlot = signal<AvailabilitySlot | null>(null);
 
@@ -86,18 +82,17 @@ export class BarberDetailsComponent {
     const selected = this.services().filter(s =>
       this.selectedServiceIds().includes(s.id)
     );
-    if (selected.length === 0) {
-      return this.barber()?.price ?? 0;
-    }
+    if (selected.length === 0) return this.barber()?.price ?? 0;
     return selected.reduce((sum, s) => sum + s.price, 0);
   });
 
+  // ✅ Garde TOUS les slots (booked ou pas) pour affichage
   dayGroups = computed<DayGroup[]>(() => {
     const now = new Date();
     const todayKey = now.toISOString().slice(0, 10);
     const map = new Map<string, AvailabilitySlot[]>();
+
     for (const slot of this.slots()) {
-      if (slot.booked) continue;
       const dateKey = slot.startTime.slice(0, 10);
       if (dateKey < todayKey) continue;
       if (dateKey === todayKey) {
@@ -107,6 +102,7 @@ export class BarberDetailsComponent {
       if (!map.has(dateKey)) map.set(dateKey, []);
       map.get(dateKey)!.push(slot);
     }
+
     return Array.from(map.entries())
       .map(([dateKey, slots]) => ({
         dateKey,
@@ -140,9 +136,7 @@ export class BarberDetailsComponent {
     this.barberService.getBarberById(barberId).subscribe({
       next: (barberResponse) => {
         this.barber.set(barberResponse);
-        this.reloadSlots(barberId, () => {
-          this.isLoading.set(false);
-        });
+        this.reloadSlots(barberId, () => { this.isLoading.set(false); });
         this.loadPhotos(barberId);
         this.loadReviews(barberId);
         this.loadServices(barberId);
@@ -174,14 +168,8 @@ export class BarberDetailsComponent {
     return this.selectedServiceIds().includes(serviceId);
   }
 
-  // ✅ Lightbox
-  openLightbox(url: string) {
-    this.lightboxPhoto.set(url);
-  }
-
-  closeLightbox() {
-    this.lightboxPhoto.set(null);
-  }
+  openLightbox(url: string) { this.lightboxPhoto.set(url); }
+  closeLightbox() { this.lightboxPhoto.set(null); }
 
   loadPhotos(barberId: number) {
     this.barberPhotoService.getBarberPhotos(barberId).subscribe({
@@ -197,12 +185,11 @@ export class BarberDetailsComponent {
     });
   }
 
-  getStars(count: number): string {
-    return '⭐'.repeat(count);
-  }
+  getStars(count: number): string { return '⭐'.repeat(count); }
 
   private reloadSlots(barberId: number, onDone?: () => void) {
-    this.availabilityService.getAvailableSlotsByBarber(barberId).subscribe({
+    // ✅ Utiliser getAllSlots au lieu de getAvailableSlots
+    this.availabilityService.getAllSlotsByBarber(barberId).subscribe({
       next: (slotsResponse) => {
         this.slots.set(slotsResponse);
         const stillValidSelectedDay = this.selectedDay()
@@ -212,7 +199,9 @@ export class BarberDetailsComponent {
         }
         const currentSelectedSlot = this.selectedSlot();
         if (currentSelectedSlot) {
-          const stillExists = slotsResponse.some((slot) => slot.id === currentSelectedSlot.id && !slot.booked);
+          const stillExists = slotsResponse.some(
+            (slot) => slot.id === currentSelectedSlot.id && !slot.booked
+          );
           if (!stillExists) this.selectedSlot.set(null);
         }
         onDone?.();
@@ -231,6 +220,7 @@ export class BarberDetailsComponent {
   }
 
   chooseSlot(slot: AvailabilitySlot) {
+    if (slot.booked) return; // ✅ Ne pas sélectionner un slot réservé
     this.selectedSlot.set(slot);
     this.errorMessage.set('');
   }
@@ -294,9 +284,7 @@ export class BarberDetailsComponent {
   formatTime(dateTime: string): string {
     const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
     return new Date(dateTime).toLocaleTimeString(locale, {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+      hour: '2-digit', minute: '2-digit', hour12: true
     });
   }
 

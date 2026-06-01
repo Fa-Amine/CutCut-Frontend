@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AddSlotRequest, AvailabilitySlot } from '../models/availability.models';
 
-// ✅ breakStart et breakEnd ajoutés
 export interface DaySchedulePayload {
   dayOfWeek: number;
   startTime: string;
@@ -14,15 +13,19 @@ export interface DaySchedulePayload {
   active: boolean;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AvailabilityService {
   private http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
 
+  // ✅ Slots disponibles seulement (pour compatibilité)
   getAvailableSlotsByBarber(barberId: number): Observable<AvailabilitySlot[]> {
     return this.http.get<AvailabilitySlot[]>(`${this.baseUrl}/availability/barber/${barberId}`);
+  }
+
+  // ✅ TOUS les slots (disponibles + réservés) pour affichage grisé
+  getAllSlotsByBarber(barberId: number): Observable<AvailabilitySlot[]> {
+    return this.http.get<AvailabilitySlot[]>(`${this.baseUrl}/availability/barber/${barberId}/all`);
   }
 
   updateSchedule(barberId: number, payload: DaySchedulePayload[]): Observable<void> {
