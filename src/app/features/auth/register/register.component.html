@@ -23,7 +23,7 @@
             [message]="errorMessage()">
           </app-error-alert>
 
-          <!-- TOGGLE — caché si vient du bouton barbier -->
+          <!-- TOGGLE ROLE -->
           <div class="role-toggle" *ngIf="!fromBarberButton()">
             <button type="button"
               [style.background]="selectedRole() === 'CLIENT' ? '#1A1A1A' : 'transparent'"
@@ -39,7 +39,7 @@
               [style.border]="selectedRole() === 'BARBER' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
               style="padding:0.75rem 2rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
               (click)="setRole('BARBER')">
-              ✂ Barbier
+              ✂️ Barbier
             </button>
           </div>
 
@@ -73,6 +73,30 @@
 
           <!-- CHAMPS BARBIER SEULEMENT -->
           <ng-container *ngIf="selectedRole() === 'BARBER'">
+
+            <!-- ✅ CHOIX CATÉGORIE -->
+            <div class="form-group">
+              <label>Je suis :</label>
+              <div class="category-toggle">
+                <button type="button"
+                  [style.background]="selectedCategory() === 'HOMME' ? '#1A1A1A' : 'transparent'"
+                  [style.color]="selectedCategory() === 'HOMME' ? '#FAFAF7' : '#1A1A1A'"
+                  [style.border]="selectedCategory() === 'HOMME' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
+                  style="padding:0.75rem 1.5rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
+                  (click)="setCategory('HOMME')">
+                  🧔 Barbier Homme
+                </button>
+                <button type="button"
+                  [style.background]="selectedCategory() === 'FEMME' ? '#1A1A1A' : 'transparent'"
+                  [style.color]="selectedCategory() === 'FEMME' ? '#FAFAF7' : '#1A1A1A'"
+                  [style.border]="selectedCategory() === 'FEMME' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
+                  style="padding:0.75rem 1.5rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
+                  (click)="setCategory('FEMME')">
+                  💇‍♀️ Coiffeuse Femme
+                </button>
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="shopName">{{ langService.t().shopName }}</label>
               <input id="shopName" type="text" pInputText formControlName="shopName"

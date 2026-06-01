@@ -62,6 +62,9 @@ export class RegisterComponent implements OnInit {
   errorMessage = signal('');
   fromBarberButton = signal(false);
 
+  // ✅ Catégorie barbier
+  selectedCategory = signal<'HOMME' | 'FEMME'>('HOMME');
+
   registerForm = this.fb.group(
     {
       name: ['', [Validators.required]],
@@ -96,6 +99,11 @@ export class RegisterComponent implements OnInit {
   setRole(role: RegisterRole) {
     this.selectedRole.set(role);
     this.applyRoleValidators(role);
+  }
+
+  // ✅ Choisir catégorie
+  setCategory(category: 'HOMME' | 'FEMME') {
+    this.selectedCategory.set(category);
   }
 
   private applyRoleValidators(role: RegisterRole) {
@@ -166,7 +174,9 @@ export class RegisterComponent implements OnInit {
         shopName: formValue.shopName!,
         bio: formValue.bio || '',
         photoUrl: formValue.photoUrl || '',
-        price: Number(formValue.price)
+        price: Number(formValue.price),
+        // ✅ Envoyer la catégorie
+        category: this.selectedCategory()
       }).subscribe({
         next: () => {
           this.isLoading.set(false);

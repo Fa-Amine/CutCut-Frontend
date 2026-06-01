@@ -21,6 +21,8 @@ export interface RegisterBarberRequest {
   bio?: string;
   photoUrl?: string;
   price: number;
+  // ✅ Nouveau champ
+  category?: string;
 }
 
 export interface AuthResponse {

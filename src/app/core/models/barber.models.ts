@@ -10,6 +10,8 @@ export interface BarberListItem {
   address?: string;
   latitude?: number;
   longitude?: number;
+  // ✅ Nouveau champ
+  category?: string;
 }
 
 export interface BarberDetails {
@@ -24,4 +26,6 @@ export interface BarberDetails {
   address?: string;
   latitude?: number;
   longitude?: number;
+  // ✅ Nouveau champ
+  category?: string;
 }
