@@ -51,7 +51,7 @@ export class AvailabilityComponent implements OnInit {
     breakEnd: '13:00'
   });
 
-  weeklySchedule = signal<DayConfig[]>([
+  defaultSchedule: DayConfig[] = [
     { id: 1, name: 'monday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
     { id: 2, name: 'tuesday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
     { id: 3, name: 'wednesday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
@@ -59,40 +59,70 @@ export class AvailabilityComponent implements OnInit {
     { id: 5, name: 'friday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
     { id: 6, name: 'saturday' as TranslationKey, active: false, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
     { id: 7, name: 'sunday' as TranslationKey, active: false, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
-  ]);
+  ];
+
+  weeklySchedule = signal<DayConfig[]>([...this.defaultSchedule]);
+
+  private getStorageKey(): string {
+    return `schedule_${this.sessionService.userId()}`;
+  }
+
+  // ✅ Sauvegarder dans localStorage
+  private saveToStorage(schedule: DayConfig[]) {
+    try {
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(schedule));
+    } catch {}
+  }
+
+  // ✅ Charger depuis localStorage
+  private loadFromStorage(): DayConfig[] | null {
+    try {
+      const stored = localStorage.getItem(this.getStorageKey());
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  }
 
   ngOnInit() {
     this.loadSavedSchedule();
   }
 
-  // ✅ Charger le schedule sauvegardé depuis la BDD
   loadSavedSchedule() {
     const barberId = this.sessionService.userId();
     if (!barberId) { this.isLoading.set(false); return; }
 
+    // ✅ 1. Charger localStorage immédiatement
+    const stored = this.loadFromStorage();
+    if (stored) {
+      this.weeklySchedule.set(stored);
+    }
+
+    // ✅ 2. Sync avec backend
     this.availabilityService.getSchedule(barberId).subscribe({
       next: (savedSchedule) => {
         if (savedSchedule && savedSchedule.length > 0) {
-          this.weeklySchedule.update(days =>
-            days.map(day => {
-              const saved = savedSchedule.find(s => s.dayOfWeek === day.id);
-              if (saved) {
-                return {
-                  ...day,
-                  active: saved.active,
-                  startTime: saved.startTime?.slice(0, 5) || day.startTime,
-                  endTime: saved.endTime?.slice(0, 5) || day.endTime,
-                  breakStart: saved.breakStart?.slice(0, 5) || day.breakStart,
-                  breakEnd: saved.breakEnd?.slice(0, 5) || day.breakEnd
-                };
-              }
-              return day;
-            })
-          );
+          const updated = this.defaultSchedule.map(day => {
+            const saved = savedSchedule.find(s => s.dayOfWeek === day.id);
+            if (saved) {
+              return {
+                ...day,
+                active: saved.active,
+                startTime: saved.startTime?.slice(0, 5) || day.startTime,
+                endTime: saved.endTime?.slice(0, 5) || day.endTime,
+                breakStart: saved.breakStart?.slice(0, 5) || day.breakStart,
+                breakEnd: saved.breakEnd?.slice(0, 5) || day.breakEnd
+              };
+            }
+            return day;
+          });
+          this.weeklySchedule.set(updated);
+          this.saveToStorage(updated);
         }
         this.isLoading.set(false);
       },
-      error: () => { this.isLoading.set(false); }
+      error: () => {
+        // API down → garde localStorage
+        this.isLoading.set(false);
+      }
     });
   }
 
@@ -134,6 +164,9 @@ export class AvailabilityComponent implements OnInit {
 
     if (this.configMode() === 'global') this.applyGlobalToAll();
 
+    // ✅ Sauvegarder dans localStorage immédiatement
+    this.saveToStorage(this.weeklySchedule());
+
     this.isSaving.set(true);
     this.errorMessage.set('');
 
@@ -154,7 +187,9 @@ export class AvailabilityComponent implements OnInit {
       },
       error: (err: any) => {
         this.isSaving.set(false);
-        this.errorMessage.set(err?.error?.message || 'Une erreur est survenue.');
+        // ✅ Même si API échoue, localStorage est déjà sauvegardé
+        this.successMessage.set('✅ Sauvegardé localement !');
+        setTimeout(() => this.successMessage.set(''), 3000);
       }
     });
   }
