@@ -13,19 +13,32 @@ export interface DaySchedulePayload {
   active: boolean;
 }
 
+export interface BarberScheduleResponse {
+  id: number;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  breakStart: string;
+  breakEnd: string;
+  active: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AvailabilityService {
   private http = inject(HttpClient);
   private readonly baseUrl = environment.apiBaseUrl;
 
-  // ✅ Slots disponibles seulement (pour compatibilité)
   getAvailableSlotsByBarber(barberId: number): Observable<AvailabilitySlot[]> {
     return this.http.get<AvailabilitySlot[]>(`${this.baseUrl}/availability/barber/${barberId}`);
   }
 
-  // ✅ TOUS les slots (disponibles + réservés) pour affichage grisé
   getAllSlotsByBarber(barberId: number): Observable<AvailabilitySlot[]> {
     return this.http.get<AvailabilitySlot[]>(`${this.baseUrl}/availability/barber/${barberId}/all`);
+  }
+
+  // ✅ Récupérer le schedule sauvegardé
+  getSchedule(barberId: number): Observable<BarberScheduleResponse[]> {
+    return this.http.get<BarberScheduleResponse[]>(`${this.baseUrl}/availability/barber/${barberId}/schedule`);
   }
 
   updateSchedule(barberId: number, payload: DaySchedulePayload[]): Observable<void> {

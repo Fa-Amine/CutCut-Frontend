@@ -38,15 +38,12 @@ export class AvailabilityComponent implements OnInit {
   private sessionService = inject(SessionService);
   langService = inject(LanguageService);
 
-  isLoading = signal(false);
+  isLoading = signal(true);
   isSaving = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
-
-  // ✅ Mode : 'individual' ou 'global'
   configMode = signal<'global' | 'individual'>('global');
 
-  // ✅ Config globale (un seul horaire pour tous les jours actifs)
   globalConfig = signal({
     startTime: '08:00',
     endTime: '20:00',
@@ -64,19 +61,46 @@ export class AvailabilityComponent implements OnInit {
     { id: 7, name: 'sunday' as TranslationKey, active: false, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
   ]);
 
-  ngOnInit() {}
-
-  // ✅ Changer de mode
-  setMode(mode: 'global' | 'individual') {
-    configMode: this.configMode.set(mode);
-
-    // Si on passe en mode global, appliquer la config globale à tous les jours actifs
-    if (mode === 'global') {
-      this.applyGlobalToAll();
-    }
+  ngOnInit() {
+    this.loadSavedSchedule();
   }
 
-  // ✅ Appliquer config globale à tous les jours actifs
+  // ✅ Charger le schedule sauvegardé depuis la BDD
+  loadSavedSchedule() {
+    const barberId = this.sessionService.userId();
+    if (!barberId) { this.isLoading.set(false); return; }
+
+    this.availabilityService.getSchedule(barberId).subscribe({
+      next: (savedSchedule) => {
+        if (savedSchedule && savedSchedule.length > 0) {
+          this.weeklySchedule.update(days =>
+            days.map(day => {
+              const saved = savedSchedule.find(s => s.dayOfWeek === day.id);
+              if (saved) {
+                return {
+                  ...day,
+                  active: saved.active,
+                  startTime: saved.startTime?.slice(0, 5) || day.startTime,
+                  endTime: saved.endTime?.slice(0, 5) || day.endTime,
+                  breakStart: saved.breakStart?.slice(0, 5) || day.breakStart,
+                  breakEnd: saved.breakEnd?.slice(0, 5) || day.breakEnd
+                };
+              }
+              return day;
+            })
+          );
+        }
+        this.isLoading.set(false);
+      },
+      error: () => { this.isLoading.set(false); }
+    });
+  }
+
+  setMode(mode: 'global' | 'individual') {
+    this.configMode.set(mode);
+    if (mode === 'global') this.applyGlobalToAll();
+  }
+
   applyGlobalToAll() {
     const global = this.globalConfig();
     this.weeklySchedule.update(days =>
@@ -90,13 +114,11 @@ export class AvailabilityComponent implements OnInit {
     );
   }
 
-  // ✅ Mettre à jour config globale et appliquer
   updateGlobal(field: string, value: string) {
     this.globalConfig.update(config => ({ ...config, [field]: value }));
     this.applyGlobalToAll();
   }
 
-  // ✅ Toggle jour actif
   toggleDay(dayId: number) {
     this.weeklySchedule.update(days =>
       days.map(day => day.id === dayId ? { ...day, active: !day.active } : day)
@@ -110,10 +132,7 @@ export class AvailabilityComponent implements OnInit {
       return;
     }
 
-    // En mode global, appliquer d'abord
-    if (this.configMode() === 'global') {
-      this.applyGlobalToAll();
-    }
+    if (this.configMode() === 'global') this.applyGlobalToAll();
 
     this.isSaving.set(true);
     this.errorMessage.set('');
