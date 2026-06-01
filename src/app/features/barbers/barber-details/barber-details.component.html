@@ -1,6 +1,12 @@
 <div id="page-top"></div>
 <p-toast position="top-center"></p-toast>
 
+<!-- ✅ LIGHTBOX -->
+<div class="lightbox" *ngIf="lightboxPhoto()" (click)="closeLightbox()">
+  <button class="lightbox-close" (click)="closeLightbox()">✕</button>
+  <img [src]="lightboxPhoto()!" alt="Photo" (click)="$event.stopPropagation()" />
+</div>
+
 <section class="barber-details-page">
   <div class="barber-details-shell">
     <div class="page-header">
@@ -67,14 +73,14 @@
               </a>
             </div>
 
+            <!-- ✅ PHOTOS AVEC LIGHTBOX -->
             <div *ngIf="photos().length > 0"
               style="margin-top:1.5rem; border-top:1px solid rgba(26,26,26,0.08); padding-top:1rem;">
               <h3 style="color:#1A1A1A; font-size:1.1rem; margin-bottom:1rem;">📸 {{ langService.t().photosLabel }}</h3>
-              <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem;">
-                <div *ngFor="let photo of photos()"
-                  style="border-radius:8px; overflow:hidden; aspect-ratio:1;">
-                  <img [src]="photo.imageUrl" [alt]="photo.caption || 'Photo'"
-                    style="width:100%; height:100%; object-fit:cover;" />
+              <div class="photos-grid">
+                <div *ngFor="let photo of photos()" class="photo-thumb"
+                  (click)="openLightbox(photo.imageUrl)">
+                  <img [src]="photo.imageUrl" [alt]="photo.caption || 'Photo'" />
                 </div>
               </div>
             </div>
@@ -108,7 +114,6 @@
           <div class="booking-card">
             <ng-container *ngIf="dayGroups().length; else noAvailability">
 
-              <!-- ✅ SERVICES -->
               <div class="section-block" *ngIf="services().length > 0">
                 <h3>✂️ Choisissez vos services</h3>
                 <div class="services-list">
@@ -127,7 +132,6 @@
                   </div>
                 </div>
 
-                <!-- ✅ TOTAL EN TEMPS RÉEL -->
                 <div class="total-bar" *ngIf="selectedServiceIds().length > 0">
                   <ng-container *ngFor="let service of services()">
                     <div class="total-line" *ngIf="isServiceSelected(service.id)">
@@ -145,9 +149,7 @@
               <div class="section-block">
                 <h3>{{ langService.t().chooseDay }}</h3>
                 <div class="day-list">
-                  <button
-                    *ngFor="let day of dayGroups()"
-                    type="button"
+                  <button *ngFor="let day of dayGroups()" type="button"
                     (click)="chooseDay(day.dateKey)"
                     [style.background]="selectedDay() === day.dateKey ? '#1A1A1A' : '#FAFAF7'"
                     [style.color]="selectedDay() === day.dateKey ? '#FAFAF7' : '#1A1A1A'"
@@ -162,9 +164,7 @@
               <div class="section-block">
                 <h3>{{ langService.t().chooseSlot }}</h3>
                 <div class="slot-list" *ngIf="selectedDay(); else chooseDayFirst">
-                  <button
-                    *ngFor="let slot of availableSlots()"
-                    type="button"
+                  <button *ngFor="let slot of availableSlots()" type="button"
                     (click)="chooseSlot(slot)"
                     [style.background]="selectedSlot()?.id === slot.id ? '#1A1A1A' : '#FAFAF7'"
                     [style.color]="selectedSlot()?.id === slot.id ? '#FAFAF7' : '#1A1A1A'"
@@ -179,7 +179,6 @@
                 </ng-template>
               </div>
 
-              <!-- ✅ RÉSUMÉ FINAL -->
               <div class="booking-summary">
                 <h3>{{ langService.t().bookingSummary }}</h3>
                 <div class="summary-row">

@@ -76,10 +76,12 @@ export class BarberDetailsComponent {
   services = signal<BarberServiceItem[]>([]);
   selectedServiceIds = signal<number[]>([]);
 
+  // ✅ Lightbox
+  lightboxPhoto = signal<string | null>(null);
+
   selectedDay = signal<string | null>(null);
   selectedSlot = signal<AvailabilitySlot | null>(null);
 
-  // ✅ Total calculé automatiquement
   totalPrice = computed(() => {
     const selected = this.services().filter(s =>
       this.selectedServiceIds().includes(s.id)
@@ -159,7 +161,6 @@ export class BarberDetailsComponent {
     });
   }
 
-  // ✅ Toggle service selection
   toggleService(serviceId: number) {
     const current = this.selectedServiceIds();
     if (current.includes(serviceId)) {
@@ -171,6 +172,15 @@ export class BarberDetailsComponent {
 
   isServiceSelected(serviceId: number): boolean {
     return this.selectedServiceIds().includes(serviceId);
+  }
+
+  // ✅ Lightbox
+  openLightbox(url: string) {
+    this.lightboxPhoto.set(url);
+  }
+
+  closeLightbox() {
+    this.lightboxPhoto.set(null);
   }
 
   loadPhotos(barberId: number) {
