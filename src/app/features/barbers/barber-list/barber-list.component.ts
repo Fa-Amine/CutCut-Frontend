@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
@@ -31,6 +31,7 @@ declare const L: any;
 export class BarberListComponent implements AfterViewChecked {
   private barberService = inject(BarberService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   langService = inject(LanguageService);
   favoriteService = inject(FavoriteService);
   sessionService = inject(SessionService);
@@ -45,11 +46,14 @@ export class BarberListComponent implements AfterViewChecked {
   isLocating = signal(false);
   sortByDistance = signal(false);
 
+  // ✅ Filtre catégorie
+  selectedCategory = signal<'ALL' | 'HOMME' | 'FEMME'>('ALL');
+
   private map: any = null;
   private mapInitialized = false;
   private userMarker: any = null;
   private markers: any[] = [];
-  private currentRoute: any = null; // ✅ Route actuelle sur la carte
+  private currentRoute: any = null;
 
   isFavorite = computed(() => (barberId: number) => {
     return this.favoriteService.favoriteIds().includes(barberId);
@@ -57,7 +61,11 @@ export class BarberListComponent implements AfterViewChecked {
 
   filteredBarbers = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
+    const category = this.selectedCategory();
+
     let result = this.barbers().filter((barber) => {
+      // ✅ Filtre catégorie
+      if (category !== 'ALL' && barber.category !== category) return false;
       if (!term) return true;
       return (
         barber.name.toLowerCase().includes(term) ||
@@ -65,6 +73,7 @@ export class BarberListComponent implements AfterViewChecked {
         (barber.bio ?? '').toLowerCase().includes(term)
       );
     });
+
     if (this.sortByDistance() && this.userLat() && this.userLng()) {
       result = [...result].sort((a, b) => {
         const distA = this.calculateDistance(this.userLat()!, this.userLng()!, a.latitude ?? 0, a.longitude ?? 0);
@@ -89,10 +98,19 @@ export class BarberListComponent implements AfterViewChecked {
     this.loadBarbers();
     this.favoriteService.loadFavorites();
 
-    // ✅ Expose showRoute pour les boutons dans les popups
+    // ✅ Lire catégorie depuis query params
+    const category = this.route.snapshot.queryParamMap.get('category');
+    if (category === 'FEMME') this.selectedCategory.set('FEMME');
+    if (category === 'HOMME') this.selectedCategory.set('HOMME');
+
     (window as any).showRoute = (destLat: number, destLng: number) => {
       this.showRouteOnMap(destLat, destLng);
     };
+  }
+
+  // ✅ Changer catégorie
+  setCategory(category: 'ALL' | 'HOMME' | 'FEMME') {
+    this.selectedCategory.set(category);
   }
 
   calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
@@ -105,25 +123,18 @@ export class BarberListComponent implements AfterViewChecked {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
-  // ✅ Dessine le chemin sur la carte via OSRM (gratuit, sans clé)
   showRouteOnMap(destLat: number, destLng: number) {
     const userLat = this.userLat();
     const userLng = this.userLng();
-
     if (!userLat || !userLng) {
       alert('📍 Activez votre localisation d\'abord !');
       return;
     }
-
-    // Supprime l'ancien chemin
     if (this.currentRoute) {
       this.map.removeLayer(this.currentRoute);
       this.currentRoute = null;
     }
-
-    // Appel OSRM API
     const url = `https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${destLng},${destLat}?overview=full&geometries=geojson`;
-
     fetch(url)
       .then(res => res.json())
       .then(data => {
@@ -131,19 +142,11 @@ export class BarberListComponent implements AfterViewChecked {
           const coords = data.routes[0].geometry.coordinates.map(
             (c: number[]) => [c[1], c[0]]
           );
-
           this.currentRoute = L.polyline(coords, {
-            color: '#171717',
-            weight: 5,
-            opacity: 0.8,
-            lineJoin: 'round',
-            lineCap: 'round',
-            dashArray: '10, 5'
+            color: '#171717', weight: 5, opacity: 0.8,
+            lineJoin: 'round', lineCap: 'round', dashArray: '10, 5'
           }).addTo(this.map);
-
           this.map.fitBounds(this.currentRoute.getBounds(), { padding: [40, 40] });
-
-          // Durée estimée
           const duration = Math.round(data.routes[0].duration / 60);
           const distance = (data.routes[0].distance / 1000).toFixed(1);
           L.popup()
@@ -152,9 +155,7 @@ export class BarberListComponent implements AfterViewChecked {
             .openOn(this.map);
         }
       })
-      .catch(() => {
-        alert('Impossible de calculer l\'itinéraire.');
-      });
+      .catch(() => alert('Impossible de calculer l\'itinéraire.'));
   }
 
   locateMe() {
@@ -172,23 +173,12 @@ export class BarberListComponent implements AfterViewChecked {
         if (this.map && this.viewMode() === 'map') {
           if (this.userMarker) this.userMarker.remove();
           const userIcon = L.divIcon({
-            html: `<div style="
-              width:18px; height:18px; background:#3b82f6;
-              border:3px solid white; border-radius:50%;
-              box-shadow:0 0 0 4px rgba(59,130,246,0.3);">
-            </div>`,
-            className: '',
-            iconSize: [18, 18],
-            iconAnchor: [9, 9]
+            html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(59,130,246,0.3);"></div>`,
+            className: '', iconSize: [18, 18], iconAnchor: [9, 9]
           });
-          this.userMarker = L.marker(
-            [position.coords.latitude, position.coords.longitude],
-            { icon: userIcon }
-          ).addTo(this.map);
+          this.userMarker = L.marker([position.coords.latitude, position.coords.longitude], { icon: userIcon }).addTo(this.map);
           this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>').openPopup();
-          this.map.flyTo([position.coords.latitude, position.coords.longitude], 13, {
-            animate: true, duration: 1.5
-          });
+          this.map.flyTo([position.coords.latitude, position.coords.longitude], 13, { animate: true, duration: 1.5 });
         }
       },
       () => {
@@ -232,36 +222,14 @@ export class BarberListComponent implements AfterViewChecked {
     const photo = barber.photoUrl
       ? `<img src="${barber.photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
       : `<span style="color:white;font-weight:700;font-size:0.85rem;">${initials}</span>`;
-
     return L.divIcon({
       html: `
-        <div style="
-          width:44px; height:44px;
-          background:#171717;
-          border:3px solid white;
-          border-radius:50%;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          box-shadow:0 4px 12px rgba(0,0,0,0.3);
-          overflow:hidden;
-          cursor:pointer;
-        ">
+        <div style="width:44px;height:44px;background:#171717;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);overflow:hidden;cursor:pointer;">
           ${photo}
         </div>
-        <div style="
-          width:0; height:0;
-          border-left:6px solid transparent;
-          border-right:6px solid transparent;
-          border-top:8px solid white;
-          margin:0 auto;
-          margin-top:-2px;
-        "></div>
+        <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid white;margin:0 auto;margin-top:-2px;"></div>
       `,
-      className: '',
-      iconSize: [44, 52],
-      iconAnchor: [22, 52],
-      popupAnchor: [0, -54]
+      className: '', iconSize: [44, 52], iconAnchor: [22, 52], popupAnchor: [0, -54]
     });
   }
 
@@ -269,52 +237,29 @@ export class BarberListComponent implements AfterViewChecked {
     this.mapInitialized = true;
     const centerLat = this.userLat() || 33.9716;
     const centerLng = this.userLng() || -6.8498;
-
-    this.map = L.map('barbers-map', {
-      zoomControl: false,
-      attributionControl: true
-    }).setView([centerLat, centerLng], 12);
-
-    // ✅ Ancienne carte Google Maps
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-      attribution: '© Google Maps',
-      maxZoom: 19
-    }).addTo(this.map);
-
+    this.map = L.map('barbers-map', { zoomControl: false, attributionControl: true }).setView([centerLat, centerLng], 12);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { attribution: '© Google Maps', maxZoom: 19 }).addTo(this.map);
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
     if (this.userLat() && this.userLng()) {
       const userIcon = L.divIcon({
-        html: `<div style="
-          width:18px; height:18px; background:#3b82f6;
-          border:3px solid white; border-radius:50%;
-          box-shadow:0 0 0 4px rgba(59,130,246,0.3);">
-        </div>`,
-        className: '',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
+        html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(59,130,246,0.3);"></div>`,
+        className: '', iconSize: [18, 18], iconAnchor: [9, 9]
       });
-      this.userMarker = L.marker([this.userLat()!, this.userLng()!], { icon: userIcon })
-        .addTo(this.map);
+      this.userMarker = L.marker([this.userLat()!, this.userLng()!], { icon: userIcon }).addTo(this.map);
       this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>');
     }
 
     const barbersWithLocation = this.filteredBarbers().filter(b => b.latitude && b.longitude);
-
     barbersWithLocation.forEach(barber => {
       const dist = this.userLat() && this.userLng() && barber.latitude && barber.longitude
         ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude).toFixed(1)
         : null;
-
       const icon = this.createBarberIcon(barber);
       const marker = L.marker([barber.latitude!, barber.longitude!], { icon });
-
-      const popup = L.popup({
-        maxWidth: 230,
-        className: 'custom-popup'
-      }).setContent(`
+      const popup = L.popup({ maxWidth: 230, className: 'custom-popup' }).setContent(`
         <div style="padding:4px; min-width:190px;">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
             ${barber.photoUrl
               ? `<img src="${barber.photoUrl}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #e5e5e5;" />`
               : `<div style="width:48px;height:48px;border-radius:50%;background:#171717;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">${this.getInitials(barber.name)}</div>`
@@ -322,28 +267,23 @@ export class BarberListComponent implements AfterViewChecked {
             <div style="text-align:left;">
               <strong style="display:block;color:#171717;font-size:0.95rem;">${barber.name}</strong>
               <span style="color:#737373;font-size:0.8rem;">${barber.shopName || 'CutCut'}</span>
+              ${barber.category === 'FEMME' ? '<span style="font-size:0.75rem;color:#ec4899;">💇‍♀️ Coiffeuse</span>' : '<span style="font-size:0.75rem;color:#737373;">🧔 Barbier</span>'}
             </div>
           </div>
-
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span style="background:#f5f5f5;padding:3px 10px;border-radius:20px;font-size:0.82rem;font-weight:700;color:#171717;">
-              ${barber.price ?? 0} MAD
-            </span>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span style="background:#f5f5f5;padding:3px 10px;border-radius:20px;font-size:0.82rem;font-weight:700;color:#171717;">${barber.price ?? 0} MAD</span>
             ${dist ? `<span style="color:#16a34a;font-size:0.82rem;font-weight:600;">📍 ${dist} km</span>` : ''}
           </div>
-
           <button onclick="window.location.href='/barbers/${barber.id}'"
             style="width:100%;background:#171717;color:white;border:none;padding:9px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;margin-bottom:7px;">
             ✂️ Réserver
           </button>
-
           <button onclick="window.showRoute(${barber.latitude}, ${barber.longitude})"
             style="width:100%;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;padding:8px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;">
             🗺️ Itinéraire sur la carte
           </button>
         </div>
       `);
-
       marker.bindPopup(popup);
       marker.addTo(this.map);
       this.markers.push(marker);

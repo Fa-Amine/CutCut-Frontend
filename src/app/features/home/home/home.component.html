@@ -40,10 +40,7 @@
   </div>
   <div class="barbers-grid">
     <div class="modern-barber-card" *ngFor="let barber of favoriteService.favorites()" style="position:relative;">
-      <button class="fav-btn-home"
-        (click)="favoriteService.toggleFavorite(barber.id)">
-        ❤️
-      </button>
+      <button class="fav-btn-home" (click)="favoriteService.toggleFavorite(barber.id)">❤️</button>
       <div class="barber-top">
         <ng-container *ngIf="barber.photoUrl; else favAvatar">
           <p-avatar [image]="barber.photoUrl" shape="circle" size="xlarge"></p-avatar>
@@ -58,6 +55,43 @@
       </div>
       <div class="barber-meta">
         <p-tag [value]="(barber.price ?? 0) + ' MAD'" severity="info"></p-tag>
+      </div>
+      <button pButton type="button" [label]="langService.t().bookThisBarber"
+        icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ COIFFEUSES FEMMES -->
+<section class="how-section" *ngIf="femaleBarbers().length > 0">
+  <div class="section-header">
+    <span class="section-kicker">💇‍♀️ COIFFEUSES</span>
+    <h2>Coiffeuses disponibles</h2>
+    <a routerLink="/barbers" [queryParams]="{category: 'FEMME'}"
+      style="font-size:0.9rem; color:#171717; text-decoration:underline; margin-top:0.5rem; display:inline-block;">
+      Voir toutes →
+    </a>
+  </div>
+  <div class="barbers-grid">
+    <div class="modern-barber-card" *ngFor="let barber of femaleBarbers()">
+      <div class="barber-top">
+        <ng-container *ngIf="barber.photoUrl; else femaleAvatar">
+          <p-avatar [image]="barber.photoUrl" shape="circle" size="xlarge"></p-avatar>
+        </ng-container>
+        <ng-template #femaleAvatar>
+          <p-avatar [label]="getInitials(barber.name)" shape="circle" size="xlarge"></p-avatar>
+        </ng-template>
+        <div>
+          <h3>{{ barber.name }}</h3>
+          <p>{{ barber.shopName || 'CutCut' }}</p>
+        </div>
+      </div>
+      <div class="barber-meta">
+        <p-tag [value]="(barber.price ?? 0) + ' MAD'" severity="info"></p-tag>
+        <span *ngIf="barber.averageRating" style="font-size:0.9rem; color:#64748b; margin-left:0.5rem;">
+          ⭐ {{ barber.averageRating }}
+        </span>
       </div>
       <button pButton type="button" [label]="langService.t().bookThisBarber"
         icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">

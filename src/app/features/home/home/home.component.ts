@@ -31,12 +31,23 @@ export class HomeComponent {
   allBarbers = signal<BarberListItem[]>([]);
   previewSlots = signal<AvailabilitySlot[]>([]);
 
-  featuredBarbers = computed(() => this.allBarbers().slice(0, 3));
+  featuredBarbers = computed(() =>
+    this.allBarbers()
+      .filter(b => b.category !== 'FEMME')
+      .slice(0, 3)
+  );
 
   topBarbers = computed(() =>
     [...this.allBarbers()]
-      .filter(b => b.averageRating && b.averageRating > 0)
+      .filter(b => b.averageRating && b.averageRating > 0 && b.category !== 'FEMME')
       .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0))
+      .slice(0, 3)
+  );
+
+  // ✅ Coiffeuses femmes
+  femaleBarbers = computed(() =>
+    this.allBarbers()
+      .filter(b => b.category === 'FEMME')
       .slice(0, 3)
   );
 

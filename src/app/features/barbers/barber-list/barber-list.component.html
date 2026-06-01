@@ -17,6 +17,25 @@
       </button>
     </div>
 
+    <!-- ✅ FILTRE CATÉGORIE -->
+    <div class="category-filter">
+      <button
+        [class.active]="selectedCategory() === 'ALL'"
+        (click)="setCategory('ALL')">
+        👥 Tous
+      </button>
+      <button
+        [class.active]="selectedCategory() === 'HOMME'"
+        (click)="setCategory('HOMME')">
+        🧔 Barbiers Hommes
+      </button>
+      <button
+        [class.active]="selectedCategory() === 'FEMME'"
+        (click)="setCategory('FEMME')">
+        💇‍♀️ Coiffeuses Femmes
+      </button>
+    </div>
+
     <div class="filters-card">
       <div class="filters-grid">
         <div class="filter-group">
@@ -40,7 +59,7 @@
     <app-loading-spinner *ngIf="isLoading()" message="Chargement des barbiers..."></app-loading-spinner>
     <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
 
-    <!-- ✅ VUE CARTE -->
+    <!-- VUE CARTE -->
     <div *ngIf="!isLoading() && !errorMessage() && viewMode() === 'map'" class="map-wrapper">
       <div id="barbers-map"></div>
       <div class="map-hint">
@@ -58,6 +77,11 @@
 
       <div class="barbers-grid" *ngIf="!isLoading() && !errorMessage() && barbersWithDistance().length">
         <div class="barber-card" *ngFor="let barber of barbersWithDistance()">
+
+          <!-- Badge catégorie -->
+          <div class="category-badge" *ngIf="barber.category">
+            {{ barber.category === 'FEMME' ? '💇‍♀️' : '🧔' }}
+          </div>
 
           <button
             *ngIf="sessionService.isClient()"
