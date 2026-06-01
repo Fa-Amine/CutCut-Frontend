@@ -1,22 +1,15 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-// PrimeNG Imports
 import { ButtonModule } from 'primeng/button';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { MessageModule } from 'primeng/message';
-
-// Core Services
 import { LanguageService } from '../../../core/services/language.service';
 import { AvailabilityService, DaySchedulePayload } from '../../../core/services/availability.service';
 import { SessionService } from '../../../core/services/session.service';
-
-// Shared Components
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 
-// Define the translation key type to avoid the 'any' index error
 type TranslationKey = keyof ReturnType<LanguageService['t']>;
 
 interface DayConfig {
@@ -33,13 +26,9 @@ interface DayConfig {
   selector: 'app-availability',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    ButtonModule, 
-    InputSwitchModule, 
-    MessageModule,
-    LoadingSpinnerComponent, 
-    ErrorAlertComponent
+    CommonModule, FormsModule, ButtonModule,
+    InputSwitchModule, MessageModule,
+    LoadingSpinnerComponent, ErrorAlertComponent
   ],
   templateUrl: './availability.component.html',
   styleUrl: './availability.component.css'
@@ -49,13 +38,22 @@ export class AvailabilityComponent implements OnInit {
   private sessionService = inject(SessionService);
   langService = inject(LanguageService);
 
-  // State Management
   isLoading = signal(false);
   isSaving = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
 
-  // Default Weekly Template (The "Rules")
+  // ✅ Mode : 'individual' ou 'global'
+  configMode = signal<'global' | 'individual'>('global');
+
+  // ✅ Config globale (un seul horaire pour tous les jours actifs)
+  globalConfig = signal({
+    startTime: '08:00',
+    endTime: '20:00',
+    breakStart: '12:00',
+    breakEnd: '13:00'
+  });
+
   weeklySchedule = signal<DayConfig[]>([
     { id: 1, name: 'monday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
     { id: 2, name: 'tuesday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
@@ -66,25 +64,60 @@ export class AvailabilityComponent implements OnInit {
     { id: 7, name: 'sunday' as TranslationKey, active: false, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
   ]);
 
-  ngOnInit() {
-    // You could call a getWeeklyRules() service here to load saved data from the DB
+  ngOnInit() {}
+
+  // ✅ Changer de mode
+  setMode(mode: 'global' | 'individual') {
+    configMode: this.configMode.set(mode);
+
+    // Si on passe en mode global, appliquer la config globale à tous les jours actifs
+    if (mode === 'global') {
+      this.applyGlobalToAll();
+    }
   }
 
-  /**
-   * Maps the UI state to the DTO expected by Spring Boot
-   * and sends it to the backend.
-   */
+  // ✅ Appliquer config globale à tous les jours actifs
+  applyGlobalToAll() {
+    const global = this.globalConfig();
+    this.weeklySchedule.update(days =>
+      days.map(day => ({
+        ...day,
+        startTime: global.startTime,
+        endTime: global.endTime,
+        breakStart: global.breakStart,
+        breakEnd: global.breakEnd
+      }))
+    );
+  }
+
+  // ✅ Mettre à jour config globale et appliquer
+  updateGlobal(field: string, value: string) {
+    this.globalConfig.update(config => ({ ...config, [field]: value }));
+    this.applyGlobalToAll();
+  }
+
+  // ✅ Toggle jour actif
+  toggleDay(dayId: number) {
+    this.weeklySchedule.update(days =>
+      days.map(day => day.id === dayId ? { ...day, active: !day.active } : day)
+    );
+  }
+
   saveFullSchedule() {
     const barberId = this.sessionService.userId();
     if (!barberId) {
-      this.errorMessage.set("Session expirée. Veuillez vous reconnecter.");
+      this.errorMessage.set('Session expirée. Veuillez vous reconnecter.');
       return;
+    }
+
+    // En mode global, appliquer d'abord
+    if (this.configMode() === 'global') {
+      this.applyGlobalToAll();
     }
 
     this.isSaving.set(true);
     this.errorMessage.set('');
 
-    // Transform local DayConfig to DaySchedulePayload (DTO)
     const payload: DaySchedulePayload[] = this.weeklySchedule().map(day => ({
       dayOfWeek: day.id,
       startTime: day.startTime,
@@ -97,14 +130,12 @@ export class AvailabilityComponent implements OnInit {
     this.availabilityService.updateSchedule(barberId, payload).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.successMessage.set(this.langService.t().availabilitySaved || "Disponibilité mise à jour !");
-        
-        // Clear success message after a few seconds
+        this.successMessage.set('✅ Disponibilité mise à jour avec succès !');
         setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: (err: any) => {
         this.isSaving.set(false);
-        this.errorMessage.set(err?.error?.message || "Une erreur est survenue lors de l'enregistrement.");
+        this.errorMessage.set(err?.error?.message || 'Une erreur est survenue.');
       }
     });
   }

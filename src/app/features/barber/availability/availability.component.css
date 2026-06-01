@@ -11,16 +11,23 @@
   margin: 0 auto;
 }
 
-.schedule-header {
-  margin-bottom: 2rem;
-  padding-bottom: 0;
-  border-bottom: none;
+.page-header { margin-bottom: 1.5rem; }
+
+.page-kicker {
+  display: inline-block;
+  color: #a3a3a3;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  font-family: 'Courier New', monospace;
 }
 
-.schedule-header h2 {
+.page-header h1 {
+  margin: 0 0 0.6rem;
   font-size: clamp(2rem, 4vw, 3rem);
   color: #1A1A1A;
-  margin: 0;
   font-family: Georgia, serif;
   font-weight: 900;
   letter-spacing: -0.04em;
@@ -34,6 +41,134 @@
   padding: 2.5rem;
 }
 
+.schedule-header {
+  margin-bottom: 1.5rem;
+}
+
+.schedule-header h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: #1A1A1A;
+  margin: 0;
+  font-family: Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+/* ===========================
+   ✅ MODE SELECTOR
+=========================== */
+.mode-selector {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.mode-btn {
+  padding: 0.7rem 1.5rem;
+  border: 2px solid rgba(26,26,26,0.15);
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: white;
+  color: #737373;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.mode-btn:hover {
+  border-color: #1A1A1A;
+  color: #1A1A1A;
+}
+
+.mode-btn.active {
+  background: #1A1A1A;
+  color: white;
+  border-color: #1A1A1A;
+}
+
+/* ===========================
+   ✅ GLOBAL CONFIG
+=========================== */
+.global-config-card {
+  background: white;
+  border: 1px solid rgba(26,26,26,0.08);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.global-config-card h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin: 0 0 0.4rem;
+  font-family: Georgia, serif;
+}
+
+.global-config-card p {
+  color: #a3a3a3;
+  font-size: 0.88rem;
+  margin: 0 0 1.5rem;
+}
+
+.global-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.global-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* ✅ DAYS TOGGLE */
+.global-days h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #737373;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'Courier New', monospace;
+  margin: 0 0 0.75rem;
+}
+
+.days-toggle-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.day-toggle-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid rgba(26,26,26,0.15);
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: white;
+  color: #a3a3a3;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.day-toggle-btn.day-active {
+  background: #1A1A1A;
+  color: white;
+  border-color: #1A1A1A;
+}
+
+.day-toggle-btn:hover {
+  border-color: #1A1A1A;
+}
+
+/* ===========================
+   INDIVIDUAL MODE
+=========================== */
 .days-list {
   display: flex;
   flex-direction: column;
@@ -105,6 +240,11 @@
   font-weight: 600;
   color: #1A1A1A !important;
   outline: none;
+  transition: border-color 0.2s;
+}
+
+.modern-input:focus {
+  border-color: #1A1A1A;
 }
 
 .pause-style {
@@ -117,8 +257,16 @@
   font-weight: bold;
 }
 
+.off-label {
+  font-size: 0.82rem;
+  color: rgba(26,26,26,0.3);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .footer-actions {
-  margin-top: 3rem;
+  margin-top: 2.5rem;
   display: flex;
   justify-content: flex-end;
 }
@@ -145,11 +293,15 @@
 
 .inactive-day { opacity: 0.5; }
 
-html[dir='rtl'] .input-row { flex-direction: row-reverse; }
-html[dir='rtl'] .row-label { text-align: left; }
-
+/* ===========================
+   RESPONSIVE
+=========================== */
 @media (max-width: 640px) {
   .availability-page { padding: 2rem 1rem 3rem; }
+  .schedule-card { padding: 1.5rem; }
   .day-item { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1rem; }
   .input-row { justify-content: flex-start; }
+  .global-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .mode-selector { flex-direction: column; }
+  .mode-btn { width: 100%; text-align: center; }
 }

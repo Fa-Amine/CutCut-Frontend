@@ -1,10 +1,7 @@
 <section class="availability-page" [dir]="langService.lang() === 'ar' ? 'rtl' : 'ltr'">
   <div class="availability-shell">
-    
-    <app-loading-spinner 
-      *ngIf="isSaving()" 
-      [message]="langService.lang() === 'ar' ? 'جاري الحفظ...' : 'Enregistrement...'">
-    </app-loading-spinner>
+
+    <app-loading-spinner *ngIf="isSaving()" message="Enregistrement..."></app-loading-spinner>
 
     <div class="page-header">
       <span class="page-kicker">{{ langService.t().manageAvailability }}</span>
@@ -20,9 +17,78 @@
         <h2>{{ langService.t().workingDays }}</h2>
       </div>
 
-      <div class="days-list">
+      <!-- ✅ CHOIX DU MODE -->
+      <div class="mode-selector">
+        <button
+          class="mode-btn"
+          [class.active]="configMode() === 'global'"
+          (click)="setMode('global')">
+          ⚡ Même horaire pour tous
+        </button>
+        <button
+          class="mode-btn"
+          [class.active]="configMode() === 'individual'"
+          (click)="setMode('individual')">
+          🗓️ Configurer chaque jour
+        </button>
+      </div>
+
+      <!-- ✅ MODE GLOBAL -->
+      <div class="global-config" *ngIf="configMode() === 'global'">
+        <div class="global-config-card">
+          <h3>⚡ Horaire pour tous les jours actifs</h3>
+          <p>Configurez une fois, tous vos jours actifs prendront cet horaire.</p>
+
+          <div class="global-inputs">
+            <div class="global-row">
+              <span class="row-label">Travail</span>
+              <div class="controls-wrapper">
+                <input type="time"
+                  [ngModel]="globalConfig().startTime"
+                  (ngModelChange)="updateGlobal('startTime', $event)"
+                  class="modern-input" />
+                <span class="arrow-sep">→</span>
+                <input type="time"
+                  [ngModel]="globalConfig().endTime"
+                  (ngModelChange)="updateGlobal('endTime', $event)"
+                  class="modern-input" />
+              </div>
+            </div>
+            <div class="global-row">
+              <span class="row-label">☕ Pause</span>
+              <div class="controls-wrapper">
+                <input type="time"
+                  [ngModel]="globalConfig().breakStart"
+                  (ngModelChange)="updateGlobal('breakStart', $event)"
+                  class="modern-input pause-style" />
+                <span class="arrow-sep">→</span>
+                <input type="time"
+                  [ngModel]="globalConfig().breakEnd"
+                  (ngModelChange)="updateGlobal('breakEnd', $event)"
+                  class="modern-input pause-style" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Jours actifs/inactifs en mode global -->
+          <div class="global-days">
+            <h4>Choisissez vos jours de travail :</h4>
+            <div class="days-toggle-row">
+              <div *ngFor="let day of weeklySchedule()"
+                class="day-toggle-btn"
+                [class.day-active]="day.active"
+                (click)="toggleDay(day.id)">
+                {{ langService.t()[day.name] | slice:0:3 }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ MODE INDIVIDUEL -->
+      <div class="days-list" *ngIf="configMode() === 'individual'">
         <div *ngFor="let day of weeklySchedule()" class="day-item" [class.inactive-day]="!day.active">
-          
+
           <div class="day-info-col">
             <p-inputSwitch [(ngModel)]="day.active"></p-inputSwitch>
             <span class="day-name">{{ langService.t()[day.name] }}</span>
@@ -30,16 +96,15 @@
 
           <div class="schedule-inputs-col" *ngIf="day.active">
             <div class="input-row">
-              <span class="row-label">{{ langService.lang() === 'ar' ? 'العمل' : 'Travail' }}</span>
+              <span class="row-label">Travail</span>
               <div class="controls-wrapper">
                 <input type="time" [(ngModel)]="day.startTime" class="modern-input">
                 <span class="arrow-sep">→</span>
                 <input type="time" [(ngModel)]="day.endTime" class="modern-input">
               </div>
             </div>
-
             <div class="input-row">
-              <span class="row-label">☕ {{ langService.lang() === 'ar' ? 'استراحة' : 'Pause' }}</span>
+              <span class="row-label">☕ Pause</span>
               <div class="controls-wrapper">
                 <input type="time" [(ngModel)]="day.breakStart" class="modern-input pause-style">
                 <span class="arrow-sep">→</span>
@@ -48,18 +113,13 @@
             </div>
           </div>
 
-          <div class="off-label" *ngIf="!day.active">
-            {{ langService.lang() === 'ar' ? 'عطلة' : 'Repos' }}
-          </div>
+          <div class="off-label" *ngIf="!day.active">Repos</div>
         </div>
       </div>
 
       <div class="footer-actions">
-        <button 
-          pButton 
-          type="button" 
-          class="save-schedule-btn"
-          [label]="isSaving() ? '...' : langService.t().saveAvailability" 
+        <button pButton type="button" class="save-schedule-btn"
+          [label]="isSaving() ? '...' : langService.t().saveAvailability"
           [disabled]="isSaving()"
           (click)="saveFullSchedule()">
         </button>
