@@ -156,41 +156,44 @@ export class AvailabilityComponent implements OnInit {
   }
 
   saveFullSchedule() {
-    const barberId = this.sessionService.userId();
-    if (!barberId) {
-      this.errorMessage.set('Session expirée. Veuillez vous reconnecter.');
-      return;
-    }
-
-    if (this.configMode() === 'global') this.applyGlobalToAll();
-
-    // ✅ Sauvegarder dans localStorage immédiatement
-    this.saveToStorage(this.weeklySchedule());
-
-    this.isSaving.set(true);
-    this.errorMessage.set('');
-
-    const payload: DaySchedulePayload[] = this.weeklySchedule().map(day => ({
-      dayOfWeek: day.id,
-      startTime: day.startTime,
-      endTime: day.endTime,
-      breakStart: day.breakStart,
-      breakEnd: day.breakEnd,
-      active: day.active
-    }));
-
-    this.availabilityService.updateSchedule(barberId, payload).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        this.successMessage.set('✅ Disponibilité mise à jour avec succès !');
-        setTimeout(() => this.successMessage.set(''), 3000);
-      },
-      error: (err: any) => {
-        this.isSaving.set(false);
-        // ✅ Même si API échoue, localStorage est déjà sauvegardé
-        this.successMessage.set('✅ Sauvegardé localement !');
-        setTimeout(() => this.successMessage.set(''), 3000);
-      }
-    });
+  const barberId = this.sessionService.userId();
+  if (!barberId) {
+    this.errorMessage.set('Session expirée. Veuillez vous reconnecter.');
+    return;
   }
+
+  if (this.configMode() === 'global') this.applyGlobalToAll();
+
+  // ✅ Force signal update pour capturer les ngModel changes
+  const currentSchedule = this.weeklySchedule().map(day => ({ ...day }));
+  this.weeklySchedule.set(currentSchedule);
+
+  // ✅ Sauvegarder dans localStorage
+  this.saveToStorage(currentSchedule);
+
+  this.isSaving.set(true);
+  this.errorMessage.set('');
+
+  const payload: DaySchedulePayload[] = currentSchedule.map(day => ({
+    dayOfWeek: day.id,
+    startTime: day.startTime,
+    endTime: day.endTime,
+    breakStart: day.breakStart,
+    breakEnd: day.breakEnd,
+    active: day.active
+  }));
+
+  this.availabilityService.updateSchedule(barberId, payload).subscribe({
+    next: () => {
+      this.isSaving.set(false);
+      this.successMessage.set('✅ Disponibilité mise à jour avec succès !');
+      setTimeout(() => this.successMessage.set(''), 3000);
+    },
+    error: () => {
+      this.isSaving.set(false);
+      this.successMessage.set('✅ Sauvegardé localement !');
+      setTimeout(() => this.successMessage.set(''), 3000);
+    }
+  });
+}
 }
