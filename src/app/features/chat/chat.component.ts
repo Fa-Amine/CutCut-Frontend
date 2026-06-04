@@ -29,7 +29,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   isSending = signal(false);
   partnerName = signal('');
   partnerId = signal<number>(0);
+
+  // ✅ Flag pour scroller seulement quand nouveau message
+  private shouldScroll = false;
   private wsSubscription: any = null;
+  private refreshInterval: any = null;
 
   ngOnInit() {
     const partnerId = Number(this.route.snapshot.paramMap.get('id'));
@@ -37,6 +41,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.loadPartnerInfo(partnerId);
     this.loadMessages(partnerId);
     this.subscribeToWebSocket(partnerId);
+
+    // ✅ Rafraîchir les messages toutes les 5 secondes (fallback WebSocket)
+    this.refreshInterval = setInterval(() => {
+      this.loadMessagesSilently(partnerId);
+    }, 5000);
   }
 
   loadPartnerInfo(partnerId: number) {
@@ -54,9 +63,26 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: (msgs) => {
         this.messages.set(msgs);
         this.isLoading.set(false);
+        this.shouldScroll = true;
         this.chatService.markAsRead(myId, partnerId).subscribe();
       },
       error: () => this.isLoading.set(false)
+    });
+  }
+
+  // ✅ Charger sans spinner (pour rafraîchissement automatique)
+  loadMessagesSilently(partnerId: number) {
+    const myId = this.sessionService.userId();
+    if (!myId) return;
+    this.chatService.getConversation(myId, partnerId).subscribe({
+      next: (msgs) => {
+        if (msgs.length !== this.messages().length) {
+          this.messages.set(msgs);
+          this.shouldScroll = true;
+          this.chatService.markAsRead(myId, partnerId).subscribe();
+        }
+      },
+      error: () => {}
     });
   }
 
@@ -66,11 +92,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const client = (this.wsService as any).client;
     if (client?.active) {
       this.wsSubscription = client.subscribe(`/topic/chat/${myId}`, (msg: any) => {
-        const parts = msg.body.split('|');
-        const senderId = parseInt(parts[0]);
-        if (senderId === partnerId) {
-          this.loadMessages(partnerId);
-        }
+        this.loadMessagesSilently(partnerId);
       });
     }
   }
@@ -84,16 +106,22 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.isSending.set(true);
     this.chatService.sendMessage(myId, partnerId, content).subscribe({
       next: (msg) => {
+        // ✅ Ajouter le message immédiatement
         this.messages.update(msgs => [...msgs, msg]);
         this.newMessage.set('');
         this.isSending.set(false);
+        this.shouldScroll = true;
       },
       error: () => this.isSending.set(false)
     });
   }
 
   ngAfterViewChecked() {
-    this.scrollToBottom();
+    // ✅ Scroller seulement si nouveau message
+    if (this.shouldScroll) {
+      this.scrollToBottom();
+      this.shouldScroll = false;
+    }
   }
 
   scrollToBottom() {
@@ -127,5 +155,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngOnDestroy() {
     this.wsSubscription?.unsubscribe();
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 }
