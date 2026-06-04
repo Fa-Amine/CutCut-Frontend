@@ -15,20 +15,15 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
 import { ReviewService } from '../../../core/services/review.service';
 
 type UiBookingStatus = 'CONFIRMED' | 'PENDING' | 'CANCELLED' | 'COMPLETED';
+type FilterType = 'ALL' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 
 @Component({
   selector: 'app-my-bookings',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    ButtonModule,
-    TagModule,
-    AvatarModule,
-    MessageModule,
-    LoadingSpinnerComponent,
-    ErrorAlertComponent,
-    EmptyStateComponent
+    CommonModule, FormsModule, ButtonModule, TagModule,
+    AvatarModule, MessageModule, LoadingSpinnerComponent,
+    ErrorAlertComponent, EmptyStateComponent
   ],
   templateUrl: './my-bookings.component.html',
   styleUrl: './my-bookings.component.css'
@@ -44,13 +39,44 @@ export class MyBookingsComponent {
   successMessage = signal('');
   bookings = signal<BookingResponse[]>([]);
 
+  // ✅ Filtre actif
+  activeFilter = signal<FilterType>('ALL');
+
   reviewingBookingId = signal<number | null>(null);
   reviewStars = signal(5);
   reviewComment = signal('');
   reviewedBookings = signal<Set<number>>(new Set());
 
+  // ✅ Toutes les réservations filtrées
+  filteredBookings = computed(() => {
+    const filter = this.activeFilter();
+    return this.bookings().filter(booking => {
+      const mapped = this.mapStatus(booking.status);
+      if (filter === 'ALL') return true;
+      if (filter === 'CONFIRMED') return mapped === 'CONFIRMED' || mapped === 'PENDING';
+      if (filter === 'COMPLETED') return mapped === 'COMPLETED';
+      if (filter === 'CANCELLED') return mapped === 'CANCELLED';
+      return true;
+    });
+  });
+
+  // ✅ Compter par statut
+  countAll = computed(() => this.bookings().length);
+  countConfirmed = computed(() =>
+    this.bookings().filter(b => {
+      const m = this.mapStatus(b.status);
+      return m === 'CONFIRMED' || m === 'PENDING';
+    }).length
+  );
+  countCompleted = computed(() =>
+    this.bookings().filter(b => this.mapStatus(b.status) === 'COMPLETED').length
+  );
+  countCancelled = computed(() =>
+    this.bookings().filter(b => this.mapStatus(b.status) === 'CANCELLED').length
+  );
+
   upcomingBookings = computed(() =>
-    this.bookings().filter((booking) => {
+    this.filteredBookings().filter((booking) => {
       const start = new Date(booking.slot.startTime).getTime();
       const status = booking.status;
       return (
@@ -63,7 +89,7 @@ export class MyBookingsComponent {
   );
 
   pastBookings = computed(() =>
-    this.bookings().filter((booking) => {
+    this.filteredBookings().filter((booking) => {
       const start = new Date(booking.slot.startTime).getTime();
       const status = booking.status;
       return (
@@ -76,8 +102,10 @@ export class MyBookingsComponent {
     })
   );
 
-  constructor() {
-    this.loadBookings();
+  constructor() { this.loadBookings(); }
+
+  setFilter(filter: FilterType) {
+    this.activeFilter.set(filter);
   }
 
   loadBookings() {
@@ -97,9 +125,7 @@ export class MyBookingsComponent {
           if (b.status === 'COMPLETED') {
             this.reviewService.hasReview(b.id).subscribe({
               next: (has) => {
-                if (has) {
-                  this.reviewedBookings.update(s => new Set([...s, b.id]));
-                }
+                if (has) this.reviewedBookings.update(s => new Set([...s, b.id]));
               }
             });
           }
@@ -137,14 +163,11 @@ export class MyBookingsComponent {
     this.reviewComment.set('');
   }
 
-  cancelReview() {
-    this.reviewingBookingId.set(null);
-  }
+  cancelReview() { this.reviewingBookingId.set(null); }
 
   submitReview(bookingId: number) {
     const clientId = this.sessionService.userId();
     if (!clientId) return;
-
     this.reviewService.addReview(
       bookingId, clientId, this.reviewStars(), this.reviewComment()
     ).subscribe({
