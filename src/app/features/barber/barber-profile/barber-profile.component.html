@@ -192,27 +192,27 @@
             </div>
           </div>
 
-          <!-- ✅ APPROUVÉ -->
+          <!-- APPROUVÉ -->
           <div *ngIf="homeServiceRequest()?.status === 'APPROVED'"
             style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:1rem; color:#16a34a; font-weight:600;">
             🏠 Service à domicile activé ! Vos clients peuvent vous demander de vous déplacer.
           </div>
 
-          <!-- ✅ REFUSÉ -->
+          <!-- REFUSÉ -->
           <div *ngIf="homeServiceRequest()?.status === 'REJECTED'"
             style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:1rem; margin-bottom:1rem;">
             <p style="color:#dc2626; font-weight:600; margin:0 0 4px;">❌ Demande refusée</p>
             <p style="color:#737373; margin:0; font-size:0.88rem;">{{ homeServiceRequest()!.rejectionReason }}</p>
           </div>
 
-          <!-- ✅ FORMULAIRE -->
+          <!-- FORMULAIRE -->
           <div *ngIf="!homeServiceRequest() || homeServiceRequest()?.status === 'REJECTED'"
             class="home-service-form">
             <p style="color:#737373; font-size:0.88rem; margin-bottom:1rem;">
               Pour activer ce service, veuillez soumettre les documents suivants :
             </p>
 
-            <!-- Diplôme -->
+            <!-- ✅ Diplôme avec feedback -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">📄</span>
@@ -222,16 +222,20 @@
                 </div>
               </div>
               <div class="doc-actions">
-                <span *ngIf="diplomaUrl()" style="color:#16a34a; font-size:0.85rem;">✅ Uploadé</span>
-                <label for="diplomaInput" class="upload-label">
-                  {{ diplomaUrl() ? '🔄 Changer' : '📤 Uploader' }}
-                </label>
+                <ng-container *ngIf="!diplomaUrl()">
+                  <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
+                  <label *ngIf="!isUploadingDoc()" for="diplomaInput" class="upload-label">📤 Uploader</label>
+                </ng-container>
+                <ng-container *ngIf="diplomaUrl()">
+                  <span style="color:#16a34a; font-size:0.85rem; font-weight:600;">✅ Uploadé</span>
+                  <label for="diplomaInput" class="upload-label" style="background:#737373;">🔄 Changer</label>
+                </ng-container>
                 <input id="diplomaInput" type="file" accept="image/*,.pdf" style="display:none"
                   (change)="onDocumentSelected($event, 'diploma')" />
               </div>
             </div>
 
-            <!-- CIN -->
+            <!-- ✅ CIN avec feedback -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">🪪</span>
@@ -241,36 +245,56 @@
                 </div>
               </div>
               <div class="doc-actions">
-                <span *ngIf="cinUrl()" style="color:#16a34a; font-size:0.85rem;">✅ Uploadé</span>
-                <label for="cinInput" class="upload-label">
-                  {{ cinUrl() ? '🔄 Changer' : '📤 Uploader' }}
-                </label>
+                <ng-container *ngIf="!cinUrl()">
+                  <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
+                  <label *ngIf="!isUploadingDoc()" for="cinInput" class="upload-label">📤 Uploader</label>
+                </ng-container>
+                <ng-container *ngIf="cinUrl()">
+                  <span style="color:#16a34a; font-size:0.85rem; font-weight:600;">✅ Uploadé</span>
+                  <label for="cinInput" class="upload-label" style="background:#737373;">🔄 Changer</label>
+                </ng-container>
                 <input id="cinInput" type="file" accept="image/*" style="display:none"
                   (change)="onDocumentSelected($event, 'cin')" />
               </div>
             </div>
 
-            <!-- Selfie -->
+            <!-- ✅ Selfie — caméra frontale OBLIGATOIRE -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">🤳</span>
                 <div>
                   <strong>Selfie en temps réel</strong>
-                  <p>Une photo de vous prise maintenant avec votre CIN</p>
+                  <p>Photo prise maintenant avec caméra frontale</p>
                 </div>
               </div>
               <div class="doc-actions">
-                <span *ngIf="selfieUrl()" style="color:#16a34a; font-size:0.85rem;">✅ Uploadé</span>
-                <label for="selfieInput" class="upload-label">
-                  {{ selfieUrl() ? '🔄 Changer' : '📷 Prendre' }}
-                </label>
-                <input id="selfieInput" type="file" accept="image/*" capture="user" style="display:none"
+                <ng-container *ngIf="!selfieUrl()">
+                  <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
+                  <label *ngIf="!isUploadingDoc()" for="selfieInput" class="upload-label">📷 Prendre selfie</label>
+                </ng-container>
+                <ng-container *ngIf="selfieUrl()">
+                  <span style="color:#16a34a; font-size:0.85rem; font-weight:600;">✅ Pris</span>
+                  <label for="selfieInput" class="upload-label" style="background:#737373;">🔄 Reprendre</label>
+                </ng-container>
+                <!-- ✅ capture="user" = caméra frontale, pas de fichier existant -->
+                <input id="selfieInput" type="file" accept="image/*"
+                  capture="user"
+                  style="display:none"
                   (change)="onDocumentSelected($event, 'selfie')" />
               </div>
             </div>
 
-            <div *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.85rem; margin:0.5rem 0;">
-              ⏳ Upload en cours...
+            <!-- Barre de progression -->
+            <div class="upload-progress" *ngIf="diplomaUrl() || cinUrl() || selfieUrl()">
+              <div class="progress-step" [class.done]="diplomaUrl()">
+                {{ diplomaUrl() ? '✅' : '⬜' }} Diplôme
+              </div>
+              <div class="progress-step" [class.done]="cinUrl()">
+                {{ cinUrl() ? '✅' : '⬜' }} CIN
+              </div>
+              <div class="progress-step" [class.done]="selfieUrl()">
+                {{ selfieUrl() ? '✅' : '⬜' }} Selfie
+              </div>
             </div>
 
             <button pButton type="button"
