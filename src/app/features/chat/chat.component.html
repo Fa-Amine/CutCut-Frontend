@@ -1,0 +1,67 @@
+<div class="chat-page">
+
+  <!-- HEADER -->
+  <div class="chat-header">
+    <a routerLink="/barbers" class="back-btn">←</a>
+    <div class="chat-partner-info">
+      <div class="partner-avatar">{{ partnerName().charAt(0).toUpperCase() }}</div>
+      <div>
+        <h3>{{ partnerName() }}</h3>
+        <span class="online-status">En ligne</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="messages-container">
+    <div *ngIf="isLoading()" class="loading-msgs">
+      <p>Chargement...</p>
+    </div>
+
+    <div *ngIf="!isLoading() && messages().length === 0" class="empty-chat">
+      <span>💬</span>
+      <p>Commencez la conversation avec {{ partnerName() }}</p>
+    </div>
+
+    <div *ngFor="let msg of messages(); let i = index">
+
+      <!-- Date separator -->
+      <div class="date-separator"
+        *ngIf="i === 0 || formatDate(msg.sentAt) !== formatDate(messages()[i-1].sentAt)">
+        <span>{{ formatDate(msg.sentAt) }}</span>
+      </div>
+
+      <!-- Message -->
+      <div class="message-wrapper" [class.my-message]="isMyMessage(msg)">
+        <div class="message-bubble" [class.mine]="isMyMessage(msg)">
+          <p>{{ msg.content }}</p>
+          <span class="msg-time">
+            {{ formatTime(msg.sentAt) }}
+            <span *ngIf="isMyMessage(msg)" class="read-status">
+              {{ msg.read ? '✓✓' : '✓' }}
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div #messagesEnd></div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="chat-input-bar">
+    <textarea
+      [(ngModel)]="newMessage"
+      placeholder="Écrire un message..."
+      rows="1"
+      (keydown)="onKeyPress($event)"
+      [disabled]="isSending()"
+      class="message-input">
+    </textarea>
+    <button class="send-btn"
+      (click)="sendMessage()"
+      [disabled]="!newMessage().trim() || isSending()">
+      {{ isSending() ? '...' : '➤' }}
+    </button>
+  </div>
+</div>
