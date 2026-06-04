@@ -29,6 +29,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   partnerId = signal<number>(0);
 
   private shouldScroll = false;
+  private firstLoad = false; // ✅
   private wsSubscription: any = null;
   private refreshInterval: any = null;
 
@@ -38,13 +39,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.loadMessages(partnerId);
     this.subscribeToWebSocket(partnerId);
 
-    // ✅ Rafraîchir toutes les 5 secondes
     this.refreshInterval = setInterval(() => {
       this.loadMessagesSilently(partnerId);
     }, 5000);
   }
 
-  // ✅ Charger le nom du partenaire depuis les messages
   loadPartnerName(msgs: ChatMessage[]) {
     const myId = this.sessionService.userId();
     if (msgs.length > 0) {
@@ -68,7 +67,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.messages.set(msgs);
         this.loadPartnerName(msgs);
         this.isLoading.set(false);
-        this.shouldScroll = true;
+        // ✅ Scroller seulement au premier chargement
+        if (!this.firstLoad) {
+          this.shouldScroll = true;
+          this.firstLoad = true;
+        }
         this.chatService.markAsRead(myId, partnerId).subscribe();
       },
       error: () => this.isLoading.set(false)
@@ -83,6 +86,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         if (msgs.length !== this.messages().length) {
           this.messages.set(msgs);
           this.loadPartnerName(msgs);
+          // ✅ Scroller seulement si nouveau message
           this.shouldScroll = true;
           this.chatService.markAsRead(myId, partnerId).subscribe();
         }
@@ -114,6 +118,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.messages.update(msgs => [...msgs, msg]);
         this.newMessage.set('');
         this.isSending.set(false);
+        // ✅ Scroller après envoi
         this.shouldScroll = true;
       },
       error: () => this.isSending.set(false)
