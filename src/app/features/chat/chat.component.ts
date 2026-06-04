@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -13,8 +13,8 @@ import { WebSocketService } from '../../core/services/websocket.service';
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.css'
 })
-export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
-  @ViewChild('messagesEnd') messagesEnd!: ElementRef;
+export class ChatComponent implements OnInit, OnDestroy {
+  @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
   private route = inject(ActivatedRoute);
   private chatService = inject(ChatService);
@@ -28,10 +28,9 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   partnerName = signal('');
   partnerId = signal<number>(0);
 
-  private shouldScroll = false;
-  private firstLoad = false; // ✅
   private wsSubscription: any = null;
   private refreshInterval: any = null;
+  private firstLoad = true;
 
   ngOnInit() {
     const partnerId = Number(this.route.snapshot.paramMap.get('id'));
@@ -48,11 +47,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     const myId = this.sessionService.userId();
     if (msgs.length > 0) {
       const msg = msgs[0];
-      if (msg.sender.id === myId) {
-        this.partnerName.set(msg.receiver.name);
-      } else {
-        this.partnerName.set(msg.sender.name);
-      }
+      this.partnerName.set(msg.sender.id === myId ? msg.receiver.name : msg.sender.name);
     } else {
       this.partnerName.set('Utilisateur');
     }
@@ -67,12 +62,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.messages.set(msgs);
         this.loadPartnerName(msgs);
         this.isLoading.set(false);
-        // ✅ Scroller seulement au premier chargement
-        if (!this.firstLoad) {
-          this.shouldScroll = true;
-          this.firstLoad = true;
-        }
         this.chatService.markAsRead(myId, partnerId).subscribe();
+        // ✅ Scroll uniquement au premier chargement
+        if (this.firstLoad) {
+          this.firstLoad = false;
+          setTimeout(() => this.scrollToBottom(), 100);
+        }
       },
       error: () => this.isLoading.set(false)
     });
@@ -84,15 +79,24 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.chatService.getConversation(myId, partnerId).subscribe({
       next: (msgs) => {
         if (msgs.length !== this.messages().length) {
+          const wasAtBottom = this.isAtBottom();
           this.messages.set(msgs);
           this.loadPartnerName(msgs);
-          // ✅ Scroller seulement si nouveau message
-          this.shouldScroll = true;
           this.chatService.markAsRead(myId, partnerId).subscribe();
+          // ✅ Scroll seulement si l'utilisateur était en bas
+          if (wasAtBottom) {
+            setTimeout(() => this.scrollToBottom(), 100);
+          }
         }
       },
       error: () => {}
     });
+  }
+
+  isAtBottom(): boolean {
+    const container = this.messagesContainer?.nativeElement;
+    if (!container) return true;
+    return container.scrollHeight - container.scrollTop - container.clientHeight < 100;
   }
 
   subscribeToWebSocket(partnerId: number) {
@@ -118,24 +122,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.messages.update(msgs => [...msgs, msg]);
         this.newMessage.set('');
         this.isSending.set(false);
-        // ✅ Scroller après envoi
-        this.shouldScroll = true;
+        // ✅ Scroll après envoi
+        setTimeout(() => this.scrollToBottom(), 100);
       },
       error: () => this.isSending.set(false)
     });
   }
 
-  ngAfterViewChecked() {
-    if (this.shouldScroll) {
-      this.scrollToBottom();
-      this.shouldScroll = false;
-    }
-  }
-
   scrollToBottom() {
-    try {
-      this.messagesEnd?.nativeElement?.scrollIntoView({ behavior: 'smooth' });
-    } catch {}
+    const container = this.messagesContainer?.nativeElement;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }
 
   isMyMessage(msg: ChatMessage): boolean {
@@ -163,8 +161,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngOnDestroy() {
     this.wsSubscription?.unsubscribe();
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
   }
 }

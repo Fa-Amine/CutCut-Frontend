@@ -12,8 +12,9 @@
     </div>
   </div>
 
-  <!-- MESSAGES -->
-  <div class="messages-container">
+  <!-- ✅ MESSAGES avec #messagesContainer -->
+  <div class="messages-container" #messagesContainer>
+
     <div *ngIf="isLoading()" class="loading-msgs">
       <p>Chargement...</p>
     </div>
@@ -45,7 +46,6 @@
       </div>
     </div>
 
-    <div #messagesEnd></div>
   </div>
 
   <!-- INPUT -->
@@ -64,4 +64,5 @@
       {{ isSending() ? '...' : '➤' }}
     </button>
   </div>
+
 </div>
