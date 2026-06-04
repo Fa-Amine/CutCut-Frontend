@@ -93,7 +93,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ✅ Vérifier si l'utilisateur est en bas
   isAtBottom(): boolean {
     const container = this.messagesContainer?.nativeElement;
     if (!container) return true;
@@ -123,7 +122,7 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.messages.update(msgs => [...msgs, msg]);
         this.newMessage.set('');
         this.isSending.set(false);
-        // ✅ Scroll après envoi de mon message
+        // ✅ Scroll après envoi
         setTimeout(() => this.scrollToBottom(), 100);
       },
       error: () => this.isSending.set(false)
