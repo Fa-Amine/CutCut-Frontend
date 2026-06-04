@@ -254,6 +254,7 @@
   cursor: pointer;
   transition: all 0.2s;
   background: #fafafa;
+  color: #171717;
 }
 
 .service-item:hover { border-color: #171717; background: #f5f5f5; }
@@ -265,10 +266,10 @@
 }
 
 .service-info { display: flex; flex-direction: column; gap: 2px; }
-.service-name { font-weight: 700; font-size: 0.95rem; }
+.service-name { font-weight: 700; font-size: 0.95rem; color: #171717; }
 .service-desc { font-size: 0.78rem; opacity: 0.6; }
 .service-right { display: flex; align-items: center; gap: 0.75rem; }
-.service-price { font-weight: 700; font-size: 0.95rem; }
+.service-price { font-weight: 700; font-size: 0.95rem; color: #171717; }
 .service-check { font-size: 1rem; }
 
 .total-bar {

@@ -19,17 +19,21 @@
 
       <!-- ✅ BOUTON APPLIQUER À TOUS -->
       <div class="apply-all-banner">
-        <div class="apply-all-info">
-          <span class="apply-all-icon">⚡</span>
-          <div>
-            <strong>Appliquer le même horaire à tous les jours</strong>
-            <p>Configurez le premier jour, puis cliquez pour copier l'horaire à tous les autres jours.</p>
-          </div>
-        </div>
-        <button class="apply-all-btn" type="button" (click)="applyFirstDayToAll()">
-          ⚡ Appliquer à tous
-        </button>
-      </div>
+  <div class="apply-all-info">
+    <span class="apply-all-icon">⚡</span>
+    <div>
+      <strong>
+        {{ langService.lang() === 'ar' ? 'تطبيق نفس التوقيت على جميع الأيام' : 'Appliquer le même horaire à tous les jours' }}
+      </strong>
+      <p>
+        {{ langService.lang() === 'ar' ? 'قم بإعداد اليوم الأول، ثم انقر لنسخ التوقيت على جميع الأيام الأخرى.' : 'Configurez le premier jour, puis cliquez pour copier l\'horaire à tous les autres jours.' }}
+      </p>
+    </div>
+  </div>
+  <button class="apply-all-btn" type="button" (click)="applyFirstDayToAll()">
+    {{ langService.lang() === 'ar' ? 'تطبيق على الكل ⚡' : '⚡ Appliquer à tous' }}
+  </button>
+</div>
 
       <!-- LISTE DES JOURS -->
       <div class="days-list">
@@ -41,7 +45,9 @@
           <div class="day-info-col">
             <p-inputSwitch [(ngModel)]="day.active"></p-inputSwitch>
             <span class="day-name">{{ getDayName(day) }}</span>
-            <span *ngIf="i === 0" class="first-day-badge">Modèle</span>
+           <span *ngIf="i === 0" class="first-day-badge">
+  {{ langService.lang() === 'ar' ? 'نموذج' : 'Modèle' }}
+</span>
           </div>
 
           <div class="schedule-inputs-col" *ngIf="day.active">
