@@ -72,8 +72,15 @@ export class BarberProfileComponent implements AfterViewChecked {
   diplomaUrl = signal('');
   cinUrl = signal('');
   selfieUrl = signal('');
-  isUploadingDoc = signal(false);
+
+  // ✅ Un signal par document
+  isUploadingDiploma = signal(false);
+  isUploadingCin = signal(false);
+  isUploadingSelfie = signal(false);
   isSubmittingHomeService = signal(false);
+
+  // ✅ Helper
+  isUploadingDoc = () => this.isUploadingDiploma() || this.isUploadingCin() || this.isUploadingSelfie();
 
   private editMap: any = null;
   private editMarker: any = null;
@@ -226,7 +233,7 @@ export class BarberProfileComponent implements AfterViewChecked {
             services.map(s => s.id === updated.id ? updated : s)
           );
           this.cancelServiceForm();
-          this.successMessage.set('Service modifié !');
+          this.successMessage.set('Service modifie !');
         }
       });
     } else {
@@ -234,7 +241,7 @@ export class BarberProfileComponent implements AfterViewChecked {
         next: (newService) => {
           this.barberServices.update(services => [...services, newService]);
           this.cancelServiceForm();
-          this.successMessage.set('Service ajouté !');
+          this.successMessage.set('Service ajoute !');
         }
       });
     }
@@ -254,7 +261,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.barberServiceService.deleteService(barberId, serviceId).subscribe({
       next: () => {
         this.barberServices.update(services => services.filter(s => s.id !== serviceId));
-        this.successMessage.set('Service supprimé !');
+        this.successMessage.set('Service supprime !');
       }
     });
   }
@@ -274,11 +281,16 @@ export class BarberProfileComponent implements AfterViewChecked {
     });
   }
 
+  // ✅ Upload séparé par document
   onDocumentSelected(event: Event, type: 'diploma' | 'cin' | 'selfie') {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
-    this.isUploadingDoc.set(true);
+
+    if (type === 'diploma') this.isUploadingDiploma.set(true);
+    if (type === 'cin') this.isUploadingCin.set(true);
+    if (type === 'selfie') this.isUploadingSelfie.set(true);
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
@@ -287,12 +299,24 @@ export class BarberProfileComponent implements AfterViewChecked {
       formData
     ).subscribe({
       next: (response) => {
-        if (type === 'diploma') this.diplomaUrl.set(response.secure_url);
-        if (type === 'cin') this.cinUrl.set(response.secure_url);
-        if (type === 'selfie') this.selfieUrl.set(response.secure_url);
-        this.isUploadingDoc.set(false);
+        if (type === 'diploma') {
+          this.diplomaUrl.set(response.secure_url);
+          this.isUploadingDiploma.set(false);
+        }
+        if (type === 'cin') {
+          this.cinUrl.set(response.secure_url);
+          this.isUploadingCin.set(false);
+        }
+        if (type === 'selfie') {
+          this.selfieUrl.set(response.secure_url);
+          this.isUploadingSelfie.set(false);
+        }
       },
-      error: () => { this.isUploadingDoc.set(false); }
+      error: () => {
+        this.isUploadingDiploma.set(false);
+        this.isUploadingCin.set(false);
+        this.isUploadingSelfie.set(false);
+      }
     });
   }
 
