@@ -26,6 +26,8 @@ import { DashboardComponent as AdminDashboardComponent } from './features/admin/
 import { adminGuard } from './core/guards/admin.guard';
 import { AboutComponent } from './features/about/about.component';
 
+import { ChatComponent } from './features/chat/chat.component';
+
 
 export const routes: Routes = [
   {
@@ -44,6 +46,8 @@ export const routes: Routes = [
       { path: 'barber/profile', component: BarberProfileComponent, canActivate: [barberGuard] },
       { path: 'barber/availability', component: AvailabilityComponent, canActivate: [barberGuard] },
       { path: 'barber/bookings', component: BarberBookingsComponent, canActivate: [barberGuard] },
+
+	{ path: 'chat/:id', component: ChatComponent, canActivate: [clientGuard] },
 
       { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
       { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
