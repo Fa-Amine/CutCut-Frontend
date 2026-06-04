@@ -10,11 +10,10 @@ import { SessionService } from '../../../core/services/session.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
 
-type TranslationKey = keyof ReturnType<LanguageService['t']>;
-
 interface DayConfig {
   id: number;
-  name: TranslationKey;
+  nameFr: string;
+  nameAr: string;
   active: boolean;
   startTime: string;
   endTime: string;
@@ -42,44 +41,36 @@ export class AvailabilityComponent implements OnInit {
   isSaving = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
-  configMode = signal<'global' | 'individual'>('global');
 
-  globalConfig = signal({
-    startTime: '08:00',
-    endTime: '20:00',
-    breakStart: '12:00',
-    breakEnd: '13:00'
-  });
-
-  defaultSchedule: DayConfig[] = [
-    { id: 1, name: 'monday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
-    { id: 2, name: 'tuesday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
-    { id: 3, name: 'wednesday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
-    { id: 4, name: 'thursday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
-    { id: 5, name: 'friday' as TranslationKey, active: true, startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
-    { id: 6, name: 'saturday' as TranslationKey, active: false, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
-    { id: 7, name: 'sunday' as TranslationKey, active: false, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
-  ];
-
-  weeklySchedule = signal<DayConfig[]>([...this.defaultSchedule]);
+  weeklySchedule = signal<DayConfig[]>([
+    { id: 1, nameFr: 'Lundi',    nameAr: 'الإثنين',   active: true,  startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
+    { id: 2, nameFr: 'Mardi',    nameAr: 'الثلاثاء',  active: true,  startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
+    { id: 3, nameFr: 'Mercredi', nameAr: 'الأربعاء',  active: true,  startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
+    { id: 4, nameFr: 'Jeudi',    nameAr: 'الخميس',    active: true,  startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
+    { id: 5, nameFr: 'Vendredi', nameAr: 'الجمعة',    active: true,  startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
+    { id: 6, nameFr: 'Samedi',   nameAr: 'السبت',     active: false, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
+    { id: 7, nameFr: 'Dimanche', nameAr: 'الأحد',     active: false, startTime: '09:00', endTime: '18:00', breakStart: '12:00', breakEnd: '13:00' },
+  ]);
 
   private getStorageKey(): string {
     return `schedule_${this.sessionService.userId()}`;
   }
 
-  // ✅ Sauvegarder dans localStorage
   private saveToStorage(schedule: DayConfig[]) {
     try {
       localStorage.setItem(this.getStorageKey(), JSON.stringify(schedule));
     } catch {}
   }
 
-  // ✅ Charger depuis localStorage
   private loadFromStorage(): DayConfig[] | null {
     try {
       const stored = localStorage.getItem(this.getStorageKey());
       return stored ? JSON.parse(stored) : null;
     } catch { return null; }
+  }
+
+  getDayName(day: DayConfig): string {
+    return this.langService.isArabic() ? day.nameAr : day.nameFr;
   }
 
   ngOnInit() {
@@ -90,18 +81,23 @@ export class AvailabilityComponent implements OnInit {
     const barberId = this.sessionService.userId();
     if (!barberId) { this.isLoading.set(false); return; }
 
-    // ✅ 1. Charger localStorage immédiatement
+    // ✅ Charger localStorage immédiatement
     const stored = this.loadFromStorage();
     if (stored) {
-      this.weeklySchedule.set(stored);
+      // Merge avec les noms FR/AR car localStorage ne les a pas forcément
+      const merged = this.weeklySchedule().map(day => {
+        const saved = stored.find((s: any) => s.id === day.id);
+        return saved ? { ...day, ...saved, nameFr: day.nameFr, nameAr: day.nameAr } : day;
+      });
+      this.weeklySchedule.set(merged);
     }
 
-    // ✅ 2. Sync avec backend
+    // ✅ Sync avec backend
     this.availabilityService.getSchedule(barberId).subscribe({
       next: (savedSchedule) => {
         if (savedSchedule && savedSchedule.length > 0) {
-          const updated = this.defaultSchedule.map(day => {
-            const saved = savedSchedule.find(s => s.dayOfWeek === day.id);
+          const updated = this.weeklySchedule().map(day => {
+            const saved = savedSchedule.find((s: any) => s.dayOfWeek === day.id);
             if (saved) {
               return {
                 ...day,
@@ -119,34 +115,24 @@ export class AvailabilityComponent implements OnInit {
         }
         this.isLoading.set(false);
       },
-      error: () => {
-        // API down → garde localStorage
-        this.isLoading.set(false);
-      }
+      error: () => { this.isLoading.set(false); }
     });
   }
 
-  setMode(mode: 'global' | 'individual') {
-    this.configMode.set(mode);
-    if (mode === 'global') this.applyGlobalToAll();
-  }
+  // ✅ Copier l'horaire du 1er jour actif vers tous les autres
+  applyFirstDayToAll() {
+    const schedule = this.weeklySchedule();
+    const firstDay = schedule.find(d => d.active) || schedule[0];
 
-  applyGlobalToAll() {
-    const global = this.globalConfig();
     this.weeklySchedule.update(days =>
       days.map(day => ({
         ...day,
-        startTime: global.startTime,
-        endTime: global.endTime,
-        breakStart: global.breakStart,
-        breakEnd: global.breakEnd
+        startTime: firstDay.startTime,
+        endTime: firstDay.endTime,
+        breakStart: firstDay.breakStart,
+        breakEnd: firstDay.breakEnd
       }))
     );
-  }
-
-  updateGlobal(field: string, value: string) {
-    this.globalConfig.update(config => ({ ...config, [field]: value }));
-    this.applyGlobalToAll();
   }
 
   toggleDay(dayId: number) {
@@ -156,44 +142,40 @@ export class AvailabilityComponent implements OnInit {
   }
 
   saveFullSchedule() {
-  const barberId = this.sessionService.userId();
-  if (!barberId) {
-    this.errorMessage.set('Session expirée. Veuillez vous reconnecter.');
-    return;
-  }
-
-  if (this.configMode() === 'global') this.applyGlobalToAll();
-
-  // ✅ Force signal update pour capturer les ngModel changes
-  const currentSchedule = this.weeklySchedule().map(day => ({ ...day }));
-  this.weeklySchedule.set(currentSchedule);
-
-  // ✅ Sauvegarder dans localStorage
-  this.saveToStorage(currentSchedule);
-
-  this.isSaving.set(true);
-  this.errorMessage.set('');
-
-  const payload: DaySchedulePayload[] = currentSchedule.map(day => ({
-    dayOfWeek: day.id,
-    startTime: day.startTime,
-    endTime: day.endTime,
-    breakStart: day.breakStart,
-    breakEnd: day.breakEnd,
-    active: day.active
-  }));
-
-  this.availabilityService.updateSchedule(barberId, payload).subscribe({
-    next: () => {
-      this.isSaving.set(false);
-      this.successMessage.set('✅ Disponibilité mise à jour avec succès !');
-      setTimeout(() => this.successMessage.set(''), 3000);
-    },
-    error: () => {
-      this.isSaving.set(false);
-      this.successMessage.set('✅ Sauvegardé localement !');
-      setTimeout(() => this.successMessage.set(''), 3000);
+    const barberId = this.sessionService.userId();
+    if (!barberId) {
+      this.errorMessage.set('Session expirée. Veuillez vous reconnecter.');
+      return;
     }
-  });
-}
+
+    // ✅ Force signal update
+    const currentSchedule = this.weeklySchedule().map(day => ({ ...day }));
+    this.weeklySchedule.set(currentSchedule);
+    this.saveToStorage(currentSchedule);
+
+    this.isSaving.set(true);
+    this.errorMessage.set('');
+
+    const payload: DaySchedulePayload[] = currentSchedule.map(day => ({
+      dayOfWeek: day.id,
+      startTime: day.startTime,
+      endTime: day.endTime,
+      breakStart: day.breakStart,
+      breakEnd: day.breakEnd,
+      active: day.active
+    }));
+
+    this.availabilityService.updateSchedule(barberId, payload).subscribe({
+      next: () => {
+        this.isSaving.set(false);
+        this.successMessage.set('✅ Disponibilité mise à jour avec succès !');
+        setTimeout(() => this.successMessage.set(''), 3000);
+      },
+      error: () => {
+        this.isSaving.set(false);
+        this.successMessage.set('✅ Sauvegardé localement !');
+        setTimeout(() => this.successMessage.set(''), 3000);
+      }
+    });
+  }
 }

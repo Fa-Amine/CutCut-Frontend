@@ -45,8 +45,6 @@ export class BarberListComponent implements AfterViewChecked {
   userLng = signal<number | null>(null);
   isLocating = signal(false);
   sortByDistance = signal(false);
-
-  // ✅ Filtre catégorie
   selectedCategory = signal<'ALL' | 'HOMME' | 'FEMME'>('ALL');
 
   private map: any = null;
@@ -62,9 +60,7 @@ export class BarberListComponent implements AfterViewChecked {
   filteredBarbers = computed(() => {
     const term = this.searchTerm().trim().toLowerCase();
     const category = this.selectedCategory();
-
     let result = this.barbers().filter((barber) => {
-      // ✅ Filtre catégorie
       if (category !== 'ALL' && barber.category !== category) return false;
       if (!term) return true;
       return (
@@ -73,7 +69,6 @@ export class BarberListComponent implements AfterViewChecked {
         (barber.bio ?? '').toLowerCase().includes(term)
       );
     });
-
     if (this.sortByDistance() && this.userLat() && this.userLng()) {
       result = [...result].sort((a, b) => {
         const distA = this.calculateDistance(this.userLat()!, this.userLng()!, a.latitude ?? 0, a.longitude ?? 0);
@@ -97,18 +92,14 @@ export class BarberListComponent implements AfterViewChecked {
     this.loadLeaflet();
     this.loadBarbers();
     this.favoriteService.loadFavorites();
-
-    // ✅ Lire catégorie depuis query params
     const category = this.route.snapshot.queryParamMap.get('category');
     if (category === 'FEMME') this.selectedCategory.set('FEMME');
     if (category === 'HOMME') this.selectedCategory.set('HOMME');
-
     (window as any).showRoute = (destLat: number, destLng: number) => {
       this.showRouteOnMap(destLat, destLng);
     };
   }
 
-  // ✅ Changer catégorie
   setCategory(category: 'ALL' | 'HOMME' | 'FEMME') {
     this.selectedCategory.set(category);
   }
@@ -139,19 +130,23 @@ export class BarberListComponent implements AfterViewChecked {
       .then(res => res.json())
       .then(data => {
         if (data.routes && data.routes.length > 0) {
-          const coords = data.routes[0].geometry.coordinates.map(
-            (c: number[]) => [c[1], c[0]]
-          );
+          const coords = data.routes[0].geometry.coordinates.map((c: number[]) => [c[1], c[0]]);
           this.currentRoute = L.polyline(coords, {
-            color: '#171717', weight: 5, opacity: 0.8,
-            lineJoin: 'round', lineCap: 'round', dashArray: '10, 5'
+            color: '#171717', weight: 5, opacity: 0.9,
+            lineJoin: 'round', lineCap: 'round'
           }).addTo(this.map);
-          this.map.fitBounds(this.currentRoute.getBounds(), { padding: [40, 40] });
+          this.map.fitBounds(this.currentRoute.getBounds(), { padding: [50, 50] });
           const duration = Math.round(data.routes[0].duration / 60);
           const distance = (data.routes[0].distance / 1000).toFixed(1);
           L.popup()
             .setLatLng([destLat, destLng])
-            .setContent(`<strong>🗺️ Itinéraire</strong><br>📏 ${distance} km · ⏱ ~${duration} min`)
+            .setContent(`
+              <div style="font-family:inherit;padding:4px;">
+                <strong style="color:#171717;">🗺️ Itinéraire</strong><br>
+                <span style="color:#16a34a;font-weight:600;">📏 ${distance} km</span> &nbsp;
+                <span style="color:#737373;">⏱ ~${duration} min</span>
+              </div>
+            `)
             .openOn(this.map);
         }
       })
@@ -160,7 +155,7 @@ export class BarberListComponent implements AfterViewChecked {
 
   locateMe() {
     if (!navigator.geolocation) {
-      this.errorMessage.set('La geolocalisation n\'est pas supportee.');
+      this.errorMessage.set('La géolocalisation n\'est pas supportée.');
       return;
     }
     this.isLocating.set(true);
@@ -172,13 +167,14 @@ export class BarberListComponent implements AfterViewChecked {
         this.isLocating.set(false);
         if (this.map && this.viewMode() === 'map') {
           if (this.userMarker) this.userMarker.remove();
-          const userIcon = L.divIcon({
-            html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(59,130,246,0.3);"></div>`,
-            className: '', iconSize: [18, 18], iconAnchor: [9, 9]
-          });
-          this.userMarker = L.marker([position.coords.latitude, position.coords.longitude], { icon: userIcon }).addTo(this.map);
+          this.userMarker = L.marker(
+            [position.coords.latitude, position.coords.longitude],
+            { icon: this.createUserIcon() }
+          ).addTo(this.map);
           this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>').openPopup();
-          this.map.flyTo([position.coords.latitude, position.coords.longitude], 13, { animate: true, duration: 1.5 });
+          this.map.flyTo([position.coords.latitude, position.coords.longitude], 14, {
+            animate: true, duration: 1.5
+          });
         }
       },
       () => {
@@ -186,6 +182,21 @@ export class BarberListComponent implements AfterViewChecked {
         this.errorMessage.set('Impossible de récupérer votre position.');
       }
     );
+  }
+
+  createUserIcon() {
+    return L.divIcon({
+      html: `
+        <div style="
+          width:20px; height:20px;
+          background:#3b82f6;
+          border:3px solid white;
+          border-radius:50%;
+          box-shadow:0 0 0 5px rgba(59,130,246,0.25), 0 2px 8px rgba(0,0,0,0.3);
+        "></div>
+      `,
+      className: '', iconSize: [20, 20], iconAnchor: [10, 10]
+    });
   }
 
   loadLeaflet() {
@@ -219,79 +230,139 @@ export class BarberListComponent implements AfterViewChecked {
 
   createBarberIcon(barber: BarberListItem): any {
     const initials = this.getInitials(barber.name);
+    const isFemale = barber.category === 'FEMME';
+    const bgColor = isFemale ? '#ec4899' : '#171717';
     const photo = barber.photoUrl
       ? `<img src="${barber.photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
       : `<span style="color:white;font-weight:700;font-size:0.85rem;">${initials}</span>`;
+
     return L.divIcon({
       html: `
-        <div style="width:44px;height:44px;background:#171717;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);overflow:hidden;cursor:pointer;">
-          ${photo}
+        <div style="position:relative;">
+          <div style="
+            width:48px; height:48px;
+            background:${bgColor};
+            border:3px solid white;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            box-shadow:0 4px 16px rgba(0,0,0,0.35);
+            overflow:hidden;
+            cursor:pointer;
+            transition:transform 0.2s;
+          ">
+            ${photo}
+          </div>
+          <div style="
+            position:absolute;
+            bottom:-8px;
+            left:50%;
+            transform:translateX(-50%);
+            width:0; height:0;
+            border-left:7px solid transparent;
+            border-right:7px solid transparent;
+            border-top:10px solid ${bgColor};
+          "></div>
         </div>
-        <div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid white;margin:0 auto;margin-top:-2px;"></div>
       `,
-      className: '', iconSize: [44, 52], iconAnchor: [22, 52], popupAnchor: [0, -54]
+      className: '', iconSize: [48, 58], iconAnchor: [24, 58], popupAnchor: [0, -60]
     });
   }
 
   initMap() {
     this.mapInitialized = true;
-    const centerLat = this.userLat() || 33.9716;
-    const centerLng = this.userLng() || -6.8498;
-    this.map = L.map('barbers-map', { zoomControl: false, attributionControl: true }).setView([centerLat, centerLng], 12);
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { attribution: '© Google Maps', maxZoom: 19 }).addTo(this.map);
+    const centerLat = this.userLat() || 31.7917;
+    const centerLng = this.userLng() || -7.0926;
+
+    this.map = L.map('barbers-map', {
+      zoomControl: false,
+      attributionControl: true,
+      minZoom: 5,
+      maxZoom: 19
+    }).setView([centerLat, centerLng], 6);
+
+    // ✅ Tile CartoDB — affiche le Maroc correctement (Sahara inclus)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(this.map);
+
+    // Zoom controls modernes
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
+    // Marqueur utilisateur
     if (this.userLat() && this.userLng()) {
-      const userIcon = L.divIcon({
-        html: `<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(59,130,246,0.3);"></div>`,
-        className: '', iconSize: [18, 18], iconAnchor: [9, 9]
-      });
-      this.userMarker = L.marker([this.userLat()!, this.userLng()!], { icon: userIcon }).addTo(this.map);
+      this.userMarker = L.marker(
+        [this.userLat()!, this.userLng()!],
+        { icon: this.createUserIcon() }
+      ).addTo(this.map);
       this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>');
     }
 
+    // Marqueurs barbiers
     const barbersWithLocation = this.filteredBarbers().filter(b => b.latitude && b.longitude);
     barbersWithLocation.forEach(barber => {
       const dist = this.userLat() && this.userLng() && barber.latitude && barber.longitude
         ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude).toFixed(1)
         : null;
+
       const icon = this.createBarberIcon(barber);
       const marker = L.marker([barber.latitude!, barber.longitude!], { icon });
-      const popup = L.popup({ maxWidth: 230, className: 'custom-popup' }).setContent(`
-        <div style="padding:4px; min-width:190px;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+
+      const popup = L.popup({
+        maxWidth: 240,
+        className: 'cutcut-popup',
+        closeButton: true
+      }).setContent(`
+        <div style="padding:8px; min-width:200px; font-family:'Inter',sans-serif;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
             ${barber.photoUrl
-              ? `<img src="${barber.photoUrl}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid #e5e5e5;" />`
-              : `<div style="width:48px;height:48px;border-radius:50%;background:#171717;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;">${this.getInitials(barber.name)}</div>`
+              ? `<img src="${barber.photoUrl}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #e5e5e5;flex-shrink:0;" />`
+              : `<div style="width:52px;height:52px;border-radius:50%;background:#171717;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;flex-shrink:0;">${this.getInitials(barber.name)}</div>`
             }
-            <div style="text-align:left;">
-              <strong style="display:block;color:#171717;font-size:0.95rem;">${barber.name}</strong>
-              <span style="color:#737373;font-size:0.8rem;">${barber.shopName || 'CutCut'}</span>
-              ${barber.category === 'FEMME' ? '<span style="font-size:0.75rem;color:#ec4899;">💇‍♀️ Coiffeuse</span>' : '<span style="font-size:0.75rem;color:#737373;">🧔 Barbier</span>'}
+            <div>
+              <strong style="display:block;color:#171717;font-size:1rem;margin-bottom:2px;">${barber.name}</strong>
+              <span style="color:#737373;font-size:0.82rem;">${barber.shopName || 'CutCut'}</span><br>
+              <span style="font-size:0.75rem;">${barber.category === 'FEMME' ? '💇‍♀️ Coiffeuse' : '🧔 Barbier'}</span>
             </div>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <span style="background:#f5f5f5;padding:3px 10px;border-radius:20px;font-size:0.82rem;font-weight:700;color:#171717;">${barber.price ?? 0} MAD</span>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:8px;background:#f9f9f9;border-radius:10px;">
+            <span style="font-weight:700;color:#171717;font-size:0.9rem;">${barber.price ?? 0} MAD</span>
+            ${barber.averageRating ? `<span style="color:#f59e0b;font-size:0.82rem;">⭐ ${barber.averageRating}</span>` : ''}
             ${dist ? `<span style="color:#16a34a;font-size:0.82rem;font-weight:600;">📍 ${dist} km</span>` : ''}
           </div>
+
           <button onclick="window.location.href='/barbers/${barber.id}'"
-            style="width:100%;background:#171717;color:white;border:none;padding:9px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;margin-bottom:7px;">
-            ✂️ Réserver
+            style="width:100%;background:#171717;color:white;border:none;padding:10px 0;border-radius:12px;cursor:pointer;font-size:0.9rem;font-weight:700;font-family:inherit;margin-bottom:8px;transition:opacity 0.2s;"
+            onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            ✂️ Voir & Réserver
           </button>
+
           <button onclick="window.showRoute(${barber.latitude}, ${barber.longitude})"
-            style="width:100%;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;padding:8px 0;border-radius:10px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;">
-            🗺️ Itinéraire sur la carte
+            style="width:100%;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;padding:9px 0;border-radius:12px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;">
+            🗺️ Itinéraire
           </button>
         </div>
       `);
+
       marker.bindPopup(popup);
       marker.addTo(this.map);
       this.markers.push(marker);
     });
 
+    // ✅ Centrer sur les barbiers s'ils existent, sinon sur le Maroc complet
     if (barbersWithLocation.length > 0) {
       const bounds = L.latLngBounds(barbersWithLocation.map(b => [b.latitude!, b.longitude!]));
       this.map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+    } else {
+      // ✅ Vue complète du Maroc (Sahara inclus)
+      this.map.fitBounds([
+        [20.7, -17.1], // Sud-Ouest (Sahara)
+        [35.9, -1.0]   // Nord-Est
+      ]);
     }
   }
 
