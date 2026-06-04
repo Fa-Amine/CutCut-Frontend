@@ -61,7 +61,6 @@ export class BarberProfileComponent implements AfterViewChecked {
   photos = signal<BarberPhoto[]>([]);
   newCaption = signal('');
 
-  // ✅ Services
   barberServices = signal<BarberServiceItem[]>([]);
   showAddService = signal(false);
   editingServiceId = signal<number | null>(null);
@@ -69,7 +68,6 @@ export class BarberProfileComponent implements AfterViewChecked {
   newServicePrice: number = 0;
   newServiceDesc = '';
 
-  // ✅ Home Service
   homeServiceRequest = signal<HomeServiceRequest | null>(null);
   diplomaUrl = signal('');
   cinUrl = signal('');
@@ -206,7 +204,6 @@ export class BarberProfileComponent implements AfterViewChecked {
     );
   }
 
-  // ✅ Services
   loadServices(barberId: number) {
     this.barberServiceService.getServices(barberId).subscribe({
       next: (services) => this.barberServices.set(services),
@@ -270,7 +267,6 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.newServiceDesc = '';
   }
 
-  // ✅ Home Service
   loadHomeServiceRequest(barberId: number) {
     this.homeServiceService.getByBarber(barberId).subscribe({
       next: (req) => { if (req) this.homeServiceRequest.set(req); },
@@ -310,7 +306,7 @@ export class BarberProfileComponent implements AfterViewChecked {
       next: (req) => {
         this.homeServiceRequest.set(req);
         this.isSubmittingHomeService.set(false);
-        this.successMessage.set('✅ Demande soumise ! Notre équipe va vérifier vos documents.');
+        this.successMessage.set('Demande soumise ! Notre equipe va verifier vos documents.');
         setTimeout(() => this.successMessage.set(''), 4000);
       },
       error: () => { this.isSubmittingHomeService.set(false); }
