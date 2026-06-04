@@ -20,6 +20,8 @@ import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
 import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-photo.service';
 import { BarberServiceService } from '../../../core/services/barber-service.service';
 import { BarberServiceItem } from '../../../core/models/booking.models';
+import { HomeServiceService } from '../../../core/services/home-service.service';
+import { HomeServiceRequest } from '../../../core/models/barber.models';
 
 declare const L: any;
 
@@ -27,20 +29,10 @@ declare const L: any;
   selector: 'app-barber-profile',
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    AvatarModule,
-    CardModule,
-    TagModule,
-    ButtonModule,
-    InputTextModule,
-    InputNumberModule,
-    TextareaModule,
-    MessageModule,
-    LoadingSpinnerComponent,
-    ErrorAlertComponent,
-    SafeUrlPipe
+    CommonModule, ReactiveFormsModule, FormsModule,
+    AvatarModule, CardModule, TagModule, ButtonModule,
+    InputTextModule, InputNumberModule, TextareaModule, MessageModule,
+    LoadingSpinnerComponent, ErrorAlertComponent, SafeUrlPipe
   ],
   templateUrl: './barber-profile.component.html',
   styleUrl: './barber-profile.component.css'
@@ -50,6 +42,7 @@ export class BarberProfileComponent implements AfterViewChecked {
   private profileService = inject(ProfileService);
   private barberPhotoService = inject(BarberPhotoService);
   private barberServiceService = inject(BarberServiceService);
+  private homeServiceService = inject(HomeServiceService);
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   langService = inject(LanguageService);
@@ -75,6 +68,14 @@ export class BarberProfileComponent implements AfterViewChecked {
   newServiceName = '';
   newServicePrice: number = 0;
   newServiceDesc = '';
+
+  // ✅ Home Service
+  homeServiceRequest = signal<HomeServiceRequest | null>(null);
+  diplomaUrl = signal('');
+  cinUrl = signal('');
+  selfieUrl = signal('');
+  isUploadingDoc = signal(false);
+  isSubmittingHomeService = signal(false);
 
   private editMap: any = null;
   private editMarker: any = null;
@@ -205,7 +206,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     );
   }
 
-  // ✅ Charger les services
+  // ✅ Services
   loadServices(barberId: number) {
     this.barberServiceService.getServices(barberId).subscribe({
       next: (services) => this.barberServices.set(services),
@@ -213,17 +214,14 @@ export class BarberProfileComponent implements AfterViewChecked {
     });
   }
 
-  // ✅ Sauvegarder (ajouter ou modifier)
   saveService() {
     const barberId = this.sessionService.userId();
     if (!barberId || !this.newServiceName || !this.newServicePrice) return;
-
     const payload = {
       name: this.newServiceName,
       price: this.newServicePrice,
       description: this.newServiceDesc
     };
-
     if (this.editingServiceId()) {
       this.barberServiceService.updateService(barberId, this.editingServiceId()!, payload).subscribe({
         next: (updated) => {
@@ -245,7 +243,6 @@ export class BarberProfileComponent implements AfterViewChecked {
     }
   }
 
-  // ✅ Modifier un service
   editService(service: BarberServiceItem) {
     this.editingServiceId.set(service.id);
     this.newServiceName = service.name;
@@ -254,7 +251,6 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.showAddService.set(true);
   }
 
-  // ✅ Supprimer un service
   deleteService(serviceId: number) {
     const barberId = this.sessionService.userId();
     if (!barberId) return;
@@ -266,13 +262,59 @@ export class BarberProfileComponent implements AfterViewChecked {
     });
   }
 
-  // ✅ Annuler le formulaire
   cancelServiceForm() {
     this.showAddService.set(false);
     this.editingServiceId.set(null);
     this.newServiceName = '';
     this.newServicePrice = 0;
     this.newServiceDesc = '';
+  }
+
+  // ✅ Home Service
+  loadHomeServiceRequest(barberId: number) {
+    this.homeServiceService.getByBarber(barberId).subscribe({
+      next: (req) => { if (req) this.homeServiceRequest.set(req); },
+      error: () => {}
+    });
+  }
+
+  onDocumentSelected(event: Event, type: 'diploma' | 'cin' | 'selfie') {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingDoc.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+    this.http.post<any>(
+      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      formData
+    ).subscribe({
+      next: (response) => {
+        if (type === 'diploma') this.diplomaUrl.set(response.secure_url);
+        if (type === 'cin') this.cinUrl.set(response.secure_url);
+        if (type === 'selfie') this.selfieUrl.set(response.secure_url);
+        this.isUploadingDoc.set(false);
+      },
+      error: () => { this.isUploadingDoc.set(false); }
+    });
+  }
+
+  submitHomeService() {
+    const barberId = this.sessionService.userId();
+    if (!barberId) return;
+    this.isSubmittingHomeService.set(true);
+    this.homeServiceService.submitRequest(
+      barberId, this.diplomaUrl(), this.cinUrl(), this.selfieUrl()
+    ).subscribe({
+      next: (req) => {
+        this.homeServiceRequest.set(req);
+        this.isSubmittingHomeService.set(false);
+        this.successMessage.set('✅ Demande soumise ! Notre équipe va vérifier vos documents.');
+        setTimeout(() => this.successMessage.set(''), 4000);
+      },
+      error: () => { this.isSubmittingHomeService.set(false); }
+    });
   }
 
   onPhotoSelected(event: Event) {
@@ -370,6 +412,7 @@ export class BarberProfileComponent implements AfterViewChecked {
         this.isLoading.set(false);
         this.loadPhotos(barberId);
         this.loadServices(barberId);
+        this.loadHomeServiceRequest(barberId);
       },
       error: (error) => {
         this.errorMessage.set(error?.error?.message || 'Impossible de charger le profil barbier.');

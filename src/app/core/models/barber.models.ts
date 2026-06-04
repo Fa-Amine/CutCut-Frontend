@@ -10,8 +10,9 @@ export interface BarberListItem {
   address?: string;
   latitude?: number;
   longitude?: number;
-  // ✅ Nouveau champ
   category?: string;
+  // ✅ Service à domicile
+  homeService?: boolean;
 }
 
 export interface BarberDetails {
@@ -26,6 +27,22 @@ export interface BarberDetails {
   address?: string;
   latitude?: number;
   longitude?: number;
-  // ✅ Nouveau champ
   category?: string;
+  // ✅ Service à domicile
+  homeService?: boolean;
+}
+
+export interface HomeServiceRequest {
+  id?: number;
+  status?: string;
+  diplomaUrl?: string;
+  cinUrl?: string;
+  selfieUrl?: string;
+  rejectionReason?: string;
+  barber?: {
+    id: number;
+    name: string;
+    shopName?: string;
+    photoUrl?: string;
+  };
 }

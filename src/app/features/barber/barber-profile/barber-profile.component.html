@@ -124,7 +124,6 @@
             </button>
           </div>
 
-          <!-- Formulaire ajout/modification -->
           <div class="service-form" *ngIf="showAddService()">
             <div class="service-form-grid">
               <div>
@@ -153,7 +152,6 @@
             </div>
           </div>
 
-          <!-- Liste des services -->
           <div class="services-list" *ngIf="barberServices().length > 0">
             <div class="service-row" *ngFor="let service of barberServices()">
               <div class="service-row-info">
@@ -174,6 +172,120 @@
             style="color:#a3a3a3; text-align:center; padding:1.5rem; font-size:0.9rem;">
             Aucun service ajouté. Cliquez sur "Ajouter un service" !
           </p>
+        </div>
+
+        <!-- ✅ SECTION SERVICE À DOMICILE -->
+        <div class="home-service-section">
+          <div class="home-service-header">
+            <div>
+              <h3>🏠 Service à domicile</h3>
+              <p>Proposez vos services directement chez vos clients</p>
+            </div>
+            <div *ngIf="homeServiceRequest()">
+              <span class="status-badge"
+                [class.pending]="homeServiceRequest()!.status === 'PENDING'"
+                [class.approved]="homeServiceRequest()!.status === 'APPROVED'"
+                [class.rejected]="homeServiceRequest()!.status === 'REJECTED'">
+                {{ homeServiceRequest()!.status === 'PENDING' ? '⏳ En attente' :
+                   homeServiceRequest()!.status === 'APPROVED' ? '✅ Activé' : '❌ Refusé' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- ✅ APPROUVÉ -->
+          <div *ngIf="homeServiceRequest()?.status === 'APPROVED'"
+            style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:1rem; color:#16a34a; font-weight:600;">
+            🏠 Service à domicile activé ! Vos clients peuvent vous demander de vous déplacer.
+          </div>
+
+          <!-- ✅ REFUSÉ -->
+          <div *ngIf="homeServiceRequest()?.status === 'REJECTED'"
+            style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+            <p style="color:#dc2626; font-weight:600; margin:0 0 4px;">❌ Demande refusée</p>
+            <p style="color:#737373; margin:0; font-size:0.88rem;">{{ homeServiceRequest()!.rejectionReason }}</p>
+          </div>
+
+          <!-- ✅ FORMULAIRE -->
+          <div *ngIf="!homeServiceRequest() || homeServiceRequest()?.status === 'REJECTED'"
+            class="home-service-form">
+            <p style="color:#737373; font-size:0.88rem; margin-bottom:1rem;">
+              Pour activer ce service, veuillez soumettre les documents suivants :
+            </p>
+
+            <!-- Diplôme -->
+            <div class="doc-upload-item">
+              <div class="doc-info">
+                <span class="doc-icon">📄</span>
+                <div>
+                  <strong>Diplôme de coiffure</strong>
+                  <p>Photo ou scan de votre diplôme</p>
+                </div>
+              </div>
+              <div class="doc-actions">
+                <span *ngIf="diplomaUrl()" style="color:#16a34a; font-size:0.85rem;">✅ Uploadé</span>
+                <label for="diplomaInput" class="upload-label">
+                  {{ diplomaUrl() ? '🔄 Changer' : '📤 Uploader' }}
+                </label>
+                <input id="diplomaInput" type="file" accept="image/*,.pdf" style="display:none"
+                  (change)="onDocumentSelected($event, 'diploma')" />
+              </div>
+            </div>
+
+            <!-- CIN -->
+            <div class="doc-upload-item">
+              <div class="doc-info">
+                <span class="doc-icon">🪪</span>
+                <div>
+                  <strong>Carte Nationale d'Identité</strong>
+                  <p>Recto et verso de votre CIN</p>
+                </div>
+              </div>
+              <div class="doc-actions">
+                <span *ngIf="cinUrl()" style="color:#16a34a; font-size:0.85rem;">✅ Uploadé</span>
+                <label for="cinInput" class="upload-label">
+                  {{ cinUrl() ? '🔄 Changer' : '📤 Uploader' }}
+                </label>
+                <input id="cinInput" type="file" accept="image/*" style="display:none"
+                  (change)="onDocumentSelected($event, 'cin')" />
+              </div>
+            </div>
+
+            <!-- Selfie -->
+            <div class="doc-upload-item">
+              <div class="doc-info">
+                <span class="doc-icon">🤳</span>
+                <div>
+                  <strong>Selfie en temps réel</strong>
+                  <p>Une photo de vous prise maintenant avec votre CIN</p>
+                </div>
+              </div>
+              <div class="doc-actions">
+                <span *ngIf="selfieUrl()" style="color:#16a34a; font-size:0.85rem;">✅ Uploadé</span>
+                <label for="selfieInput" class="upload-label">
+                  {{ selfieUrl() ? '🔄 Changer' : '📷 Prendre' }}
+                </label>
+                <input id="selfieInput" type="file" accept="image/*" capture="user" style="display:none"
+                  (change)="onDocumentSelected($event, 'selfie')" />
+              </div>
+            </div>
+
+            <div *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.85rem; margin:0.5rem 0;">
+              ⏳ Upload en cours...
+            </div>
+
+            <button pButton type="button"
+              label="📤 Soumettre ma demande"
+              [disabled]="!diplomaUrl() || !cinUrl() || !selfieUrl() || isUploadingDoc() || isSubmittingHomeService()"
+              (click)="submitHomeService()"
+              style="margin-top:1rem; width:100%;">
+            </button>
+          </div>
+
+          <!-- EN ATTENTE -->
+          <div *ngIf="homeServiceRequest()?.status === 'PENDING'"
+            style="background:#fefce8; border:1px solid #fde047; border-radius:12px; padding:1rem; color:#854d0e;">
+            ⏳ Votre demande est en cours de vérification. Nous vous répondrons dans les 24-48h.
+          </div>
         </div>
 
         <!-- PHOTOS -->
