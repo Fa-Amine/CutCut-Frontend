@@ -5,11 +5,14 @@
   min-height: calc(100vh - 76px);
   padding: 2rem 1.25rem 3rem;
 }
+
 .barber-profile-shell {
   max-width: 1100px;
   margin: 0 auto;
 }
+
 .page-header { margin-bottom: 1.5rem; }
+
 .page-kicker {
   display: inline-block;
   color: #a3a3a3;
@@ -20,6 +23,7 @@
   margin-bottom: 0.75rem;
   font-family: 'Courier New', monospace;
 }
+
 .page-header h1 {
   margin: 0 0 0.6rem;
   font-size: clamp(2rem, 4vw, 3.1rem);
@@ -29,55 +33,65 @@
   font-family: var(--font-heading);
   font-weight: 800;
 }
+
 .page-header p {
   margin: 0;
   color: #737373;
   font-size: 1rem;
   line-height: 1.7;
 }
+
 :host ::ng-deep .p-card {
   background: #ffffff;
   border: 1px solid #e5e5e5;
   border-radius: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
+
 .profile-card {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
+
 .profile-top {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
+
 .profile-top h2 {
   margin: 0 0 0.25rem;
   color: #171717;
   font-family: var(--font-heading);
   font-weight: 700;
 }
+
 .profile-top p {
   margin: 0;
   color: #a3a3a3;
   font-size: 0.85rem;
 }
+
 .profile-tags {
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
 }
+
 .profile-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
+
 .info-box {
   background: #fafafa;
   border: 1px solid #e5e5e5;
   border-radius: 12px;
   padding: 1rem;
 }
+
 .info-box span {
   display: block;
   color: #a3a3a3;
@@ -87,11 +101,14 @@
   letter-spacing: 0.08em;
   font-family: 'Courier New', monospace;
 }
+
 .info-box strong {
   color: #171717;
   font-weight: 600;
 }
+
 .full-width { grid-column: 1 / -1; }
+
 .barber-photo-large {
   width: 72px;
   height: 72px;
@@ -103,6 +120,7 @@
   object-fit: cover;
   border: 2px solid #e5e5e5;
 }
+
 .profile-actions {
   display: flex;
   gap: 0.75rem;
@@ -110,7 +128,7 @@
 }
 
 /* ===========================
-   ✅ SERVICES SECTION
+   SERVICES SECTION
 =========================== */
 .services-section {
   border-top: 1px solid #e5e5e5;
@@ -178,9 +196,7 @@
   transition: box-shadow 0.2s;
 }
 
-.service-row:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
+.service-row:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
 .service-row-info {
   display: flex;
@@ -216,6 +232,106 @@
 }
 
 /* ===========================
+   ✅ HOME SERVICE SECTION
+=========================== */
+.home-service-section {
+  border-top: 1px solid #e5e5e5;
+  padding-top: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.home-service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.home-service-header h3 {
+  color: #171717;
+  font-size: 1.1rem;
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.home-service-header p {
+  color: #737373;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.status-badge {
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.status-badge.pending { background: #fef9c3; color: #854d0e; }
+.status-badge.approved { background: #f0fdf4; color: #16a34a; }
+.status-badge.rejected { background: #fef2f2; color: #dc2626; }
+
+.home-service-form {
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.doc-upload-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.doc-upload-item:last-of-type { border-bottom: none; }
+
+.doc-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.doc-icon { font-size: 1.5rem; }
+
+.doc-info strong {
+  display: block;
+  color: #171717;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.doc-info p {
+  color: #a3a3a3;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.upload-label {
+  cursor: pointer;
+  background: #171717;
+  color: #FAFAF7;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.upload-label:hover { opacity: 0.85; }
+
+/* ===========================
    GALLERY
 =========================== */
 .gallery-section {
@@ -223,6 +339,7 @@
   border-top: 1px solid #e5e5e5;
   padding-top: 1.5rem;
 }
+
 .gallery-section h3 {
   color: #171717;
   font-size: 1.1rem;
@@ -230,12 +347,15 @@
   font-family: var(--font-heading);
   font-weight: 700;
 }
+
 .gallery-upload { margin-bottom: 1.5rem; }
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
+
 .gallery-item {
   position: relative;
   border-radius: 12px;
@@ -243,11 +363,13 @@
   aspect-ratio: 1;
   border: 1px solid #e5e5e5;
 }
+
 .gallery-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .gallery-overlay {
   position: absolute;
   bottom: 0;
@@ -270,4 +392,6 @@
   .gallery-grid { grid-template-columns: repeat(2, 1fr); }
   .service-form-grid { grid-template-columns: 1fr; }
   .services-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .home-service-header { flex-direction: column; gap: 0.75rem; }
+  .doc-upload-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
 }
