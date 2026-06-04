@@ -1,353 +1,510 @@
-<section class="barber-profile-page">
-  <div class="barber-profile-shell">
-    <div class="page-header">
-      <span class="page-kicker">{{ langService.t().barberProfileNav }}</span>
-      <h1>{{ langService.t().barberProfileNav }}</h1>
-      <p>Consultez et modifiez les informations de votre activité.</p>
-    </div>
+import { Component, inject, signal, AfterViewChecked } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
+import { AvatarModule } from 'primeng/avatar';
+import { CardModule } from 'primeng/card';
+import { TagModule } from 'primeng/tag';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TextareaModule } from 'primeng/textarea';
+import { MessageModule } from 'primeng/message';
+import { HttpClient } from '@angular/common/http';
+import { LanguageService } from '../../../core/services/language.service';
+import { SessionService } from '../../../core/services/session.service';
+import { ProfileService } from '../../../core/services/profile.service';
+import { BarberProfile } from '../../../core/models/profile.models';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert/error-alert.component';
+import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
+import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-photo.service';
+import { BarberServiceService } from '../../../core/services/barber-service.service';
+import { BarberServiceItem } from '../../../core/models/booking.models';
+import { HomeServiceService } from '../../../core/services/home-service.service';
+import { HomeServiceRequest } from '../../../core/models/barber.models';
 
-    <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
-    <app-loading-spinner *ngIf="isLoading()" message="Chargement du profil barbier..."></app-loading-spinner>
-    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+declare const L: any;
 
-    <p-card *ngIf="!isLoading() && !errorMessage() && profile()">
-      <div class="profile-card">
+@Component({
+  selector: 'app-barber-profile',
+  standalone: true,
+  imports: [
+    CommonModule, ReactiveFormsModule, FormsModule,
+    AvatarModule, CardModule, TagModule, ButtonModule,
+    InputTextModule, InputNumberModule, TextareaModule, MessageModule,
+    LoadingSpinnerComponent, ErrorAlertComponent, SafeUrlPipe
+  ],
+  templateUrl: './barber-profile.component.html',
+  styleUrl: './barber-profile.component.css'
+})
+export class BarberProfileComponent implements AfterViewChecked {
+  private sessionService = inject(SessionService);
+  private profileService = inject(ProfileService);
+  private barberPhotoService = inject(BarberPhotoService);
+  private barberServiceService = inject(BarberServiceService);
+  private homeServiceService = inject(HomeServiceService);
+  private fb = inject(FormBuilder);
+  private http = inject(HttpClient);
+  langService = inject(LanguageService);
 
-        <div class="profile-top">
-          <div class="photo-container">
-            <ng-container *ngIf="profileForm.value.photoUrl || profile()!.photoUrl; else barberAvatar">
-              <img [src]="profileForm.value.photoUrl || profile()!.photoUrl!" [alt]="profile()!.name" class="barber-photo-large" />
-            </ng-container>
-            <ng-template #barberAvatar>
-              <p-avatar [label]="getInitials(profile()!.name)" shape="circle" size="xlarge"></p-avatar>
-            </ng-template>
-            <div *ngIf="isEditMode()" class="photo-upload-btn" style="margin-top:8px;">
-              <label for="photoInput" style="cursor:pointer; background:#1A1A1A; color:#FAFAF7; padding:6px 12px; border-radius:8px; font-size:0.85rem;">
-                📷 Changer la photo
-              </label>
-              <input id="photoInput" type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)" />
-              <span *ngIf="isUploadingPhoto()" style="color:#64748b; font-size:0.85rem; margin-left:8px;">Envoi en cours...</span>
-            </div>
-          </div>
-          <div>
-            <h2>{{ profile()!.name }}</h2>
-            <p>{{ profile()!.shopName || 'CutCut' }}</p>
-          </div>
-        </div>
+  isLoading = signal(true);
+  isSaving = signal(false);
+  isEditMode = signal(false);
+  isUploadingPhoto = signal(false);
+  isUploadingGallery = signal(false);
+  isLocating = signal(false);
+  errorMessage = signal('');
+  successMessage = signal('');
+  locationError = signal('');
+  profile = signal<BarberProfile | null>(null);
+  mapUrl = signal('');
+  photos = signal<BarberPhoto[]>([]);
+  newCaption = signal('');
 
-        <div class="profile-tags">
-          <p-tag *ngIf="profile()!.price !== undefined && profile()!.price !== null"
-            [value]="profile()!.price + ' MAD'" severity="info"></p-tag>
-          <p-tag *ngIf="profile()!.averageRating !== undefined && profile()!.averageRating !== null"
-            [value]="'⭐ ' + profile()!.averageRating" severity="success"></p-tag>
-        </div>
+  barberServices = signal<BarberServiceItem[]>([]);
+  showAddService = signal(false);
+  editingServiceId = signal<number | null>(null);
+  newServiceName = '';
+  newServicePrice: number = 0;
+  newServiceDesc = '';
 
-        <form [formGroup]="profileForm" class="profile-grid">
-          <div class="info-box">
-            <span>Nom</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.name }}</strong>
-            <input *ngIf="isEditMode()" pInputText formControlName="name" class="w-full" />
-          </div>
-          <div class="info-box">
-            <span>Email</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.email }}</strong>
-            <input *ngIf="isEditMode()" pInputText formControlName="email" class="w-full" />
-          </div>
-          <div class="info-box">
-            <span>Téléphone</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.phone }}</strong>
-            <input *ngIf="isEditMode()" pInputText formControlName="phone" class="w-full" />
-          </div>
-          <div class="info-box">
-            <span>Salon</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.shopName || '-' }}</strong>
-            <input *ngIf="isEditMode()" pInputText formControlName="shopName" class="w-full" />
-          </div>
-          <div class="info-box">
-            <span>Prix</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.price ?? 0 }} MAD</strong>
-            <p-inputNumber *ngIf="isEditMode()" formControlName="price" mode="decimal" [useGrouping]="false"></p-inputNumber>
-          </div>
-          <div class="info-box">
-            <span>Portefeuille</span>
-            <strong>{{ profile()!.walletBalance ?? 0 }} MAD</strong>
-          </div>
-          <div class="info-box full-width">
-            <span>Bio</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.bio || '-' }}</strong>
-            <textarea *ngIf="isEditMode()" pTextarea rows="4" formControlName="bio" class="w-full"></textarea>
-          </div>
-          <div class="info-box full-width">
-            <span>Adresse</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.address || '-' }}</strong>
-            <input *ngIf="isEditMode()" pInputText formControlName="address" class="w-full" placeholder="Ex: 12 Rue Hassan II, Casablanca" />
-          </div>
-        </form>
+  homeServiceRequest = signal<HomeServiceRequest | null>(null);
+  diplomaUrl = signal('');
+  cinUrl = signal('');
+  selfieUrl = signal('');
+  isUploadingDoc = signal(false);
+  isSubmittingHomeService = signal(false);
 
-        <!-- CARTE EN MODE EDIT -->
-        <div class="info-box full-width" *ngIf="isEditMode()">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-            <span>📍 Cliquez sur la carte pour choisir votre position</span>
-            <button type="button" (click)="useMyLocation()" [disabled]="isLocating()"
-              style="background:#1A1A1A; color:#FAFAF7; border:none; padding:8px 16px; border-radius:999px; cursor:pointer; font-size:0.85rem; font-weight:600; font-family:inherit;">
-              {{ isLocating() ? '⏳ Localisation...' : '📍 Utiliser ma position' }}
-            </button>
-          </div>
-          <p *ngIf="locationError()" style="color:#e53e3e; font-size:0.82rem; margin:0 0 8px;">
-            ⚠️ {{ locationError() }}
-          </p>
-          <div id="edit-map" style="width:100%; height:350px; border:1px solid rgba(26,26,26,0.15); border-radius:12px;"></div>
-        </div>
+  private editMap: any = null;
+  private editMarker: any = null;
+  private mapInitialized = false;
 
-        <!-- CARTE EN MODE VIEW -->
-        <div class="info-box full-width" *ngIf="!isEditMode() && mapUrl()">
-          <span>📍 Localisation sur la carte</span>
-          <iframe [src]="mapUrl() | safeUrl" width="100%" height="300"
-            style="border:1px solid rgba(26,26,26,0.1); border-radius:12px; margin-top:8px" loading="lazy"></iframe>
-        </div>
+  private readonly CLOUDINARY_CLOUD_NAME = 'delf4ovww';
+  private readonly CLOUDINARY_UPLOAD_PRESET = 'barbergo_upload';
 
-        <div class="profile-actions">
-          <button *ngIf="!isEditMode()" pButton type="button" label="Modifier" (click)="startEdit()"></button>
-          <ng-container *ngIf="isEditMode()">
-            <button pButton type="button" label="Enregistrer" [disabled]="isSaving() || isUploadingPhoto()" (click)="saveProfile()"></button>
-            <button pButton type="button" label="Annuler" severity="secondary" [outlined]="true" (click)="cancelEdit()"></button>
-          </ng-container>
-        </div>
+  profileForm = this.fb.group({
+    name: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
+    phone: ['', [Validators.required]],
+    shopName: ['', [Validators.required]],
+    bio: [''],
+    photoUrl: [''],
+    price: [0, [Validators.required]],
+    address: [''],
+    latitude: [null as number | null],
+    longitude: [null as number | null]
+  });
 
-        <!-- ✅ SECTION SERVICES -->
-        <div class="services-section">
-          <div class="services-header">
-            <h3>✂️ Mes services</h3>
-            <button pButton type="button" label="➕ Ajouter un service"
-              severity="secondary" [outlined]="true"
-              (click)="showAddService.set(!showAddService())">
-            </button>
-          </div>
+  constructor() {
+    this.loadLeaflet();
+    this.loadProfile();
+  }
 
-          <div class="service-form" *ngIf="showAddService()">
-            <div class="service-form-grid">
-              <div>
-                <label>Nom du service *</label>
-                <input pInputText [(ngModel)]="newServiceName" placeholder="Ex: Coupe de cheveux" class="w-full" />
-              </div>
-              <div>
-                <label>Prix (MAD) *</label>
-                <input pInputText type="number" [(ngModel)]="newServicePrice" placeholder="Ex: 30" class="w-full" />
-              </div>
-              <div class="full-width">
-                <label>Description (optionnel)</label>
-                <input pInputText [(ngModel)]="newServiceDesc" placeholder="Ex: Coupe classique avec finitions" class="w-full" />
-              </div>
-            </div>
-            <div class="service-form-actions">
-              <button pButton type="button"
-                [label]="editingServiceId() ? 'Modifier' : 'Ajouter'"
-                [disabled]="!newServiceName || !newServicePrice"
-                (click)="saveService()">
-              </button>
-              <button pButton type="button" label="Annuler"
-                severity="secondary" [outlined]="true"
-                (click)="cancelServiceForm()">
-              </button>
-            </div>
-          </div>
+  loadLeaflet() {
+    if (!(window as any).L) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      document.head.appendChild(script);
+    }
+  }
 
-          <div class="services-list" *ngIf="barberServices().length > 0">
-            <div class="service-row" *ngFor="let service of barberServices()">
-              <div class="service-row-info">
-                <span class="service-row-name">{{ service.name }}</span>
-                <span *ngIf="service.description" class="service-row-desc">{{ service.description }}</span>
-              </div>
-              <div class="service-row-right">
-                <span class="service-row-price">{{ service.price }} MAD</span>
-                <button (click)="editService(service)"
-                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px;">✏️</button>
-                <button (click)="deleteService(service.id)"
-                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px;">🗑️</button>
-              </div>
-            </div>
-          </div>
+  ngAfterViewChecked() {
+    if (this.isEditMode() && !this.mapInitialized) {
+      const mapEl = document.getElementById('edit-map');
+      if (mapEl && (window as any).L) this.initEditMap();
+    }
+    if (!this.isEditMode()) {
+      this.mapInitialized = false;
+      if (this.editMap) {
+        this.editMap.remove();
+        this.editMap = null;
+        this.editMarker = null;
+      }
+    }
+  }
 
-          <p *ngIf="barberServices().length === 0"
-            style="color:#a3a3a3; text-align:center; padding:1.5rem; font-size:0.9rem;">
-            Aucun service ajouté. Cliquez sur "Ajouter un service" !
-          </p>
-        </div>
+  initEditMap() {
+    this.mapInitialized = true;
+    const lat = this.profileForm.value.latitude || 33.5731;
+    const lng = this.profileForm.value.longitude || -7.5898;
+    this.editMap = L.map('edit-map').setView([lat, lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(this.editMap);
+    if (this.profileForm.value.latitude && this.profileForm.value.longitude) {
+      this.editMarker = L.marker([lat, lng]).addTo(this.editMap);
+    }
+    this.editMap.on('click', (e: any) => {
+      const { lat, lng } = e.latlng;
+      if (this.editMarker) {
+        this.editMarker.setLatLng([lat, lng]);
+      } else {
+        this.editMarker = L.marker([lat, lng]).addTo(this.editMap);
+      }
+      this.profileForm.patchValue({ latitude: lat, longitude: lng });
+      this.http.get<any>(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+      ).subscribe({
+        next: (result) => {
+          if (result?.display_name) {
+            this.profileForm.patchValue({ address: result.display_name });
+          }
+        }
+      });
+    });
+  }
 
-        <!-- ✅ SECTION SERVICE À DOMICILE -->
-        <div class="home-service-section">
-          <div class="home-service-header">
-            <div>
-              <h3>🏠 Service à domicile</h3>
-              <p>Proposez vos services directement chez vos clients</p>
-            </div>
-            <div *ngIf="homeServiceRequest()">
-              <span class="status-badge"
-                [class.pending]="homeServiceRequest()!.status === 'PENDING'"
-                [class.approved]="homeServiceRequest()!.status === 'APPROVED'"
-                [class.rejected]="homeServiceRequest()!.status === 'REJECTED'">
-                {{ homeServiceRequest()!.status === 'PENDING' ? '⏳ En attente' :
-                   homeServiceRequest()!.status === 'APPROVED' ? '✅ Activé' : '❌ Refusé' }}
-              </span>
-            </div>
-          </div>
+  useMyLocation() {
+    this.locationError.set('');
+    if (!navigator.geolocation) {
+      this.locationError.set('La geolocalisation n\'est pas supportee.');
+      return;
+    }
+    this.isLocating.set(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        this.profileForm.patchValue({ latitude: lat, longitude: lng });
+        if (this.editMap) {
+          this.editMap.setView([lat, lng], 17);
+          if (this.editMarker) {
+            this.editMarker.setLatLng([lat, lng]);
+          } else {
+            this.editMarker = L.marker([lat, lng]).addTo(this.editMap);
+          }
+        }
+        this.http.get<any>(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+        ).subscribe({
+          next: (result) => {
+            if (result?.display_name) {
+              this.profileForm.patchValue({ address: result.display_name });
+            }
+          }
+        });
+        this.isLocating.set(false);
+        this.successMessage.set('Position detectee !');
+      },
+      (error) => {
+        this.isLocating.set(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            this.locationError.set('Acces a la localisation refuse.');
+            break;
+          default:
+            this.locationError.set('Impossible de detecter la position.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }
 
-          <!-- APPROUVÉ -->
-          <div *ngIf="homeServiceRequest()?.status === 'APPROVED'"
-            style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:1rem; color:#16a34a; font-weight:600;">
-            🏠 Service à domicile activé ! Vos clients peuvent vous demander de vous déplacer.
-          </div>
+  loadServices(barberId: number) {
+    this.barberServiceService.getServices(barberId).subscribe({
+      next: (services) => this.barberServices.set(services),
+      error: () => {}
+    });
+  }
 
-          <!-- REFUSÉ -->
-          <div *ngIf="homeServiceRequest()?.status === 'REJECTED'"
-            style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:1rem; margin-bottom:1rem;">
-            <p style="color:#dc2626; font-weight:600; margin:0 0 4px;">❌ Demande refusée</p>
-            <p style="color:#737373; margin:0; font-size:0.88rem;">{{ homeServiceRequest()!.rejectionReason }}</p>
-          </div>
+  saveService() {
+    const barberId = this.sessionService.userId();
+    if (!barberId || !this.newServiceName || !this.newServicePrice) return;
+    const payload = {
+      name: this.newServiceName,
+      price: this.newServicePrice,
+      description: this.newServiceDesc
+    };
+    if (this.editingServiceId()) {
+      this.barberServiceService.updateService(barberId, this.editingServiceId()!, payload).subscribe({
+        next: (updated) => {
+          this.barberServices.update(services =>
+            services.map(s => s.id === updated.id ? updated : s)
+          );
+          this.cancelServiceForm();
+          this.successMessage.set('Service modifié !');
+        }
+      });
+    } else {
+      this.barberServiceService.addService(barberId, payload).subscribe({
+        next: (newService) => {
+          this.barberServices.update(services => [...services, newService]);
+          this.cancelServiceForm();
+          this.successMessage.set('Service ajouté !');
+        }
+      });
+    }
+  }
 
-          <!-- FORMULAIRE -->
-          <div *ngIf="!homeServiceRequest() || homeServiceRequest()?.status === 'REJECTED'"
-            class="home-service-form">
-            <p style="color:#737373; font-size:0.88rem; margin-bottom:1rem;">
-              Pour activer ce service, veuillez soumettre les documents suivants :
-            </p>
+  editService(service: BarberServiceItem) {
+    this.editingServiceId.set(service.id);
+    this.newServiceName = service.name;
+    this.newServicePrice = service.price;
+    this.newServiceDesc = service.description || '';
+    this.showAddService.set(true);
+  }
 
-            <!-- ✅ Diplôme -->
-            <div class="doc-upload-item">
-              <div class="doc-info">
-                <span class="doc-icon">📄</span>
-                <div>
-                  <strong>Diplôme de coiffure</strong>
-                  <p>Photo ou scan de votre diplôme</p>
-                </div>
-              </div>
-              <div class="doc-actions">
-                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
-                <label *ngIf="!isUploadingDoc()" for="diplomaInput" class="upload-label"
-                  [style.background]="diplomaUrl() ? '#16a34a' : '#171717'">
-                  {{ diplomaUrl() ? '✅ Confirmé' : '📤 Uploader' }}
-                </label>
-                <input id="diplomaInput" type="file" accept="image/*,.pdf" style="display:none"
-                  (change)="onDocumentSelected($event, 'diploma')" />
-              </div>
-            </div>
-            <!-- Aperçu diplôme -->
-            <div *ngIf="diplomaUrl()" class="doc-preview">
-              <img [src]="diplomaUrl()" alt="Diplôme" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">✅ Diplôme uploadé avec succès</span>
-            </div>
+  deleteService(serviceId: number) {
+    const barberId = this.sessionService.userId();
+    if (!barberId) return;
+    this.barberServiceService.deleteService(barberId, serviceId).subscribe({
+      next: () => {
+        this.barberServices.update(services => services.filter(s => s.id !== serviceId));
+        this.successMessage.set('Service supprimé !');
+      }
+    });
+  }
 
-            <!-- ✅ CIN -->
-            <div class="doc-upload-item">
-              <div class="doc-info">
-                <span class="doc-icon">🪪</span>
-                <div>
-                  <strong>Carte Nationale d'Identité</strong>
-                  <p>Recto et verso de votre CIN</p>
-                </div>
-              </div>
-              <div class="doc-actions">
-                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
-                <label *ngIf="!isUploadingDoc()" for="cinInput" class="upload-label"
-                  [style.background]="cinUrl() ? '#16a34a' : '#171717'">
-                  {{ cinUrl() ? '✅ Confirmé' : '📤 Uploader' }}
-                </label>
-                <input id="cinInput" type="file" accept="image/*" style="display:none"
-                  (change)="onDocumentSelected($event, 'cin')" />
-              </div>
-            </div>
-            <!-- Aperçu CIN -->
-            <div *ngIf="cinUrl()" class="doc-preview">
-              <img [src]="cinUrl()" alt="CIN" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">✅ CIN uploadé avec succès</span>
-            </div>
+  cancelServiceForm() {
+    this.showAddService.set(false);
+    this.editingServiceId.set(null);
+    this.newServiceName = '';
+    this.newServicePrice = 0;
+    this.newServiceDesc = '';
+  }
 
-            <!-- ✅ Selfie caméra frontale -->
-            <div class="doc-upload-item">
-              <div class="doc-info">
-                <span class="doc-icon">🤳</span>
-                <div>
-                  <strong>Selfie en temps réel</strong>
-                  <p>Photo prise maintenant avec caméra frontale</p>
-                </div>
-              </div>
-              <div class="doc-actions">
-                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
-                <label *ngIf="!isUploadingDoc()" for="selfieInput" class="upload-label"
-                  [style.background]="selfieUrl() ? '#16a34a' : '#171717'">
-                  {{ selfieUrl() ? '✅ Confirmé' : '📷 Prendre selfie' }}
-                </label>
-                <input id="selfieInput" type="file" accept="image/*"
-                  capture="user" style="display:none"
-                  (change)="onDocumentSelected($event, 'selfie')" />
-              </div>
-            </div>
-            <!-- Aperçu selfie -->
-            <div *ngIf="selfieUrl()" class="doc-preview">
-              <img [src]="selfieUrl()" alt="Selfie" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">✅ Selfie pris avec succès</span>
-            </div>
+  loadHomeServiceRequest(barberId: number) {
+    this.homeServiceService.getByBarber(barberId).subscribe({
+      next: (req) => { if (req) this.homeServiceRequest.set(req); },
+      error: () => {}
+    });
+  }
 
-            <!-- Barre de progression -->
-            <div class="upload-progress" *ngIf="diplomaUrl() || cinUrl() || selfieUrl()">
-              <div class="progress-step" [class.done]="diplomaUrl()">
-                {{ diplomaUrl() ? '✅' : '⬜' }} Diplôme
-              </div>
-              <div class="progress-step" [class.done]="cinUrl()">
-                {{ cinUrl() ? '✅' : '⬜' }} CIN
-              </div>
-              <div class="progress-step" [class.done]="selfieUrl()">
-                {{ selfieUrl() ? '✅' : '⬜' }} Selfie
-              </div>
-            </div>
+  onDocumentSelected(event: Event, type: 'diploma' | 'cin' | 'selfie') {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingDoc.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+    this.http.post<any>(
+      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      formData
+    ).subscribe({
+      next: (response) => {
+        if (type === 'diploma') this.diplomaUrl.set(response.secure_url);
+        if (type === 'cin') this.cinUrl.set(response.secure_url);
+        if (type === 'selfie') this.selfieUrl.set(response.secure_url);
+        this.isUploadingDoc.set(false);
+      },
+      error: () => { this.isUploadingDoc.set(false); }
+    });
+  }
 
-            <button pButton type="button"
-              label="📤 Soumettre ma demande"
-              [disabled]="!diplomaUrl() || !cinUrl() || !selfieUrl() || isUploadingDoc() || isSubmittingHomeService()"
-              (click)="submitHomeService()"
-              style="margin-top:1rem; width:100%;">
-            </button>
-          </div>
+  submitHomeService() {
+    const barberId = this.sessionService.userId();
+    if (!barberId) return;
+    this.isSubmittingHomeService.set(true);
+    this.homeServiceService.submitRequest(
+      barberId, this.diplomaUrl(), this.cinUrl(), this.selfieUrl()
+    ).subscribe({
+      next: (req) => {
+        this.homeServiceRequest.set(req);
+        this.isSubmittingHomeService.set(false);
+        this.successMessage.set('Demande soumise ! Notre equipe va verifier vos documents.');
+        setTimeout(() => this.successMessage.set(''), 4000);
+      },
+      error: () => { this.isSubmittingHomeService.set(false); }
+    });
+  }
 
-          <!-- EN ATTENTE -->
-          <div *ngIf="homeServiceRequest()?.status === 'PENDING'"
-            style="background:#fefce8; border:1px solid #fde047; border-radius:12px; padding:1rem; color:#854d0e;">
-            ⏳ Votre demande est en cours de vérification. Nous vous répondrons dans les 24-48h.
-          </div>
-        </div>
+  onPhotoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingPhoto.set(true);
+    this.errorMessage.set('');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+    this.http.post<any>(
+      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      formData
+    ).subscribe({
+      next: (response) => {
+        this.profileForm.patchValue({ photoUrl: response.secure_url });
+        this.isUploadingPhoto.set(false);
+        this.successMessage.set('Photo uploadee !');
+      },
+      error: () => {
+        this.isUploadingPhoto.set(false);
+        this.errorMessage.set('Impossible d\'uploader la photo.');
+      }
+    });
+  }
 
-        <!-- PHOTOS -->
-        <div class="gallery-section">
-          <h3>📸 Photos</h3>
-          <div class="gallery-upload">
-            <input type="text" placeholder="Description (optionnel)"
-              [value]="newCaption()"
-              (input)="newCaption.set($any($event.target).value)"
-              style="padding:8px; border:1px solid rgba(26,26,26,0.1); border-radius:8px; width:100%; margin-bottom:8px; background:#FAFAF7; box-sizing:border-box;" />
-            <label for="galleryInput" style="cursor:pointer; background:#1A1A1A; color:#FAFAF7; padding:8px 16px; border-radius:999px; font-size:0.9rem; display:inline-block;">
-              📷 Ajouter une photo
-            </label>
-            <input id="galleryInput" type="file" accept="image/*" style="display:none" (change)="onGalleryPhotoSelected($event, 'gallery')" />
-            <span *ngIf="isUploadingGallery()" style="color:#64748b; font-size:0.85rem; margin-left:8px;">Envoi en cours...</span>
-          </div>
-          <div class="gallery-grid" *ngIf="photos().length > 0">
-            <div class="gallery-item" *ngFor="let photo of photos()">
-              <img [src]="photo.imageUrl" [alt]="photo.caption || 'Photo'" />
-              <div class="gallery-overlay">
-                <span *ngIf="photo.caption">{{ photo.caption }}</span>
-                <button (click)="deletePhoto(photo.id)"
-                  style="background:rgba(239,68,68,0.9); color:white; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem;">
-                  🗑️
-                </button>
-              </div>
-            </div>
-          </div>
-          <p *ngIf="photos().length === 0" style="color:rgba(26,26,26,0.4); text-align:center; padding:1rem;">
-            Aucune photo. Ajoutez des photos de votre salon !
-          </p>
-        </div>
+  onGalleryPhotoSelected(event: Event, category: string) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingGallery.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+    this.http.post<any>(
+      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      formData
+    ).subscribe({
+      next: (response) => {
+        const barberId = this.sessionService.userId();
+        if (!barberId) return;
+        this.barberPhotoService.addBarberPhoto(
+          barberId, response.secure_url, this.newCaption(), category
+        ).subscribe({
+          next: (photo) => {
+            this.photos.update(photos => [photo, ...photos]);
+            this.newCaption.set('');
+            this.isUploadingGallery.set(false);
+            this.successMessage.set('Photo ajoutee !');
+          },
+          error: () => { this.isUploadingGallery.set(false); }
+        });
+      },
+      error: () => { this.isUploadingGallery.set(false); }
+    });
+  }
 
-      </div>
-    </p-card>
-  </div>
-</section>
+  deletePhoto(photoId: number) {
+    const barberId = this.sessionService.userId();
+    if (!barberId) return;
+    this.barberPhotoService.deleteBarberPhoto(barberId, photoId).subscribe({
+      next: () => {
+        this.photos.update(photos => photos.filter(p => p.id !== photoId));
+        this.successMessage.set('Photo supprimee !');
+      }
+    });
+  }
+
+  loadProfile() {
+    const barberId = this.sessionService.userId();
+    if (!barberId) {
+      this.errorMessage.set('Barbier introuvable.');
+      this.isLoading.set(false);
+      return;
+    }
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.profileService.getBarberProfile(barberId).subscribe({
+      next: (response) => {
+        this.profile.set(response);
+        this.profileForm.patchValue({
+          name: response.name,
+          email: response.email,
+          phone: response.phone,
+          shopName: response.shopName || '',
+          bio: response.bio || '',
+          photoUrl: response.photoUrl || '',
+          price: response.price ?? 0,
+          address: response.address || '',
+          latitude: response.latitude ?? null,
+          longitude: response.longitude ?? null
+        });
+        this.updateMapUrl(response.latitude, response.longitude);
+        this.isLoading.set(false);
+        this.loadPhotos(barberId);
+        this.loadServices(barberId);
+        this.loadHomeServiceRequest(barberId);
+      },
+      error: (error) => {
+        this.errorMessage.set(error?.error?.message || 'Impossible de charger le profil barbier.');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadPhotos(barberId: number) {
+    this.barberPhotoService.getBarberPhotos(barberId).subscribe({
+      next: (photos) => this.photos.set(photos),
+      error: () => {}
+    });
+  }
+
+  updateMapUrl(lat?: number, lng?: number) {
+    if (lat && lng) {
+      this.mapUrl.set(
+        `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lng}`
+      );
+    } else {
+      this.mapUrl.set('');
+    }
+  }
+
+  startEdit() {
+    this.isEditMode.set(true);
+    this.mapInitialized = false;
+    this.successMessage.set('');
+    this.errorMessage.set('');
+    this.locationError.set('');
+  }
+
+  cancelEdit() {
+    const profile = this.profile();
+    if (profile) {
+      this.profileForm.patchValue({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        shopName: profile.shopName || '',
+        bio: profile.bio || '',
+        photoUrl: profile.photoUrl || '',
+        price: profile.price ?? 0,
+        address: profile.address || '',
+        latitude: profile.latitude ?? null,
+        longitude: profile.longitude ?? null
+      });
+      this.updateMapUrl(profile.latitude, profile.longitude);
+    }
+    this.isEditMode.set(false);
+    this.errorMessage.set('');
+    this.locationError.set('');
+  }
+
+  saveProfile() {
+    const barberId = this.sessionService.userId();
+    if (!barberId) {
+      this.errorMessage.set('Barbier introuvable.');
+      return;
+    }
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      return;
+    }
+    this.isSaving.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.profileService.updateBarberProfile(barberId, {
+      name: this.profileForm.value.name!,
+      email: this.profileForm.value.email!,
+      phone: this.profileForm.value.phone!,
+      shopName: this.profileForm.value.shopName!,
+      bio: this.profileForm.value.bio || '',
+      photoUrl: this.profileForm.value.photoUrl || '',
+      price: Number(this.profileForm.value.price),
+      address: this.profileForm.value.address || '',
+      latitude: this.profileForm.value.latitude ?? undefined,
+      longitude: this.profileForm.value.longitude ?? undefined
+    }).subscribe({
+      next: (response) => {
+        this.profile.set(response);
+        this.updateMapUrl(response.latitude, response.longitude);
+        this.isSaving.set(false);
+        this.isEditMode.set(false);
+        this.successMessage.set('Profil mis a jour !');
+      },
+      error: (error) => {
+        this.isSaving.set(false);
+        this.errorMessage.set(error?.error?.message || 'Impossible de mettre a jour le profil.');
+      }
+    });
+  }
+
+  getInitials(name: string): string {
+    return name.split(' ').filter(Boolean).slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? '').join('');
+  }
+}
