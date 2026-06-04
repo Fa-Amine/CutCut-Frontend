@@ -5,7 +5,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ChatService, ChatMessage } from '../../core/services/chat.service';
 import { SessionService } from '../../core/services/session.service';
 import { WebSocketService } from '../../core/services/websocket.service';
-import { BarberService } from '../../core/services/barber.service';
 
 @Component({
   selector: 'app-chat',
@@ -19,7 +18,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private route = inject(ActivatedRoute);
   private chatService = inject(ChatService);
-  private barberService = inject(BarberService);
   sessionService = inject(SessionService);
   private wsService = inject(WebSocketService);
 
@@ -30,7 +28,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   partnerName = signal('');
   partnerId = signal<number>(0);
 
-  // ✅ Flag pour scroller seulement quand nouveau message
   private shouldScroll = false;
   private wsSubscription: any = null;
   private refreshInterval: any = null;
@@ -38,21 +35,28 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   ngOnInit() {
     const partnerId = Number(this.route.snapshot.paramMap.get('id'));
     this.partnerId.set(partnerId);
-    this.loadPartnerInfo(partnerId);
     this.loadMessages(partnerId);
     this.subscribeToWebSocket(partnerId);
 
-    // ✅ Rafraîchir les messages toutes les 5 secondes (fallback WebSocket)
+    // ✅ Rafraîchir toutes les 5 secondes
     this.refreshInterval = setInterval(() => {
       this.loadMessagesSilently(partnerId);
     }, 5000);
   }
 
-  loadPartnerInfo(partnerId: number) {
-    this.barberService.getBarberById(partnerId).subscribe({
-      next: (barber) => this.partnerName.set(barber.name),
-      error: () => this.partnerName.set('Utilisateur')
-    });
+  // ✅ Charger le nom du partenaire depuis les messages
+  loadPartnerName(msgs: ChatMessage[]) {
+    const myId = this.sessionService.userId();
+    if (msgs.length > 0) {
+      const msg = msgs[0];
+      if (msg.sender.id === myId) {
+        this.partnerName.set(msg.receiver.name);
+      } else {
+        this.partnerName.set(msg.sender.name);
+      }
+    } else {
+      this.partnerName.set('Utilisateur');
+    }
   }
 
   loadMessages(partnerId: number) {
@@ -62,6 +66,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.chatService.getConversation(myId, partnerId).subscribe({
       next: (msgs) => {
         this.messages.set(msgs);
+        this.loadPartnerName(msgs);
         this.isLoading.set(false);
         this.shouldScroll = true;
         this.chatService.markAsRead(myId, partnerId).subscribe();
@@ -70,7 +75,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
-  // ✅ Charger sans spinner (pour rafraîchissement automatique)
   loadMessagesSilently(partnerId: number) {
     const myId = this.sessionService.userId();
     if (!myId) return;
@@ -78,6 +82,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: (msgs) => {
         if (msgs.length !== this.messages().length) {
           this.messages.set(msgs);
+          this.loadPartnerName(msgs);
           this.shouldScroll = true;
           this.chatService.markAsRead(myId, partnerId).subscribe();
         }
@@ -91,7 +96,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (!myId) return;
     const client = (this.wsService as any).client;
     if (client?.active) {
-      this.wsSubscription = client.subscribe(`/topic/chat/${myId}`, (msg: any) => {
+      this.wsSubscription = client.subscribe(`/topic/chat/${myId}`, () => {
         this.loadMessagesSilently(partnerId);
       });
     }
@@ -106,7 +111,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.isSending.set(true);
     this.chatService.sendMessage(myId, partnerId, content).subscribe({
       next: (msg) => {
-        // ✅ Ajouter le message immédiatement
         this.messages.update(msgs => [...msgs, msg]);
         this.newMessage.set('');
         this.isSending.set(false);
@@ -117,7 +121,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   ngAfterViewChecked() {
-    // ✅ Scroller seulement si nouveau message
     if (this.shouldScroll) {
       this.scrollToBottom();
       this.shouldScroll = false;
