@@ -84,7 +84,6 @@
           </div>
         </form>
 
-        <!-- CARTE EN MODE EDIT -->
         <div class="info-box full-width" *ngIf="isEditMode()">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
             <span>Cliquez sur la carte pour choisir votre position</span>
@@ -99,7 +98,6 @@
           <div id="edit-map" style="width:100%; height:350px; border:1px solid rgba(26,26,26,0.15); border-radius:12px;"></div>
         </div>
 
-        <!-- CARTE EN MODE VIEW -->
         <div class="info-box full-width" *ngIf="!isEditMode() && mapUrl()">
           <span>Localisation sur la carte</span>
           <iframe [src]="mapUrl() | safeUrl" width="100%" height="300"
@@ -114,7 +112,7 @@
           </ng-container>
         </div>
 
-        <!-- SECTION SERVICES -->
+        <!-- SERVICES -->
         <div class="services-section">
           <div class="services-header">
             <h3>Mes services</h3>
@@ -161,9 +159,9 @@
               <div class="service-row-right">
                 <span class="service-row-price">{{ service.price }} MAD</span>
                 <button (click)="editService(service)"
-                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px;">Modifier</button>
+                  style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:4px; color:#171717; font-family:inherit;">Modifier</button>
                 <button (click)="deleteService(service.id)"
-                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px; color:red;">Supprimer</button>
+                  style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:4px; color:#dc2626; font-family:inherit;">Supprimer</button>
               </div>
             </div>
           </div>
@@ -174,7 +172,7 @@
           </p>
         </div>
 
-        <!-- SECTION SERVICE A DOMICILE -->
+        <!-- SERVICE A DOMICILE -->
         <div class="home-service-section">
           <div class="home-service-header">
             <div>
@@ -192,27 +190,24 @@
             </div>
           </div>
 
-          <!-- APPROUVE -->
           <div *ngIf="homeServiceRequest()?.status === 'APPROVED'"
             style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:1rem; color:#16a34a; font-weight:600;">
             Service a domicile active ! Vos clients peuvent vous demander de vous deplacer.
           </div>
 
-          <!-- REFUSE -->
           <div *ngIf="homeServiceRequest()?.status === 'REJECTED'"
             style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:1rem; margin-bottom:1rem;">
             <p style="color:#dc2626; font-weight:600; margin:0 0 4px;">Demande refusee</p>
             <p style="color:#737373; margin:0; font-size:0.88rem;">{{ homeServiceRequest()!.rejectionReason }}</p>
           </div>
 
-          <!-- FORMULAIRE -->
           <div *ngIf="!homeServiceRequest() || homeServiceRequest()?.status === 'REJECTED'"
             class="home-service-form">
             <p style="color:#737373; font-size:0.88rem; margin-bottom:1rem;">
               Pour activer ce service, veuillez soumettre les documents suivants :
             </p>
 
-            <!-- Diplome -->
+            <!-- ✅ DIPLOME -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">📄</span>
@@ -222,8 +217,8 @@
                 </div>
               </div>
               <div class="doc-actions">
-                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">Upload en cours...</span>
-                <label *ngIf="!isUploadingDoc()" for="diplomaInput" class="upload-label"
+                <span *ngIf="isUploadingDiploma()" style="color:#737373; font-size:0.82rem;">Upload...</span>
+                <label *ngIf="!isUploadingDiploma()" for="diplomaInput" class="upload-label"
                   [style.background]="diplomaUrl() ? '#16a34a' : '#171717'">
                   {{ diplomaUrl() ? 'Confirme' : 'Uploader' }}
                 </label>
@@ -233,10 +228,10 @@
             </div>
             <div *ngIf="diplomaUrl()" class="doc-preview">
               <img [src]="diplomaUrl()" alt="Diplome" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">Diplome uploade avec succes</span>
+              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">Diplome uploade !</span>
             </div>
 
-            <!-- CIN -->
+            <!-- ✅ CIN -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">🪪</span>
@@ -246,8 +241,8 @@
                 </div>
               </div>
               <div class="doc-actions">
-                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">Upload en cours...</span>
-                <label *ngIf="!isUploadingDoc()" for="cinInput" class="upload-label"
+                <span *ngIf="isUploadingCin()" style="color:#737373; font-size:0.82rem;">Upload...</span>
+                <label *ngIf="!isUploadingCin()" for="cinInput" class="upload-label"
                   [style.background]="cinUrl() ? '#16a34a' : '#171717'">
                   {{ cinUrl() ? 'Confirme' : 'Uploader' }}
                 </label>
@@ -257,21 +252,21 @@
             </div>
             <div *ngIf="cinUrl()" class="doc-preview">
               <img [src]="cinUrl()" alt="CIN" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">CIN uploade avec succes</span>
+              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">CIN uploade !</span>
             </div>
 
-            <!-- Selfie -->
+            <!-- ✅ SELFIE -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">🤳</span>
                 <div>
                   <strong>Selfie en temps reel</strong>
-                  <p>Photo prise maintenant avec camera frontale</p>
+                  <p>Photo prise avec camera frontale</p>
                 </div>
               </div>
               <div class="doc-actions">
-                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">Upload en cours...</span>
-                <label *ngIf="!isUploadingDoc()" for="selfieInput" class="upload-label"
+                <span *ngIf="isUploadingSelfie()" style="color:#737373; font-size:0.82rem;">Upload...</span>
+                <label *ngIf="!isUploadingSelfie()" for="selfieInput" class="upload-label"
                   [style.background]="selfieUrl() ? '#16a34a' : '#171717'">
                   {{ selfieUrl() ? 'Confirme' : 'Prendre selfie' }}
                 </label>
@@ -282,10 +277,10 @@
             </div>
             <div *ngIf="selfieUrl()" class="doc-preview">
               <img [src]="selfieUrl()" alt="Selfie" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">Selfie pris avec succes</span>
+              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">Selfie pris !</span>
             </div>
 
-            <!-- Barre de progression -->
+            <!-- Progression -->
             <div class="upload-progress" *ngIf="diplomaUrl() || cinUrl() || selfieUrl()">
               <div class="progress-step" [class.done]="diplomaUrl()">
                 {{ diplomaUrl() ? '✅' : '⬜' }} Diplome
@@ -306,7 +301,6 @@
             </button>
           </div>
 
-          <!-- EN ATTENTE -->
           <div *ngIf="homeServiceRequest()?.status === 'PENDING'"
             style="background:#fefce8; border:1px solid #fde047; border-radius:12px; padding:1rem; color:#854d0e;">
             Votre demande est en cours de verification. Nous vous repondrons dans les 24-48h.
