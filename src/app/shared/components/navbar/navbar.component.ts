@@ -32,13 +32,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   navLinks = computed<NavLink[]>(() => {
     if (this.sessionService.isAdmin()) {
-      return [{ label: this.langService.t().dashboard, path: '/admin/dashboard' }];
+      return [
+        { label: this.langService.t().dashboard, path: '/admin/dashboard' }
+      ];
     }
     if (this.sessionService.isBarber()) {
       return [
         { label: this.langService.t().dashboard, path: '/barber/dashboard' },
         { label: this.langService.t().bookings, path: '/barber/bookings' },
         { label: this.langService.t().availabilityNav, path: '/barber/availability' },
+        // ✅ Messages ajouté
+        { label: '💬 Messages', path: '/barber/messages' },
         { label: this.langService.t().barberProfileNav, path: '/barber/profile' }
       ];
     }
