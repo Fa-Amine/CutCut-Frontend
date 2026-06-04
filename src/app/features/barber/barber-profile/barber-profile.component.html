@@ -3,7 +3,7 @@
     <div class="page-header">
       <span class="page-kicker">{{ langService.t().barberProfileNav }}</span>
       <h1>{{ langService.t().barberProfileNav }}</h1>
-      <p>Consultez et modifiez les informations de votre activité.</p>
+      <p>Consultez et modifiez les informations de votre activite.</p>
     </div>
 
     <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
@@ -23,7 +23,7 @@
             </ng-template>
             <div *ngIf="isEditMode()" class="photo-upload-btn" style="margin-top:8px;">
               <label for="photoInput" style="cursor:pointer; background:#1A1A1A; color:#FAFAF7; padding:6px 12px; border-radius:8px; font-size:0.85rem;">
-                📷 Changer la photo
+                Changer la photo
               </label>
               <input id="photoInput" type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)" />
               <span *ngIf="isUploadingPhoto()" style="color:#64748b; font-size:0.85rem; margin-left:8px;">Envoi en cours...</span>
@@ -39,7 +39,7 @@
           <p-tag *ngIf="profile()!.price !== undefined && profile()!.price !== null"
             [value]="profile()!.price + ' MAD'" severity="info"></p-tag>
           <p-tag *ngIf="profile()!.averageRating !== undefined && profile()!.averageRating !== null"
-            [value]="'⭐ ' + profile()!.averageRating" severity="success"></p-tag>
+            [value]="'Note: ' + profile()!.averageRating" severity="success"></p-tag>
         </div>
 
         <form [formGroup]="profileForm" class="profile-grid">
@@ -54,7 +54,7 @@
             <input *ngIf="isEditMode()" pInputText formControlName="email" class="w-full" />
           </div>
           <div class="info-box">
-            <span>Téléphone</span>
+            <span>Telephone</span>
             <strong *ngIf="!isEditMode()">{{ profile()!.phone }}</strong>
             <input *ngIf="isEditMode()" pInputText formControlName="phone" class="w-full" />
           </div>
@@ -87,21 +87,21 @@
         <!-- CARTE EN MODE EDIT -->
         <div class="info-box full-width" *ngIf="isEditMode()">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-            <span>📍 Cliquez sur la carte pour choisir votre position</span>
+            <span>Cliquez sur la carte pour choisir votre position</span>
             <button type="button" (click)="useMyLocation()" [disabled]="isLocating()"
               style="background:#1A1A1A; color:#FAFAF7; border:none; padding:8px 16px; border-radius:999px; cursor:pointer; font-size:0.85rem; font-weight:600; font-family:inherit;">
-              {{ isLocating() ? '⏳ Localisation...' : '📍 Utiliser ma position' }}
+              {{ isLocating() ? 'Localisation...' : 'Utiliser ma position' }}
             </button>
           </div>
           <p *ngIf="locationError()" style="color:#e53e3e; font-size:0.82rem; margin:0 0 8px;">
-            ⚠️ {{ locationError() }}
+            {{ locationError() }}
           </p>
           <div id="edit-map" style="width:100%; height:350px; border:1px solid rgba(26,26,26,0.15); border-radius:12px;"></div>
         </div>
 
         <!-- CARTE EN MODE VIEW -->
         <div class="info-box full-width" *ngIf="!isEditMode() && mapUrl()">
-          <span>📍 Localisation sur la carte</span>
+          <span>Localisation sur la carte</span>
           <iframe [src]="mapUrl() | safeUrl" width="100%" height="300"
             style="border:1px solid rgba(26,26,26,0.1); border-radius:12px; margin-top:8px" loading="lazy"></iframe>
         </div>
@@ -114,11 +114,11 @@
           </ng-container>
         </div>
 
-        <!-- ✅ SECTION SERVICES -->
+        <!-- SECTION SERVICES -->
         <div class="services-section">
           <div class="services-header">
-            <h3>✂️ Mes services</h3>
-            <button pButton type="button" label="➕ Ajouter un service"
+            <h3>Mes services</h3>
+            <button pButton type="button" label="Ajouter un service"
               severity="secondary" [outlined]="true"
               (click)="showAddService.set(!showAddService())">
             </button>
@@ -161,24 +161,24 @@
               <div class="service-row-right">
                 <span class="service-row-price">{{ service.price }} MAD</span>
                 <button (click)="editService(service)"
-                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px;">✏️</button>
+                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px;">Modifier</button>
                 <button (click)="deleteService(service.id)"
-                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px;">🗑️</button>
+                  style="background:none; border:none; cursor:pointer; font-size:1rem; padding:4px; color:red;">Supprimer</button>
               </div>
             </div>
           </div>
 
           <p *ngIf="barberServices().length === 0"
             style="color:#a3a3a3; text-align:center; padding:1.5rem; font-size:0.9rem;">
-            Aucun service ajouté. Cliquez sur "Ajouter un service" !
+            Aucun service ajoute. Cliquez sur "Ajouter un service" !
           </p>
         </div>
 
-        <!-- ✅ SECTION SERVICE À DOMICILE -->
+        <!-- SECTION SERVICE A DOMICILE -->
         <div class="home-service-section">
           <div class="home-service-header">
             <div>
-              <h3>🏠 Service à domicile</h3>
+              <h3>Service a domicile</h3>
               <p>Proposez vos services directement chez vos clients</p>
             </div>
             <div *ngIf="homeServiceRequest()">
@@ -186,22 +186,22 @@
                 [class.pending]="homeServiceRequest()!.status === 'PENDING'"
                 [class.approved]="homeServiceRequest()!.status === 'APPROVED'"
                 [class.rejected]="homeServiceRequest()!.status === 'REJECTED'">
-                {{ homeServiceRequest()!.status === 'PENDING' ? '⏳ En attente' :
-                   homeServiceRequest()!.status === 'APPROVED' ? '✅ Activé' : '❌ Refusé' }}
+                {{ homeServiceRequest()!.status === 'PENDING' ? 'En attente' :
+                   homeServiceRequest()!.status === 'APPROVED' ? 'Active' : 'Refuse' }}
               </span>
             </div>
           </div>
 
-          <!-- APPROUVÉ -->
+          <!-- APPROUVE -->
           <div *ngIf="homeServiceRequest()?.status === 'APPROVED'"
             style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:1rem; color:#16a34a; font-weight:600;">
-            🏠 Service à domicile activé ! Vos clients peuvent vous demander de vous déplacer.
+            Service a domicile active ! Vos clients peuvent vous demander de vous deplacer.
           </div>
 
-          <!-- REFUSÉ -->
+          <!-- REFUSE -->
           <div *ngIf="homeServiceRequest()?.status === 'REJECTED'"
             style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:1rem; margin-bottom:1rem;">
-            <p style="color:#dc2626; font-weight:600; margin:0 0 4px;">❌ Demande refusée</p>
+            <p style="color:#dc2626; font-weight:600; margin:0 0 4px;">Demande refusee</p>
             <p style="color:#737373; margin:0; font-size:0.88rem;">{{ homeServiceRequest()!.rejectionReason }}</p>
           </div>
 
@@ -212,82 +212,83 @@
               Pour activer ce service, veuillez soumettre les documents suivants :
             </p>
 
-            <!-- ✅ Diplôme avec feedback -->
+            <!-- Diplome -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">📄</span>
                 <div>
-                  <strong>Diplôme de coiffure</strong>
-                  <p>Photo ou scan de votre diplôme</p>
+                  <strong>Diplome de coiffure</strong>
+                  <p>Photo ou scan de votre diplome</p>
                 </div>
               </div>
               <div class="doc-actions">
-                <ng-container *ngIf="!diplomaUrl()">
-                  <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
-                  <label *ngIf="!isUploadingDoc()" for="diplomaInput" class="upload-label">📤 Uploader</label>
-                </ng-container>
-                <ng-container *ngIf="diplomaUrl()">
-                  <span style="color:#16a34a; font-size:0.85rem; font-weight:600;">✅ Uploadé</span>
-                  <label for="diplomaInput" class="upload-label" style="background:#737373;">🔄 Changer</label>
-                </ng-container>
+                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">Upload en cours...</span>
+                <label *ngIf="!isUploadingDoc()" for="diplomaInput" class="upload-label"
+                  [style.background]="diplomaUrl() ? '#16a34a' : '#171717'">
+                  {{ diplomaUrl() ? 'Confirme' : 'Uploader' }}
+                </label>
                 <input id="diplomaInput" type="file" accept="image/*,.pdf" style="display:none"
                   (change)="onDocumentSelected($event, 'diploma')" />
               </div>
             </div>
+            <div *ngIf="diplomaUrl()" class="doc-preview">
+              <img [src]="diplomaUrl()" alt="Diplome" />
+              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">Diplome uploade avec succes</span>
+            </div>
 
-            <!-- ✅ CIN avec feedback -->
+            <!-- CIN -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">🪪</span>
                 <div>
-                  <strong>Carte Nationale d'Identité</strong>
+                  <strong>Carte Nationale d'Identite</strong>
                   <p>Recto et verso de votre CIN</p>
                 </div>
               </div>
               <div class="doc-actions">
-                <ng-container *ngIf="!cinUrl()">
-                  <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
-                  <label *ngIf="!isUploadingDoc()" for="cinInput" class="upload-label">📤 Uploader</label>
-                </ng-container>
-                <ng-container *ngIf="cinUrl()">
-                  <span style="color:#16a34a; font-size:0.85rem; font-weight:600;">✅ Uploadé</span>
-                  <label for="cinInput" class="upload-label" style="background:#737373;">🔄 Changer</label>
-                </ng-container>
+                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">Upload en cours...</span>
+                <label *ngIf="!isUploadingDoc()" for="cinInput" class="upload-label"
+                  [style.background]="cinUrl() ? '#16a34a' : '#171717'">
+                  {{ cinUrl() ? 'Confirme' : 'Uploader' }}
+                </label>
                 <input id="cinInput" type="file" accept="image/*" style="display:none"
                   (change)="onDocumentSelected($event, 'cin')" />
               </div>
             </div>
+            <div *ngIf="cinUrl()" class="doc-preview">
+              <img [src]="cinUrl()" alt="CIN" />
+              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">CIN uploade avec succes</span>
+            </div>
 
-            <!-- ✅ Selfie — caméra frontale OBLIGATOIRE -->
+            <!-- Selfie -->
             <div class="doc-upload-item">
               <div class="doc-info">
                 <span class="doc-icon">🤳</span>
                 <div>
-                  <strong>Selfie en temps réel</strong>
-                  <p>Photo prise maintenant avec caméra frontale</p>
+                  <strong>Selfie en temps reel</strong>
+                  <p>Photo prise maintenant avec camera frontale</p>
                 </div>
               </div>
               <div class="doc-actions">
-                <ng-container *ngIf="!selfieUrl()">
-                  <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">⏳ Upload...</span>
-                  <label *ngIf="!isUploadingDoc()" for="selfieInput" class="upload-label">📷 Prendre selfie</label>
-                </ng-container>
-                <ng-container *ngIf="selfieUrl()">
-                  <span style="color:#16a34a; font-size:0.85rem; font-weight:600;">✅ Pris</span>
-                  <label for="selfieInput" class="upload-label" style="background:#737373;">🔄 Reprendre</label>
-                </ng-container>
-                <!-- ✅ capture="user" = caméra frontale, pas de fichier existant -->
+                <span *ngIf="isUploadingDoc()" style="color:#737373; font-size:0.82rem;">Upload en cours...</span>
+                <label *ngIf="!isUploadingDoc()" for="selfieInput" class="upload-label"
+                  [style.background]="selfieUrl() ? '#16a34a' : '#171717'">
+                  {{ selfieUrl() ? 'Confirme' : 'Prendre selfie' }}
+                </label>
                 <input id="selfieInput" type="file" accept="image/*"
-                  capture="user"
-                  style="display:none"
+                  capture="user" style="display:none"
                   (change)="onDocumentSelected($event, 'selfie')" />
               </div>
+            </div>
+            <div *ngIf="selfieUrl()" class="doc-preview">
+              <img [src]="selfieUrl()" alt="Selfie" />
+              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">Selfie pris avec succes</span>
             </div>
 
             <!-- Barre de progression -->
             <div class="upload-progress" *ngIf="diplomaUrl() || cinUrl() || selfieUrl()">
               <div class="progress-step" [class.done]="diplomaUrl()">
-                {{ diplomaUrl() ? '✅' : '⬜' }} Diplôme
+                {{ diplomaUrl() ? '✅' : '⬜' }} Diplome
               </div>
               <div class="progress-step" [class.done]="cinUrl()">
                 {{ cinUrl() ? '✅' : '⬜' }} CIN
@@ -298,7 +299,7 @@
             </div>
 
             <button pButton type="button"
-              label="📤 Soumettre ma demande"
+              label="Soumettre ma demande"
               [disabled]="!diplomaUrl() || !cinUrl() || !selfieUrl() || isUploadingDoc() || isSubmittingHomeService()"
               (click)="submitHomeService()"
               style="margin-top:1rem; width:100%;">
@@ -308,20 +309,20 @@
           <!-- EN ATTENTE -->
           <div *ngIf="homeServiceRequest()?.status === 'PENDING'"
             style="background:#fefce8; border:1px solid #fde047; border-radius:12px; padding:1rem; color:#854d0e;">
-            ⏳ Votre demande est en cours de vérification. Nous vous répondrons dans les 24-48h.
+            Votre demande est en cours de verification. Nous vous repondrons dans les 24-48h.
           </div>
         </div>
 
         <!-- PHOTOS -->
         <div class="gallery-section">
-          <h3>📸 Photos</h3>
+          <h3>Photos</h3>
           <div class="gallery-upload">
             <input type="text" placeholder="Description (optionnel)"
               [value]="newCaption()"
               (input)="newCaption.set($any($event.target).value)"
               style="padding:8px; border:1px solid rgba(26,26,26,0.1); border-radius:8px; width:100%; margin-bottom:8px; background:#FAFAF7; box-sizing:border-box;" />
             <label for="galleryInput" style="cursor:pointer; background:#1A1A1A; color:#FAFAF7; padding:8px 16px; border-radius:999px; font-size:0.9rem; display:inline-block;">
-              📷 Ajouter une photo
+              Ajouter une photo
             </label>
             <input id="galleryInput" type="file" accept="image/*" style="display:none" (change)="onGalleryPhotoSelected($event, 'gallery')" />
             <span *ngIf="isUploadingGallery()" style="color:#64748b; font-size:0.85rem; margin-left:8px;">Envoi en cours...</span>
@@ -333,7 +334,7 @@
                 <span *ngIf="photo.caption">{{ photo.caption }}</span>
                 <button (click)="deletePhoto(photo.id)"
                   style="background:rgba(239,68,68,0.9); color:white; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem;">
-                  🗑️
+                  Supprimer
                 </button>
               </div>
             </div>
