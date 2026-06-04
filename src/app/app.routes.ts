@@ -27,6 +27,7 @@ import { adminGuard } from './core/guards/admin.guard';
 import { AboutComponent } from './features/about/about.component';
 
 import { ChatComponent } from './features/chat/chat.component';
+import { BarberMessagesComponent } from './features/barber/barber-messages/barber-messages.component';
 
 
 export const routes: Routes = [
@@ -48,6 +49,8 @@ export const routes: Routes = [
       { path: 'barber/bookings', component: BarberBookingsComponent, canActivate: [barberGuard] },
 
 	{ path: 'chat/:id', component: ChatComponent, canActivate: [clientGuard] },
+{ path: 'barber/messages', component: BarberMessagesComponent, canActivate: [barberGuard] },
+
 
       { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
       { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
