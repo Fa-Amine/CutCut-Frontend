@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner.component';
@@ -11,7 +12,8 @@ import { HomeServiceRequest } from '../../../core/models/barber.models';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, LoadingSpinnerComponent, ErrorAlertComponent],
+  // ✅ FormsModule ajouté ici
+  imports: [CommonModule, FormsModule, LoadingSpinnerComponent, ErrorAlertComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -24,7 +26,6 @@ export class DashboardComponent {
   errorMessage = signal('');
   dashboard = signal<AdminDashboardResponse | null>(null);
 
-  // ✅ Home Service Requests
   homeRequests = signal<HomeServiceRequest[]>([]);
   isLoadingRequests = signal(true);
   successMessage = signal('');
