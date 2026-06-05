@@ -1,9 +1,9 @@
 <div id="page-top"></div>
 <p-toast position="top-center"></p-toast>
 
-<!-- ✅ LIGHTBOX -->
+<!-- LIGHTBOX -->
 <div class="lightbox" *ngIf="lightboxPhoto()" (click)="closeLightbox()">
-  <button class="lightbox-close" (click)="closeLightbox()">✕</button>
+  <button class="lightbox-close" (click)="closeLightbox()">X</button>
   <img [src]="lightboxPhoto()!" alt="Photo" (click)="$event.stopPropagation()" />
 </div>
 
@@ -39,7 +39,7 @@
               <p-tag *ngIf="barber()!.price !== undefined && barber()!.price !== null"
                 [value]="barber()!.price + ' MAD'" severity="info"></p-tag>
               <p-tag *ngIf="barber()!.averageRating"
-                [value]="'⭐ ' + barber()!.averageRating + ' (' + (barber()!.reviewCount || 0) + ' avis)'"
+                [value]="'Note: ' + barber()!.averageRating + ' (' + (barber()!.reviewCount || 0) + ' avis)'"
                 severity="success"></p-tag>
             </div>
 
@@ -47,7 +47,7 @@
               style="margin-top:0.5rem;">
               <a [routerLink]="['/chat', barber()!.id]"
                 style="display:block; width:100%; text-align:center; background:#1A1A1A; color:#FAFAF7 !important; border-radius:12px; padding:0.85rem; font-weight:700; font-size:0.95rem; text-decoration:none; box-sizing:border-box;">
-                💬 Envoyer un message
+                Envoyer un message
               </a>
             </div>
 
@@ -57,7 +57,7 @@
             </div>
 
             <div class="barber-location" *ngIf="barber()!.address">
-              <h3>📍 {{ langService.t().address }}</h3>
+              <h3>{{ langService.t().address }}</h3>
               <p>{{ barber()!.address }}</p>
             </div>
 
@@ -69,14 +69,14 @@
               <a [href]="'https://www.google.com/maps?q=' + barber()!.latitude + ',' + barber()!.longitude"
                 target="_blank"
                 style="display:block; text-align:center; margin-top:8px; color:#1A1A1A; font-size:0.9rem;">
-                📍 {{ langService.t().openGoogleMaps }}
+                {{ langService.t().openGoogleMaps }}
               </a>
             </div>
 
-            <!-- ✅ PHOTOS AVEC LIGHTBOX -->
+            <!-- PHOTOS -->
             <div *ngIf="photos().length > 0"
               style="margin-top:1.5rem; border-top:1px solid rgba(26,26,26,0.08); padding-top:1rem;">
-              <h3 style="color:#1A1A1A; font-size:1.1rem; margin-bottom:1rem;">📸 {{ langService.t().photosLabel }}</h3>
+              <h3 style="color:#1A1A1A; font-size:1.1rem; margin-bottom:1rem;">{{ langService.t().photosLabel }}</h3>
               <div class="photos-grid">
                 <div *ngFor="let photo of photos()" class="photo-thumb"
                   (click)="openLightbox(photo.imageUrl)">
@@ -85,9 +85,10 @@
               </div>
             </div>
 
+            <!-- AVIS -->
             <div style="margin-top:1.5rem; border-top:1px solid rgba(26,26,26,0.08); padding-top:1rem;">
               <h3 style="color:#1A1A1A; font-size:1.1rem; margin-bottom:1rem;">
-                ⭐ {{ langService.t().reviewsLabel }} ({{ reviews().length }})
+                {{ langService.t().reviewsLabel }} ({{ reviews().length }})
               </h3>
               <div *ngIf="reviews().length === 0"
                 style="color:rgba(26,26,26,0.4); text-align:center; padding:1rem; font-family:'Courier New',monospace;">
@@ -114,9 +115,9 @@
           <div class="booking-card">
             <ng-container *ngIf="dayGroups().length; else noAvailability">
 
-              <!-- SERVICES -->
+              <!-- ✅ SERVICES -->
               <div class="section-block" *ngIf="services().length > 0">
-                <h3>✂️ Choisissez vos services</h3>
+                <h3>{{ langService.t().chooseServices || 'Choisissez vos services' }}</h3>
                 <div class="services-list">
                   <div *ngFor="let service of services()"
                     class="service-item"
@@ -133,6 +134,7 @@
                   </div>
                 </div>
 
+                <!-- ✅ Total seulement si services sélectionnés -->
                 <div class="total-bar" *ngIf="selectedServiceIds().length > 0">
                   <ng-container *ngFor="let service of services()">
                     <div class="total-line" *ngIf="isServiceSelected(service.id)">
@@ -147,23 +149,23 @@
                 </div>
               </div>
 
-              <!-- JOURS -->
+              <!-- ✅ JOURS -->
               <div class="section-block">
                 <h3>{{ langService.t().chooseDay }}</h3>
                 <div class="day-list">
                   <button *ngFor="let day of dayGroups()" type="button"
                     (click)="chooseDay(day.dateKey)"
-                    [style.background]="selectedDay() === day.dateKey ? '#1A1A1A' : '#FAFAF7'"
-                    [style.color]="selectedDay() === day.dateKey ? '#FAFAF7' : '#1A1A1A'"
-                    [style.border]="selectedDay() === day.dateKey ? '2px solid #1A1A1A' : '1.5px solid rgba(26,26,26,0.2)'"
+                    [style.background]="selectedDay() === day.dateKey ? '#1A1A1A' : '#ffffff'"
+                    [style.color]="selectedDay() === day.dateKey ? '#FAFAF7' : '#171717'"
+                    [style.border]="selectedDay() === day.dateKey ? '2px solid #1A1A1A' : '1.5px solid #a3a3a3'"
                     [style.fontWeight]="selectedDay() === day.dateKey ? '800' : '600'"
-                    style="padding:0.7rem 0.9rem; border-radius:12px; cursor:pointer; font-size:0.88rem; font-family:inherit; transition:all 0.2s;">
+                    style="padding:0.7rem 0.9rem; border-radius:12px; cursor:pointer; font-size:0.88rem; font-family:inherit; transition:all 0.2s; white-space:nowrap;">
                     {{ day.label }}
                   </button>
                 </div>
               </div>
 
-              <!-- ✅ SLOTS AVEC GRISAGE -->
+              <!-- ✅ SLOTS avec meilleur contraste -->
               <div class="section-block">
                 <h3>{{ langService.t().chooseSlot }}</h3>
                 <div class="slot-list" *ngIf="selectedDay(); else chooseDayFirst">
@@ -172,16 +174,16 @@
                     type="button"
                     (click)="chooseSlot(slot)"
                     [disabled]="slot.booked"
-                    [style.background]="slot.booked ? '#f5f5f5' : selectedSlot()?.id === slot.id ? '#1A1A1A' : '#FAFAF7'"
-                    [style.color]="slot.booked ? '#a3a3a3' : selectedSlot()?.id === slot.id ? '#FAFAF7' : '#1A1A1A'"
-                    [style.border]="slot.booked ? '1.5px solid #e5e5e5' : selectedSlot()?.id === slot.id ? '2px solid #1A1A1A' : '1.5px solid rgba(26,26,26,0.2)'"
+                    [style.background]="slot.booked ? '#f5f5f5' : selectedSlot()?.id === slot.id ? '#1A1A1A' : '#ffffff'"
+                    [style.color]="slot.booked ? '#c0c0c0' : selectedSlot()?.id === slot.id ? '#FAFAF7' : '#171717'"
+                    [style.border]="slot.booked ? '1.5px solid #e5e5e5' : selectedSlot()?.id === slot.id ? '2px solid #1A1A1A' : '1.5px solid #a3a3a3'"
                     [style.cursor]="slot.booked ? 'not-allowed' : 'pointer'"
-                    [style.opacity]="slot.booked ? '0.5' : '1'"
+                    [style.opacity]="slot.booked ? '0.45' : '1'"
                     [style.textDecoration]="slot.booked ? 'line-through' : 'none'"
-                    [style.fontWeight]="selectedSlot()?.id === slot.id ? '800' : '600'"
+                    [style.fontWeight]="selectedSlot()?.id === slot.id ? '800' : '700'"
                     style="padding:0.7rem 0.9rem; border-radius:12px; font-size:0.88rem; font-family:inherit; transition:all 0.2s; min-width:90px; text-align:center;">
                     {{ formatTime(slot.startTime) }}
-                    <span *ngIf="slot.booked" style="font-size:0.65rem; display:block; color:#a3a3a3;">Réservé</span>
+                    <span *ngIf="slot.booked" style="font-size:0.65rem; display:block; color:#c0c0c0;">Reserve</span>
                   </button>
                 </div>
                 <ng-template #chooseDayFirst>
@@ -189,7 +191,7 @@
                 </ng-template>
               </div>
 
-              <!-- RÉSUMÉ -->
+              <!-- ✅ RESUME -->
               <div class="booking-summary">
                 <h3>{{ langService.t().bookingSummary }}</h3>
                 <div class="summary-row">
@@ -202,10 +204,11 @@
                 </div>
                 <div class="summary-row" *ngIf="selectedServiceIds().length > 0">
                   <span>Services</span>
-                  <strong>{{ selectedServiceIds().length }} sélectionné(s)</strong>
+                  <strong>{{ selectedServiceIds().length }} selectionne(s)</strong>
                 </div>
+                <!-- ✅ Total 0 MAD par défaut -->
                 <div class="summary-row total-final">
-                  <span>💰 Total</span>
+                  <span>Total</span>
                   <strong style="font-size:1.1rem; color:#171717;">{{ totalPrice() }} MAD</strong>
                 </div>
               </div>
