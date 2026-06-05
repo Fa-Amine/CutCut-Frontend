@@ -33,17 +33,9 @@ interface DayGroup {
   selector: 'app-barber-details',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterLink,
-    ButtonModule,
-    CardModule,
-    AvatarModule,
-    TagModule,
-    MessageModule,
-    ToastModule,
-    LoadingSpinnerComponent,
-    ErrorAlertComponent,
-    SafeUrlPipe
+    CommonModule, RouterLink, ButtonModule, CardModule,
+    AvatarModule, TagModule, MessageModule, ToastModule,
+    LoadingSpinnerComponent, ErrorAlertComponent, SafeUrlPipe
   ],
   providers: [MessageService],
   templateUrl: './barber-details.component.html',
@@ -78,15 +70,15 @@ export class BarberDetailsComponent {
   selectedDay = signal<string | null>(null);
   selectedSlot = signal<AvailabilitySlot | null>(null);
 
+  // ✅ Fix: Total 0 MAD par défaut si rien sélectionné
   totalPrice = computed(() => {
     const selected = this.services().filter(s =>
       this.selectedServiceIds().includes(s.id)
     );
-    if (selected.length === 0) return this.barber()?.price ?? 0;
+    if (selected.length === 0) return 0;
     return selected.reduce((sum, s) => sum + s.price, 0);
   });
 
-  // ✅ Garde TOUS les slots (booked ou pas) pour affichage
   dayGroups = computed<DayGroup[]>(() => {
     const now = new Date();
     const todayKey = now.toISOString().slice(0, 10);
@@ -188,7 +180,6 @@ export class BarberDetailsComponent {
   getStars(count: number): string { return '⭐'.repeat(count); }
 
   private reloadSlots(barberId: number, onDone?: () => void) {
-    // ✅ Utiliser getAllSlots au lieu de getAvailableSlots
     this.availabilityService.getAllSlotsByBarber(barberId).subscribe({
       next: (slotsResponse) => {
         this.slots.set(slotsResponse);
@@ -220,7 +211,7 @@ export class BarberDetailsComponent {
   }
 
   chooseSlot(slot: AvailabilitySlot) {
-    if (slot.booked) return; // ✅ Ne pas sélectionner un slot réservé
+    if (slot.booked) return;
     this.selectedSlot.set(slot);
     this.errorMessage.set('');
   }

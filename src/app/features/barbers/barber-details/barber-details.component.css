@@ -96,9 +96,7 @@
   line-height: 1.6;
 }
 
-/* ===========================
-   ✅ PHOTOS + LIGHTBOX
-=========================== */
+/* PHOTOS + LIGHTBOX */
 .photos-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -120,16 +118,11 @@
   transition: transform 0.2s;
 }
 
-.photo-thumb:hover img {
-  transform: scale(1.05);
-}
+.photo-thumb:hover img { transform: scale(1.05); }
 
 .lightbox {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.92);
   z-index: 99999;
   display: flex;
@@ -148,29 +141,23 @@
 
 .lightbox-close {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 20px; right: 20px;
   color: white;
   font-size: 1.5rem;
   cursor: pointer;
   background: rgba(255,255,255,0.15);
   border: none;
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  width: 44px; height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
 }
 
-.lightbox-close:hover {
-  background: rgba(255,255,255,0.3);
-}
+.lightbox-close:hover { background: rgba(255,255,255,0.3); }
 
-/* ===========================
-   BOOKING CARD
-=========================== */
+/* BOOKING CARD */
 .booking-card {
   display: flex;
   flex-direction: column;
@@ -184,10 +171,20 @@
   margin: 0 0 0.75rem;
 }
 
-.day-list, .slot-list {
+/* ✅ Fix dates qui se chevauchent */
+.day-list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* ✅ Fix slots */
+.slot-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .helper-text {
@@ -235,7 +232,7 @@
 .no-availability-state p { color: #a3a3a3; font-size: 0.9rem; }
 
 /* ===========================
-   SERVICES
+   ✅ SERVICES — Fix Checkbox
 =========================== */
 .services-list {
   display: flex;
@@ -257,8 +254,12 @@
   color: #171717;
 }
 
-.service-item:hover { border-color: #171717; background: #f5f5f5; }
+.service-item:hover {
+  border-color: #171717;
+  background: #f5f5f5;
+}
 
+/* ✅ Fix: texte visible quand sélectionné */
 .service-item.selected {
   border-color: #171717;
   background: #171717;
@@ -266,10 +267,34 @@
 }
 
 .service-info { display: flex; flex-direction: column; gap: 2px; }
-.service-name { font-weight: 700; font-size: 0.95rem; color: #171717; }
-.service-desc { font-size: 0.78rem; opacity: 0.6; }
-.service-right { display: flex; align-items: center; gap: 0.75rem; }
-.service-price { font-weight: 700; font-size: 0.95rem; color: #171717; }
+
+/* ✅ Fix: couleur du nom selon état */
+.service-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: inherit;
+}
+
+.service-desc {
+  font-size: 0.78rem;
+  opacity: 0.6;
+  color: inherit;
+}
+
+.service-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* ✅ Fix: prix visible quand sélectionné */
+.service-price {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: inherit;
+}
+
 .service-check { font-size: 1rem; }
 
 .total-bar {
@@ -303,9 +328,7 @@
   margin-top: 0.5rem;
 }
 
-/* ===========================
-   RESPONSIVE
-=========================== */
+/* RESPONSIVE */
 @media (max-width: 900px) {
   .details-layout { grid-template-columns: 1fr; }
   .info-column, .booking-column { position: static; }
@@ -315,4 +338,5 @@
 @media (max-width: 640px) {
   .barber-details-page { padding: 1.25rem 1rem 2rem; }
   .photos-grid { grid-template-columns: repeat(2, 1fr); }
+  .day-list { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.75rem; }
 }
