@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute, Location } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
@@ -14,13 +14,8 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert/erro
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterLink,
-    InputTextModule,
-    PasswordModule,
-    ButtonModule,
-    CardModule,
+    CommonModule, ReactiveFormsModule, RouterLink,
+    InputTextModule, PasswordModule, ButtonModule, CardModule,
     ErrorAlertComponent
   ],
   templateUrl: './login.component.html',
@@ -30,6 +25,8 @@ export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private location = inject(Location);
+  private route = inject(ActivatedRoute);
   langService = inject(LanguageService);
 
   isLoading = signal(false);
@@ -45,12 +42,17 @@ export class LoginComponent implements OnInit {
     document.body.scrollTop = 0;
   }
 
-  get emailControl() {
-    return this.loginForm.get('email');
-  }
+  get emailControl() { return this.loginForm.get('email'); }
+  get passwordControl() { return this.loginForm.get('password'); }
 
-  get passwordControl() {
-    return this.loginForm.get('password');
+  // ✅ Bouton retour
+  goBack() {
+    const redirect = this.route.snapshot.queryParamMap.get('redirect');
+    if (redirect) {
+      this.router.navigate([redirect]);
+    } else {
+      this.location.back();
+    }
   }
 
   onSubmit() {
