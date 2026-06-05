@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink, ActivatedRoute, Location } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
@@ -28,24 +28,18 @@ export class LoginComponent implements OnInit {
   private location = inject(Location);
   private route = inject(ActivatedRoute);
   langService = inject(LanguageService);
-
   isLoading = signal(false);
   errorMessage = signal('');
-
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]]
   });
-
   ngOnInit() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }
-
   get emailControl() { return this.loginForm.get('email'); }
   get passwordControl() { return this.loginForm.get('password'); }
-
-  // ✅ Bouton retour
   goBack() {
     const redirect = this.route.snapshot.queryParamMap.get('redirect');
     if (redirect) {
@@ -54,7 +48,6 @@ export class LoginComponent implements OnInit {
       this.location.back();
     }
   }
-
   onSubmit() {
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
