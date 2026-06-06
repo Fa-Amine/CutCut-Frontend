@@ -117,7 +117,6 @@ export class BarberDetailsComponent {
 
   constructor() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    this.loadLeaflet();
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id || Number.isNaN(id)) {
       this.errorMessage.set('Barbier introuvable.');
@@ -127,23 +126,7 @@ export class BarberDetailsComponent {
     this.loadPageData(id);
   }
 
-  // ✅ Charger Leaflet dynamiquement
-  loadLeaflet() {
-    if (!(window as any).leafletLoaded) {
-      (window as any).leafletLoaded = true;
-
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      document.head.appendChild(link);
-
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      document.head.appendChild(script);
-    }
-  }
-
-  // ✅ tryInitMap avec retry automatique
+  // ✅ tryInitMap simplifié - Leaflet déjà chargé dans index.html
   tryInitMap() {
     const barber = this.barber();
     if (!barber?.latitude || !barber?.longitude) return;
@@ -151,12 +134,7 @@ export class BarberDetailsComponent {
 
     const mapEl = document.getElementById('view-map');
     if (!mapEl) {
-      setTimeout(() => this.tryInitMap(), 300);
-      return;
-    }
-
-    if (!(window as any).L) {
-      setTimeout(() => this.tryInitMap(), 300);
+      setTimeout(() => this.tryInitMap(), 200);
       return;
     }
 
@@ -181,8 +159,8 @@ export class BarberDetailsComponent {
         this.barber.set(barberResponse);
         this.reloadSlots(barberId, () => {
           this.isLoading.set(false);
-          // ✅ Init map après que isLoading = false
-          setTimeout(() => this.tryInitMap(), 500);
+          // ✅ Init map après rendu
+          setTimeout(() => this.tryInitMap(), 300);
         });
         this.loadPhotos(barberId);
         this.loadReviews(barberId);
