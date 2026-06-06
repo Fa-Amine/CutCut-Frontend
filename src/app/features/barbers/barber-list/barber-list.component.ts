@@ -89,7 +89,6 @@ export class BarberListComponent implements AfterViewChecked {
   });
 
   constructor() {
-    this.loadLeaflet();
     this.loadBarbers();
     this.favoriteService.loadFavorites();
     const category = this.route.snapshot.queryParamMap.get('category');
@@ -114,11 +113,16 @@ export class BarberListComponent implements AfterViewChecked {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
+  // ✅ Vérifier si les coordonnées sont au Maroc
+  isValidMoroccoCoords(lat: number, lng: number): boolean {
+    return lat >= 20 && lat <= 36 && lng >= -18 && lng <= -1;
+  }
+
   showRouteOnMap(destLat: number, destLng: number) {
     const userLat = this.userLat();
     const userLng = this.userLng();
     if (!userLat || !userLng) {
-      alert('📍 Activez votre localisation d\'abord !');
+      alert('Activez votre localisation d\'abord !');
       return;
     }
     if (this.currentRoute) {
@@ -142,20 +146,20 @@ export class BarberListComponent implements AfterViewChecked {
             .setLatLng([destLat, destLng])
             .setContent(`
               <div style="font-family:inherit;padding:4px;">
-                <strong style="color:#171717;">🗺️ Itinéraire</strong><br>
-                <span style="color:#16a34a;font-weight:600;">📏 ${distance} km</span> &nbsp;
-                <span style="color:#737373;">⏱ ~${duration} min</span>
+                <strong style="color:#171717;">Itineraire</strong><br>
+                <span style="color:#16a34a;font-weight:600;">${distance} km</span> &nbsp;
+                <span style="color:#737373;">~${duration} min</span>
               </div>
             `)
             .openOn(this.map);
         }
       })
-      .catch(() => alert('Impossible de calculer l\'itinéraire.'));
+      .catch(() => alert('Impossible de calculer l\'itineraire.'));
   }
 
   locateMe() {
     if (!navigator.geolocation) {
-      this.errorMessage.set('La géolocalisation n\'est pas supportée.');
+      this.errorMessage.set('La geolocalisation n\'est pas supportee.');
       return;
     }
     this.isLocating.set(true);
@@ -171,7 +175,7 @@ export class BarberListComponent implements AfterViewChecked {
             [position.coords.latitude, position.coords.longitude],
             { icon: this.createUserIcon() }
           ).addTo(this.map);
-          this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>').openPopup();
+          this.userMarker.bindPopup('<strong>Vous etes ici</strong>').openPopup();
           this.map.flyTo([position.coords.latitude, position.coords.longitude], 14, {
             animate: true, duration: 1.5
           });
@@ -179,7 +183,7 @@ export class BarberListComponent implements AfterViewChecked {
       },
       () => {
         this.isLocating.set(false);
-        this.errorMessage.set('Impossible de récupérer votre position.');
+        this.errorMessage.set('Impossible de recuperer votre position.');
       }
     );
   }
@@ -197,18 +201,6 @@ export class BarberListComponent implements AfterViewChecked {
       `,
       className: '', iconSize: [20, 20], iconAnchor: [10, 10]
     });
-  }
-
-  loadLeaflet() {
-    if (!(window as any).L) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      document.head.appendChild(link);
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      document.head.appendChild(script);
-    }
   }
 
   ngAfterViewChecked() {
@@ -250,7 +242,6 @@ export class BarberListComponent implements AfterViewChecked {
             box-shadow:0 4px 16px rgba(0,0,0,0.35);
             overflow:hidden;
             cursor:pointer;
-            transition:transform 0.2s;
           ">
             ${photo}
           </div>
@@ -272,37 +263,38 @@ export class BarberListComponent implements AfterViewChecked {
 
   initMap() {
     this.mapInitialized = true;
-    const centerLat = this.userLat() || 31.7917;
-    const centerLng = this.userLng() || -7.0926;
 
+    // ✅ Centré sur le Maroc
     this.map = L.map('barbers-map', {
       zoomControl: false,
       attributionControl: true,
       minZoom: 5,
       maxZoom: 19
-    }).setView([centerLat, centerLng], 6);
+    }).setView([31.7917, -7.0926], 6);
 
-    // ✅ Tile CartoDB — affiche le Maroc correctement (Sahara inclus)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 19
     }).addTo(this.map);
 
-    // Zoom controls modernes
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 
-    // Marqueur utilisateur
     if (this.userLat() && this.userLng()) {
       this.userMarker = L.marker(
         [this.userLat()!, this.userLng()!],
         { icon: this.createUserIcon() }
       ).addTo(this.map);
-      this.userMarker.bindPopup('<strong>📍 Vous êtes ici</strong>');
+      this.userMarker.bindPopup('<strong>Vous etes ici</strong>');
     }
 
-    // Marqueurs barbiers
-    const barbersWithLocation = this.filteredBarbers().filter(b => b.latitude && b.longitude);
+    // ✅ Filtrer seulement les barbiers avec coordonnées valides au Maroc
+    const barbersWithLocation = this.filteredBarbers().filter(b =>
+      b.latitude && b.longitude &&
+      b.latitude !== 0 && b.longitude !== 0 &&
+      this.isValidMoroccoCoords(b.latitude, b.longitude)
+    );
+
     barbersWithLocation.forEach(barber => {
       const dist = this.userLat() && this.userLng() && barber.latitude && barber.longitude
         ? this.calculateDistance(this.userLat()!, this.userLng()!, barber.latitude, barber.longitude).toFixed(1)
@@ -325,25 +317,24 @@ export class BarberListComponent implements AfterViewChecked {
             <div>
               <strong style="display:block;color:#171717;font-size:1rem;margin-bottom:2px;">${barber.name}</strong>
               <span style="color:#737373;font-size:0.82rem;">${barber.shopName || 'CutCut'}</span><br>
-              <span style="font-size:0.75rem;">${barber.category === 'FEMME' ? '💇‍♀️ Coiffeuse' : '🧔 Barbier'}</span>
+              <span style="font-size:0.75rem;">${barber.category === 'FEMME' ? 'Coiffeuse' : 'Barbier'}</span>
             </div>
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:8px;background:#f9f9f9;border-radius:10px;">
             <span style="font-weight:700;color:#171717;font-size:0.9rem;">${barber.price ?? 0} MAD</span>
             ${barber.averageRating ? `<span style="color:#f59e0b;font-size:0.82rem;">⭐ ${barber.averageRating}</span>` : ''}
-            ${dist ? `<span style="color:#16a34a;font-size:0.82rem;font-weight:600;">📍 ${dist} km</span>` : ''}
+            ${dist ? `<span style="color:#16a34a;font-size:0.82rem;font-weight:600;">${dist} km</span>` : ''}
           </div>
 
           <button onclick="window.location.href='/barbers/${barber.id}'"
-            style="width:100%;background:#171717;color:white;border:none;padding:10px 0;border-radius:12px;cursor:pointer;font-size:0.9rem;font-weight:700;font-family:inherit;margin-bottom:8px;transition:opacity 0.2s;"
-            onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-            ✂️ Voir & Réserver
+            style="width:100%;background:#171717;color:white;border:none;padding:10px 0;border-radius:12px;cursor:pointer;font-size:0.9rem;font-weight:700;font-family:inherit;margin-bottom:8px;">
+            Voir & Reserver
           </button>
 
           <button onclick="window.showRoute(${barber.latitude}, ${barber.longitude})"
             style="width:100%;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0;padding:9px 0;border-radius:12px;cursor:pointer;font-size:0.88rem;font-weight:600;font-family:inherit;">
-            🗺️ Itinéraire
+            Itineraire
           </button>
         </div>
       `);
@@ -353,15 +344,15 @@ export class BarberListComponent implements AfterViewChecked {
       this.markers.push(marker);
     });
 
-    // ✅ Centrer sur les barbiers s'ils existent, sinon sur le Maroc complet
+    // ✅ Centrer sur les barbiers valides ou sur le Maroc complet
     if (barbersWithLocation.length > 0) {
       const bounds = L.latLngBounds(barbersWithLocation.map(b => [b.latitude!, b.longitude!]));
       this.map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
     } else {
       // ✅ Vue complète du Maroc (Sahara inclus)
       this.map.fitBounds([
-        [20.7, -17.1], // Sud-Ouest (Sahara)
-        [35.9, -1.0]   // Nord-Est
+        [20.7, -17.1],
+        [35.9, -1.0]
       ]);
     }
   }
