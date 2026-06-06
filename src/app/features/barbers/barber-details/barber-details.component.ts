@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, AfterViewChecked } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -43,7 +43,7 @@ interface DayGroup {
   templateUrl: './barber-details.component.html',
   styleUrl: './barber-details.component.css'
 })
-export class BarberDetailsComponent implements AfterViewChecked {
+export class BarberDetailsComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private barberService = inject(BarberService);
@@ -72,7 +72,6 @@ export class BarberDetailsComponent implements AfterViewChecked {
   selectedDay = signal<string | null>(null);
   selectedSlot = signal<AvailabilitySlot | null>(null);
 
-  // ✅ Map Leaflet
   private viewMap: any = null;
   private mapInitialized = false;
 
@@ -130,38 +129,48 @@ export class BarberDetailsComponent implements AfterViewChecked {
 
   // ✅ Charger Leaflet dynamiquement
   loadLeaflet() {
-    if (!(window as any).L) {
+    if (!(window as any).leafletLoaded) {
+      (window as any).leafletLoaded = true;
+
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
       document.head.appendChild(link);
+
       const script = document.createElement('script');
       script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
       document.head.appendChild(script);
     }
   }
 
-  // ✅ Init map après rendu
-  ngAfterViewChecked() {
-    if (!this.mapInitialized && !this.isLoading()) {
-      const barber = this.barber();
-      if (barber?.latitude && barber?.longitude) {
-        const mapEl = document.getElementById('view-map');
-        if (mapEl && (window as any).L) {
-          this.initViewMap(barber.latitude, barber.longitude);
-        }
-      }
-    }
-  }
+  // ✅ tryInitMap avec retry automatique
+  tryInitMap() {
+    const barber = this.barber();
+    if (!barber?.latitude || !barber?.longitude) return;
+    if (this.mapInitialized) return;
 
-  initViewMap(lat: number, lng: number) {
+    const mapEl = document.getElementById('view-map');
+    if (!mapEl) {
+      setTimeout(() => this.tryInitMap(), 300);
+      return;
+    }
+
+    if (!(window as any).L) {
+      setTimeout(() => this.tryInitMap(), 300);
+      return;
+    }
+
     this.mapInitialized = true;
-    this.viewMap = L.map('view-map', { zoomControl: true, scrollWheelZoom: false })
-      .setView([lat, lng], 15);
+    this.viewMap = L.map('view-map', {
+      zoomControl: true,
+      scrollWheelZoom: false
+    }).setView([barber.latitude, barber.longitude], 15);
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(this.viewMap);
-    L.marker([lat, lng]).addTo(this.viewMap);
+
+    L.marker([barber.latitude, barber.longitude]).addTo(this.viewMap);
   }
 
   loadPageData(barberId: number) {
@@ -170,7 +179,11 @@ export class BarberDetailsComponent implements AfterViewChecked {
     this.barberService.getBarberById(barberId).subscribe({
       next: (barberResponse) => {
         this.barber.set(barberResponse);
-        this.reloadSlots(barberId, () => { this.isLoading.set(false); });
+        this.reloadSlots(barberId, () => {
+          this.isLoading.set(false);
+          // ✅ Init map après que isLoading = false
+          setTimeout(() => this.tryInitMap(), 500);
+        });
         this.loadPhotos(barberId);
         this.loadReviews(barberId);
         this.loadServices(barberId);
