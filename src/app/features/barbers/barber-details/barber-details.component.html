@@ -43,11 +43,10 @@
                 severity="success"></p-tag>
             </div>
 
-            <!-- ✅ Bouton message traduit -->
             <div *ngIf="!sessionService.isGuest() && sessionService.isClient()"
               style="margin-top:0.5rem;">
               <a [routerLink]="['/chat', barber()!.id]"
-                style="display:block; width:100%; text-align:center; background:#1A1A1A; color:#FAFAF7 !important; border-radius:12px; padding:0.85rem; font-weight:700; font-size:0.95rem; text-decoration:none; box-sizing:border-box;">
+                style="display:block; width:100%; text-align:center; background:#1A1A1A; color:#FAFAF7 !important; border-radius:12px; padding:0.85rem; font-weight:700; font-size:16px; text-decoration:none; box-sizing:border-box;">
                 {{ langService.t().sendMessage }}
               </a>
             </div>
@@ -116,7 +115,7 @@
           <div class="booking-card">
             <ng-container *ngIf="dayGroups().length; else noAvailability">
 
-              <!-- ✅ SERVICES traduits -->
+              <!-- ✅ SERVICES -->
               <div class="section-block" *ngIf="services().length > 0">
                 <h3>{{ langService.t().chooseServices }}</h3>
                 <div class="services-list">
@@ -149,7 +148,7 @@
                 </div>
               </div>
 
-              <!-- ✅ JOURS traduits -->
+              <!-- ✅ JOURS -->
               <div class="section-block">
                 <h3>{{ langService.t().chooseDay }}</h3>
                 <div class="day-list">
@@ -159,13 +158,13 @@
                     [style.color]="selectedDay() === day.dateKey ? '#FAFAF7' : '#171717'"
                     [style.border]="selectedDay() === day.dateKey ? '2px solid #1A1A1A' : '1.5px solid #a3a3a3'"
                     [style.fontWeight]="selectedDay() === day.dateKey ? '800' : '600'"
-                    style="padding:0.7rem 0.9rem; border-radius:12px; cursor:pointer; font-size:0.88rem; font-family:inherit; transition:all 0.2s; white-space:nowrap;">
+                    style="padding:0.7rem 0.9rem; border-radius:12px; cursor:pointer; font-size:16px; font-family:inherit; transition:all 0.2s; white-space:nowrap; touch-action:manipulation;">
                     {{ day.label }}
                   </button>
                 </div>
               </div>
 
-              <!-- ✅ SLOTS traduits -->
+              <!-- ✅ SLOTS -->
               <div class="section-block">
                 <h3>{{ langService.t().chooseSlot }}</h3>
                 <div class="slot-list" *ngIf="selectedDay(); else chooseDayFirst">
@@ -181,9 +180,9 @@
                     [style.opacity]="slot.booked ? '0.45' : '1'"
                     [style.textDecoration]="slot.booked ? 'line-through' : 'none'"
                     [style.fontWeight]="selectedSlot()?.id === slot.id ? '800' : '700'"
-                    style="padding:0.7rem 0.9rem; border-radius:12px; font-size:0.88rem; font-family:inherit; transition:all 0.2s; min-width:90px; text-align:center;">
+                    style="padding:0.7rem 0.9rem; border-radius:12px; font-size:16px; font-family:inherit; transition:all 0.2s; min-width:90px; text-align:center; touch-action:manipulation;">
                     {{ formatTime(slot.startTime) }}
-                    <span *ngIf="slot.booked" style="font-size:0.65rem; display:block; color:#c0c0c0;">
+                    <span *ngIf="slot.booked" style="font-size:12px; display:block; color:#c0c0c0;">
                       {{ langService.t().reservedSlot }}
                     </span>
                   </button>
@@ -193,7 +192,7 @@
                 </ng-template>
               </div>
 
-              <!-- ✅ RESUME traduit -->
+              <!-- ✅ RESUME -->
               <div class="booking-summary">
                 <h3>{{ langService.t().bookingSummary }}</h3>
                 <div class="summary-row">
