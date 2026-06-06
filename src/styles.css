@@ -69,6 +69,18 @@ p {
 a { color: inherit; text-decoration: none; }
 img { max-width: 100%; display: block; }
 
+/* ✅ Fix zoom iOS - inputs doivent avoir font-size >= 16px */
+input,
+textarea,
+select,
+.p-inputtext,
+.p-password input,
+.p-dropdown,
+.p-inputnumber input {
+  font-size: 16px !important;
+  touch-action: manipulation;
+}
+
 /* PRIMENG */
 .p-button {
   border-radius: var(--radius-full) !important;
@@ -106,7 +118,7 @@ img { max-width: 100%; display: block; }
   border-radius: var(--radius-md) !important;
   border: 1.5px solid var(--color-border) !important;
   font-family: var(--font-body) !important;
-  font-size: 0.9rem !important;
+  font-size: 16px !important;
   padding: 0.625rem 0.875rem !important;
   background: #ffffff !important;
   color: #171717 !important;
