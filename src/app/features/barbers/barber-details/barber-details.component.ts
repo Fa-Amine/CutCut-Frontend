@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -23,6 +23,8 @@ import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-p
 import { ReviewService, Review } from '../../../core/services/review.service';
 import { BarberServiceItem } from '../../../core/models/booking.models';
 
+declare const L: any;
+
 interface DayGroup {
   dateKey: string;
   label: string;
@@ -41,7 +43,7 @@ interface DayGroup {
   templateUrl: './barber-details.component.html',
   styleUrl: './barber-details.component.css'
 })
-export class BarberDetailsComponent {
+export class BarberDetailsComponent implements AfterViewChecked {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private barberService = inject(BarberService);
@@ -70,7 +72,10 @@ export class BarberDetailsComponent {
   selectedDay = signal<string | null>(null);
   selectedSlot = signal<AvailabilitySlot | null>(null);
 
-  // ✅ Fix: Total 0 MAD par défaut si rien sélectionné
+  // ✅ Map Leaflet
+  private viewMap: any = null;
+  private mapInitialized = false;
+
   totalPrice = computed(() => {
     const selected = this.services().filter(s =>
       this.selectedServiceIds().includes(s.id)
@@ -113,6 +118,7 @@ export class BarberDetailsComponent {
 
   constructor() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.loadLeaflet();
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id || Number.isNaN(id)) {
       this.errorMessage.set('Barbier introuvable.');
@@ -120,6 +126,42 @@ export class BarberDetailsComponent {
       return;
     }
     this.loadPageData(id);
+  }
+
+  // ✅ Charger Leaflet dynamiquement
+  loadLeaflet() {
+    if (!(window as any).L) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      document.head.appendChild(link);
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      document.head.appendChild(script);
+    }
+  }
+
+  // ✅ Init map après rendu
+  ngAfterViewChecked() {
+    if (!this.mapInitialized && !this.isLoading()) {
+      const barber = this.barber();
+      if (barber?.latitude && barber?.longitude) {
+        const mapEl = document.getElementById('view-map');
+        if (mapEl && (window as any).L) {
+          this.initViewMap(barber.latitude, barber.longitude);
+        }
+      }
+    }
+  }
+
+  initViewMap(lat: number, lng: number) {
+    this.mapInitialized = true;
+    this.viewMap = L.map('view-map', { zoomControl: true, scrollWheelZoom: false })
+      .setView([lat, lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(this.viewMap);
+    L.marker([lat, lng]).addTo(this.viewMap);
   }
 
   loadPageData(barberId: number) {
