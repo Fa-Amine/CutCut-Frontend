@@ -166,12 +166,12 @@
 
 .section-block h3 {
   color: #171717;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   margin: 0 0 0.75rem;
 }
 
-/* ✅ Fix dates qui se chevauchent */
+/* ✅ Fix dates */
 .day-list {
   display: flex;
   flex-wrap: wrap;
@@ -203,7 +203,7 @@
 
 .booking-summary h3 {
   color: #171717;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   margin: 0 0 0.75rem;
 }
@@ -213,7 +213,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.4rem 0;
-  font-size: 0.9rem;
+  font-size: 16px;
   border-bottom: 1px solid #f5f5f5;
 }
 
@@ -231,9 +231,7 @@
 .no-availability-state h3 { color: #171717; margin-bottom: 0.5rem; }
 .no-availability-state p { color: #a3a3a3; font-size: 0.9rem; }
 
-/* ===========================
-   ✅ SERVICES — Fix Checkbox
-=========================== */
+/* ✅ SERVICES */
 .services-list {
   display: flex;
   flex-direction: column;
@@ -252,6 +250,9 @@
   transition: all 0.2s;
   background: #fafafa;
   color: #171717;
+  /* ✅ Fix iOS zoom */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .service-item:hover {
@@ -259,7 +260,6 @@
   background: #f5f5f5;
 }
 
-/* ✅ Fix: texte visible quand sélectionné */
 .service-item.selected {
   border-color: #171717;
   background: #171717;
@@ -268,15 +268,15 @@
 
 .service-info { display: flex; flex-direction: column; gap: 2px; }
 
-/* ✅ Fix: couleur du nom selon état */
+/* ✅ Fix iOS zoom - font-size >= 16px */
 .service-name {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 16px;
   color: inherit;
 }
 
 .service-desc {
-  font-size: 0.78rem;
+  font-size: 13px;
   opacity: 0.6;
   color: inherit;
 }
@@ -288,10 +288,10 @@
   flex-shrink: 0;
 }
 
-/* ✅ Fix: prix visible quand sélectionné */
+/* ✅ Fix iOS zoom - font-size >= 16px */
 .service-price {
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 16px;
   color: inherit;
 }
 
@@ -308,7 +308,7 @@
 .total-line {
   display: flex;
   justify-content: space-between;
-  font-size: 0.88rem;
+  font-size: 16px;
   color: #737373;
   margin-bottom: 4px;
 }
