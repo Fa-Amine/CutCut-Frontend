@@ -172,138 +172,24 @@
           </p>
         </div>
 
-        <!-- SERVICE A DOMICILE -->
-        <div class="home-service-section">
+        <!-- ✅ SERVICE A DOMICILE - BIENTOT DISPONIBLE -->
+        <div class="home-service-section" style="opacity:0.55; pointer-events:none; user-select:none;">
           <div class="home-service-header">
             <div>
-              <h3>Service a domicile</h3>
+              <h3 style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                Service a domicile
+                <span style="background:#f59e0b; color:white; font-size:0.68rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:0.05em; text-transform:uppercase;">
+                  Bientot disponible
+                </span>
+              </h3>
               <p>Proposez vos services directement chez vos clients</p>
             </div>
-            <div *ngIf="homeServiceRequest()">
-              <span class="status-badge"
-                [class.pending]="homeServiceRequest()!.status === 'PENDING'"
-                [class.approved]="homeServiceRequest()!.status === 'APPROVED'"
-                [class.rejected]="homeServiceRequest()!.status === 'REJECTED'">
-                {{ homeServiceRequest()!.status === 'PENDING' ? 'En attente' :
-                   homeServiceRequest()!.status === 'APPROVED' ? 'Active' : 'Refuse' }}
-              </span>
-            </div>
           </div>
 
-          <div *ngIf="homeServiceRequest()?.status === 'APPROVED'"
-            style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:1rem; color:#16a34a; font-weight:600;">
-            Service a domicile active ! Vos clients peuvent vous demander de vous deplacer.
-          </div>
-
-          <div *ngIf="homeServiceRequest()?.status === 'REJECTED'"
-            style="background:#fef2f2; border:1px solid #fecaca; border-radius:12px; padding:1rem; margin-bottom:1rem;">
-            <p style="color:#dc2626; font-weight:600; margin:0 0 4px;">Demande refusee</p>
-            <p style="color:#737373; margin:0; font-size:0.88rem;">{{ homeServiceRequest()!.rejectionReason }}</p>
-          </div>
-
-          <div *ngIf="!homeServiceRequest() || homeServiceRequest()?.status === 'REJECTED'"
-            class="home-service-form">
-            <p style="color:#737373; font-size:0.88rem; margin-bottom:1rem;">
-              Pour activer ce service, veuillez soumettre les documents suivants :
+          <div style="background:#f5f5f5; border:1.5px dashed #d4d4d4; border-radius:12px; padding:2rem; text-align:center;">
+            <p style="color:#a3a3a3; font-size:0.9rem; margin:0; font-weight:500;">
+              Cette fonctionnalite sera disponible prochainement.
             </p>
-
-            <!-- ✅ DIPLOME -->
-            <div class="doc-upload-item">
-              <div class="doc-info">
-                <span class="doc-icon">📄</span>
-                <div>
-                  <strong>Diplome de coiffure</strong>
-                  <p>Photo ou scan de votre diplome</p>
-                </div>
-              </div>
-              <div class="doc-actions">
-                <span *ngIf="isUploadingDiploma()" style="color:#737373; font-size:0.82rem;">Upload...</span>
-                <label *ngIf="!isUploadingDiploma()" for="diplomaInput" class="upload-label"
-                  [style.background]="diplomaUrl() ? '#16a34a' : '#171717'">
-                  {{ diplomaUrl() ? 'Confirme' : 'Uploader' }}
-                </label>
-                <input id="diplomaInput" type="file" accept="image/*,.pdf" style="display:none"
-                  (change)="onDocumentSelected($event, 'diploma')" />
-              </div>
-            </div>
-            <div *ngIf="diplomaUrl()" class="doc-preview">
-              <img [src]="diplomaUrl()" alt="Diplome" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">Diplome uploade !</span>
-            </div>
-
-            <!-- ✅ CIN -->
-            <div class="doc-upload-item">
-              <div class="doc-info">
-                <span class="doc-icon">🪪</span>
-                <div>
-                  <strong>Carte Nationale d'Identite</strong>
-                  <p>Recto et verso de votre CIN</p>
-                </div>
-              </div>
-              <div class="doc-actions">
-                <span *ngIf="isUploadingCin()" style="color:#737373; font-size:0.82rem;">Upload...</span>
-                <label *ngIf="!isUploadingCin()" for="cinInput" class="upload-label"
-                  [style.background]="cinUrl() ? '#16a34a' : '#171717'">
-                  {{ cinUrl() ? 'Confirme' : 'Uploader' }}
-                </label>
-                <input id="cinInput" type="file" accept="image/*" style="display:none"
-                  (change)="onDocumentSelected($event, 'cin')" />
-              </div>
-            </div>
-            <div *ngIf="cinUrl()" class="doc-preview">
-              <img [src]="cinUrl()" alt="CIN" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">CIN uploade !</span>
-            </div>
-
-            <!-- ✅ SELFIE -->
-            <div class="doc-upload-item">
-              <div class="doc-info">
-                <span class="doc-icon">🤳</span>
-                <div>
-                  <strong>Selfie en temps reel</strong>
-                  <p>Photo prise avec camera frontale</p>
-                </div>
-              </div>
-              <div class="doc-actions">
-                <span *ngIf="isUploadingSelfie()" style="color:#737373; font-size:0.82rem;">Upload...</span>
-                <label *ngIf="!isUploadingSelfie()" for="selfieInput" class="upload-label"
-                  [style.background]="selfieUrl() ? '#16a34a' : '#171717'">
-                  {{ selfieUrl() ? 'Confirme' : 'Prendre selfie' }}
-                </label>
-                <input id="selfieInput" type="file" accept="image/*"
-                  capture="user" style="display:none"
-                  (change)="onDocumentSelected($event, 'selfie')" />
-              </div>
-            </div>
-            <div *ngIf="selfieUrl()" class="doc-preview">
-              <img [src]="selfieUrl()" alt="Selfie" />
-              <span style="color:#16a34a; font-size:0.78rem; font-weight:600;">Selfie pris !</span>
-            </div>
-
-            <!-- Progression -->
-            <div class="upload-progress" *ngIf="diplomaUrl() || cinUrl() || selfieUrl()">
-              <div class="progress-step" [class.done]="diplomaUrl()">
-                {{ diplomaUrl() ? '✅' : '⬜' }} Diplome
-              </div>
-              <div class="progress-step" [class.done]="cinUrl()">
-                {{ cinUrl() ? '✅' : '⬜' }} CIN
-              </div>
-              <div class="progress-step" [class.done]="selfieUrl()">
-                {{ selfieUrl() ? '✅' : '⬜' }} Selfie
-              </div>
-            </div>
-
-            <button pButton type="button"
-              label="Soumettre ma demande"
-              [disabled]="!diplomaUrl() || !cinUrl() || !selfieUrl() || isUploadingDoc() || isSubmittingHomeService()"
-              (click)="submitHomeService()"
-              style="margin-top:1rem; width:100%;">
-            </button>
-          </div>
-
-          <div *ngIf="homeServiceRequest()?.status === 'PENDING'"
-            style="background:#fefce8; border:1px solid #fde047; border-radius:12px; padding:1rem; color:#854d0e;">
-            Votre demande est en cours de verification. Nous vous repondrons dans les 24-48h.
           </div>
         </div>
 
