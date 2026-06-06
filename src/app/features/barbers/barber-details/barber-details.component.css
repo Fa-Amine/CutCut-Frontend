@@ -239,18 +239,19 @@
   margin-bottom: 1rem;
 }
 
+/* ✅ Fix visibilité services */
 .service-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.85rem 1rem;
-  border: 1.5px solid #e5e5e5;
+  border: 1.5px solid #d4d4d4;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  background: #fafafa;
+  background: #ffffff;
   color: #171717;
-  /* ✅ Fix iOS zoom */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -264,11 +265,11 @@
   border-color: #171717;
   background: #171717;
   color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
 .service-info { display: flex; flex-direction: column; gap: 2px; }
 
-/* ✅ Fix iOS zoom - font-size >= 16px */
 .service-name {
   font-weight: 700;
   font-size: 16px;
@@ -288,7 +289,6 @@
   flex-shrink: 0;
 }
 
-/* ✅ Fix iOS zoom - font-size >= 16px */
 .service-price {
   font-weight: 700;
   font-size: 16px;
