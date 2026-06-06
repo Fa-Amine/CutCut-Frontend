@@ -1,14 +1,24 @@
-:host { display: block; }
+:host { display: block; overflow: hidden; }
+
+/* ✅ Fix iOS zoom */
+:host * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
 
 .barber-details-page {
   background: #ffffff;
   min-height: calc(100vh - 72px);
   padding: 2rem 1.25rem 3rem;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .barber-details-shell {
   max-width: 1200px;
   margin: 0 auto;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .page-header { margin-bottom: 1.5rem; }
@@ -38,11 +48,14 @@
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   align-items: start;
+  width: 100%;
 }
 
 .info-column, .booking-column {
   position: sticky;
   top: 80px;
+  width: 100%;
+  min-width: 0;
 }
 
 :host ::ng-deep .p-card {
@@ -162,6 +175,11 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  width: 100%;
+}
+
+.section-block {
+  width: 100%;
 }
 
 .section-block h3 {
@@ -177,6 +195,7 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   padding-bottom: 0.5rem;
+  width: 100%;
 }
 
 /* ✅ Fix slots */
@@ -185,6 +204,7 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   padding-bottom: 0.5rem;
+  width: 100%;
 }
 
 .helper-text {
@@ -199,6 +219,7 @@
   border: 1px solid #e5e5e5;
   border-radius: 16px;
   padding: 1rem;
+  width: 100%;
 }
 
 .booking-summary h3 {
@@ -237,9 +258,9 @@
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  width: 100%;
 }
 
-/* ✅ Fix visibilité services */
 .service-item {
   display: flex;
   align-items: center;
@@ -254,6 +275,8 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  width: 100%;
+  min-width: 0;
 }
 
 .service-item:hover {
@@ -268,18 +291,30 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.service-info { display: flex; flex-direction: column; gap: 2px; }
+.service-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
 
 .service-name {
   font-weight: 700;
   font-size: 16px;
   color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .service-desc {
   font-size: 13px;
   opacity: 0.6;
   color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .service-right {
@@ -293,6 +328,7 @@
   font-weight: 700;
   font-size: 16px;
   color: inherit;
+  white-space: nowrap;
 }
 
 .service-check { font-size: 1rem; }
@@ -303,6 +339,7 @@
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
   border: 1px solid #e5e5e5;
+  width: 100%;
 }
 
 .total-line {
