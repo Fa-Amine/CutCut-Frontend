@@ -63,7 +63,7 @@ export class RegisterComponent implements OnInit {
   fromBarberButton = signal(false);
   selectedCategory = signal<'HOMME' | 'FEMME'>('HOMME');
 
-  // ✅ Services prédéfinis avec chemins corrects dans public/
+  // ✅ Signal avec interface correcte
   predefinedServices = signal<PredefinedService[]>([
     {
       id: 'coupe',
@@ -98,18 +98,10 @@ export class RegisterComponent implements OnInit {
       selected: false
     },
     {
-      id: 'coloration',
-      name: 'Coloration',
-      nameAr: 'صبغة شعر',
-      icon: '🎨',
-      price: null,
-      selected: false
-    },
-    {
       id: 'soin',
       name: 'Soin du visage',
       nameAr: 'عناية بالوجه',
-      icon: '✨',
+      icon: '🧖',
       price: null,
       selected: false
     }
@@ -161,14 +153,18 @@ export class RegisterComponent implements OnInit {
   }
 
   toggleService(serviceId: string) {
-    this.predefinedServices.update(services =>
-      services.map(s => s.id === serviceId ? { ...s, selected: !s.selected } : s)
+    this.predefinedServices.update((services: PredefinedService[]) =>
+      services.map((s: PredefinedService) =>
+        s.id === serviceId ? { ...s, selected: !s.selected } : s
+      )
     );
   }
 
   updateServicePrice(serviceId: string, price: number | null) {
-    this.predefinedServices.update(services =>
-      services.map(s => s.id === serviceId ? { ...s, price } : s)
+    this.predefinedServices.update((services: PredefinedService[]) =>
+      services.map((s: PredefinedService) =>
+        s.id === serviceId ? { ...s, price } : s
+      )
     );
   }
 
@@ -253,8 +249,8 @@ export class RegisterComponent implements OnInit {
 
     if (this.selectedRole() === 'BARBER') {
       const selectedPredefined = this.predefinedServices()
-        .filter(s => s.selected && s.price)
-        .map(s => ({
+        .filter((s: PredefinedService) => s.selected && s.price)
+        .map((s: PredefinedService) => ({
           name: s.name,
           price: s.price!,
           description: ''
