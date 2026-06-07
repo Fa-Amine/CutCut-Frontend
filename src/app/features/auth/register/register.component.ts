@@ -22,7 +22,6 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert/erro
 
 type RegisterRole = 'CLIENT' | 'BARBER';
 
-// ✅ Interface service prédéfini
 interface PredefinedService {
   id: string;
   name: string;
@@ -64,13 +63,13 @@ export class RegisterComponent implements OnInit {
   fromBarberButton = signal(false);
   selectedCategory = signal<'HOMME' | 'FEMME'>('HOMME');
 
-  // ✅ Services prédéfinis
+  // ✅ Services prédéfinis avec chemins corrects dans public/
   predefinedServices = signal<PredefinedService[]>([
     {
       id: 'coupe',
       name: 'Coupe de cheveux',
       nameAr: 'قصة شعر',
-      icon: '/assets/images/services/service-coupe.png',
+      icon: '/images/services/service-coupe.png',
       price: null,
       selected: false
     },
@@ -78,7 +77,7 @@ export class RegisterComponent implements OnInit {
       id: 'barbe',
       name: 'Barbe',
       nameAr: 'حلاقة اللحية',
-      icon: '/assets/images/services/service-barbe.png',
+      icon: '/images/services/service-barbe.png',
       price: null,
       selected: false
     },
@@ -86,7 +85,7 @@ export class RegisterComponent implements OnInit {
       id: 'brushing',
       name: 'Brushing',
       nameAr: 'مكواة الشعر',
-      icon: '/assets/images/services/service-brushing.png',
+      icon: '/images/services/service-brushing.png',
       price: null,
       selected: false
     },
@@ -94,7 +93,7 @@ export class RegisterComponent implements OnInit {
       id: 'keratine',
       name: 'Keratine / Proteine',
       nameAr: 'كيراتين / بروتين',
-      icon: '/assets/images/services/service-keratine.png',
+      icon: '/images/services/service-keratine.png',
       price: null,
       selected: false
     },
@@ -116,7 +115,6 @@ export class RegisterComponent implements OnInit {
     }
   ]);
 
-  // ✅ Services personnalisés ajoutés par le barbier
   customServices = signal<{ name: string; price: number | null }[]>([]);
   showAddCustomService = signal(false);
   newCustomServiceName = '';
@@ -162,21 +160,18 @@ export class RegisterComponent implements OnInit {
     this.selectedCategory.set(category);
   }
 
-  // ✅ Toggle sélection service prédéfini
   toggleService(serviceId: string) {
     this.predefinedServices.update(services =>
       services.map(s => s.id === serviceId ? { ...s, selected: !s.selected } : s)
     );
   }
 
-  // ✅ Mettre à jour le prix d'un service
   updateServicePrice(serviceId: string, price: number | null) {
     this.predefinedServices.update(services =>
       services.map(s => s.id === serviceId ? { ...s, price } : s)
     );
   }
 
-  // ✅ Ajouter service personnalisé
   addCustomService() {
     if (!this.newCustomServiceName) return;
     this.customServices.update(services => [
@@ -257,7 +252,6 @@ export class RegisterComponent implements OnInit {
     const formValue = this.registerForm.getRawValue();
 
     if (this.selectedRole() === 'BARBER') {
-      // ✅ Construire la liste des services à envoyer
       const selectedPredefined = this.predefinedServices()
         .filter(s => s.selected && s.price)
         .map(s => ({
@@ -275,8 +269,6 @@ export class RegisterComponent implements OnInit {
         }));
 
       const allServices = [...selectedPredefined, ...customServicesFormatted];
-
-      // ✅ Prix global = prix du premier service ou 0
       const globalPrice = allServices.length > 0 ? allServices[0].price : 0;
 
       this.authService.registerBarber({
