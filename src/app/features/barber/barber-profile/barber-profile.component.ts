@@ -25,6 +25,15 @@ import { HomeServiceRequest } from '../../../core/models/barber.models';
 
 declare const L: any;
 
+// ✅ Interface service prédéfini
+interface PredefinedServiceItem {
+  id: string;
+  name: string;
+  nameAr: string;
+  icon: string;
+  isImage: boolean;
+}
+
 @Component({
   selector: 'app-barber-profile',
   standalone: true,
@@ -68,18 +77,19 @@ export class BarberProfileComponent implements AfterViewChecked {
   newServicePrice: number = 0;
   newServiceDesc = '';
 
+  // ✅ Prix service prédéfini sélectionné
+  selectedPredefinedService = signal<PredefinedServiceItem | null>(null);
+  predefinedServicePrice: number = 0;
+  showPredefinedPriceInput = signal(false);
+
   homeServiceRequest = signal<HomeServiceRequest | null>(null);
   diplomaUrl = signal('');
   cinUrl = signal('');
   selfieUrl = signal('');
-
-  // ✅ Un signal par document
   isUploadingDiploma = signal(false);
   isUploadingCin = signal(false);
   isUploadingSelfie = signal(false);
   isSubmittingHomeService = signal(false);
-
-  // ✅ Helper
   isUploadingDoc = () => this.isUploadingDiploma() || this.isUploadingCin() || this.isUploadingSelfie();
 
   private editMap: any = null;
@@ -88,6 +98,16 @@ export class BarberProfileComponent implements AfterViewChecked {
 
   private readonly CLOUDINARY_CLOUD_NAME = 'delf4ovww';
   private readonly CLOUDINARY_UPLOAD_PRESET = 'barbergo_upload';
+
+  // ✅ Liste des services prédéfinis
+  predefinedServicesList: PredefinedServiceItem[] = [
+    { id: 'coupe', name: 'Coupe de cheveux', nameAr: 'قصة شعر', icon: '/images/services/service-coupe.png', isImage: true },
+    { id: 'barbe', name: 'Barbe', nameAr: 'حلاقة اللحية', icon: '/images/services/service-barbe.png', isImage: true },
+    { id: 'brushing', name: 'Brushing', nameAr: 'مكواة الشعر', icon: '/images/services/service-brushing.png', isImage: true },
+    { id: 'keratine', name: 'Keratine / Proteine', nameAr: 'كيراتين / بروتين', icon: '/images/services/service-keratine.png', isImage: true },
+    { id: 'coloration', name: 'Coloration', nameAr: 'صبغة شعر', icon: '🎨', isImage: false },
+    { id: 'soin', name: 'Soin du visage', nameAr: 'عناية بالوجه', icon: '✨', isImage: false }
+  ];
 
   profileForm = this.fb.group({
     name: ['', [Validators.required]],
@@ -218,6 +238,42 @@ export class BarberProfileComponent implements AfterViewChecked {
     });
   }
 
+  // ✅ Sélectionner un service prédéfini
+  selectPredefinedService(service: PredefinedServiceItem) {
+    this.selectedPredefinedService.set(service);
+    this.predefinedServicePrice = 0;
+    this.showPredefinedPriceInput.set(true);
+    this.showAddService.set(false);
+  }
+
+  // ✅ Confirmer ajout service prédéfini
+  confirmPredefinedService() {
+    const service = this.selectedPredefinedService();
+    const barberId = this.sessionService.userId();
+    if (!service || !barberId || !this.predefinedServicePrice) return;
+
+    const payload = {
+      name: this.langService.isArabic() ? service.nameAr : service.name,
+      price: this.predefinedServicePrice,
+      description: ''
+    };
+
+    this.barberServiceService.addService(barberId, payload).subscribe({
+      next: (newService) => {
+        this.barberServices.update(services => [...services, newService]);
+        this.cancelPredefinedForm();
+        this.successMessage.set('Service ajoute !');
+        setTimeout(() => this.successMessage.set(''), 3000);
+      }
+    });
+  }
+
+  cancelPredefinedForm() {
+    this.selectedPredefinedService.set(null);
+    this.predefinedServicePrice = 0;
+    this.showPredefinedPriceInput.set(false);
+  }
+
   saveService() {
     const barberId = this.sessionService.userId();
     if (!barberId || !this.newServiceName || !this.newServicePrice) return;
@@ -253,6 +309,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.newServicePrice = service.price;
     this.newServiceDesc = service.description || '';
     this.showAddService.set(true);
+    this.cancelPredefinedForm();
   }
 
   deleteService(serviceId: number) {
@@ -281,16 +338,13 @@ export class BarberProfileComponent implements AfterViewChecked {
     });
   }
 
-  // ✅ Upload séparé par document
   onDocumentSelected(event: Event, type: 'diploma' | 'cin' | 'selfie') {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
-
     if (type === 'diploma') this.isUploadingDiploma.set(true);
     if (type === 'cin') this.isUploadingCin.set(true);
     if (type === 'selfie') this.isUploadingSelfie.set(true);
-
     const formData = new FormData();
     formData.append('file', file);
     formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
@@ -299,18 +353,9 @@ export class BarberProfileComponent implements AfterViewChecked {
       formData
     ).subscribe({
       next: (response) => {
-        if (type === 'diploma') {
-          this.diplomaUrl.set(response.secure_url);
-          this.isUploadingDiploma.set(false);
-        }
-        if (type === 'cin') {
-          this.cinUrl.set(response.secure_url);
-          this.isUploadingCin.set(false);
-        }
-        if (type === 'selfie') {
-          this.selfieUrl.set(response.secure_url);
-          this.isUploadingSelfie.set(false);
-        }
+        if (type === 'diploma') { this.diplomaUrl.set(response.secure_url); this.isUploadingDiploma.set(false); }
+        if (type === 'cin') { this.cinUrl.set(response.secure_url); this.isUploadingCin.set(false); }
+        if (type === 'selfie') { this.selfieUrl.set(response.secure_url); this.isUploadingSelfie.set(false); }
       },
       error: () => {
         this.isUploadingDiploma.set(false);
@@ -330,7 +375,7 @@ export class BarberProfileComponent implements AfterViewChecked {
       next: (req) => {
         this.homeServiceRequest.set(req);
         this.isSubmittingHomeService.set(false);
-        this.successMessage.set('Demande soumise ! Notre equipe va verifier vos documents.');
+        this.successMessage.set('Demande soumise !');
         setTimeout(() => this.successMessage.set(''), 4000);
       },
       error: () => { this.isSubmittingHomeService.set(false); }
