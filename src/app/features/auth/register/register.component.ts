@@ -63,14 +63,49 @@ export class RegisterComponent implements OnInit {
   fromBarberButton = signal(false);
   selectedCategory = signal<'HOMME' | 'FEMME'>('HOMME');
 
-  // ✅ Services prédéfinis avec chemins corrects dans public/
-  predefinedServicesList: PredefinedServiceItem[] = [
-  { id: 'coupe', name: 'Coupe de cheveux', nameAr: 'قصة شعر', icon: '/images/services/service-coupe.png', isImage: true },
-  { id: 'barbe', name: 'Barbe', nameAr: 'حلاقة اللحية', icon: '/images/services/service-barbe.png', isImage: true },
-  { id: 'brushing', name: 'Brushing', nameAr: 'مكواة الشعر', icon: '/images/services/service-brushing.png', isImage: true },
-  { id: 'keratine', name: 'Keratine / Proteine', nameAr: 'كيراتين / بروتين', icon: '/images/services/service-keratine.png', isImage: true },
-  { id: 'soin', name: 'Soin du visage', nameAr: 'عناية بالوجه', icon: '🧖', isImage: false }
-];
+  // ✅ Signal avec interface correcte
+  predefinedServices = signal<PredefinedService[]>([
+    {
+      id: 'coupe',
+      name: 'Coupe de cheveux',
+      nameAr: 'قصة شعر',
+      icon: '/images/services/service-coupe.png',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'barbe',
+      name: 'Barbe',
+      nameAr: 'حلاقة اللحية',
+      icon: '/images/services/service-barbe.png',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'brushing',
+      name: 'Brushing',
+      nameAr: 'مكواة الشعر',
+      icon: '/images/services/service-brushing.png',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'keratine',
+      name: 'Keratine / Proteine',
+      nameAr: 'كيراتين / بروتين',
+      icon: '/images/services/service-keratine.png',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'soin',
+      name: 'Soin du visage',
+      nameAr: 'عناية بالوجه',
+      icon: '🧖',
+      price: null,
+      selected: false
+    }
+  ]);
 
   customServices = signal<{ name: string; price: number | null }[]>([]);
   showAddCustomService = signal(false);
@@ -118,14 +153,18 @@ export class RegisterComponent implements OnInit {
   }
 
   toggleService(serviceId: string) {
-    this.predefinedServices.update(services =>
-      services.map(s => s.id === serviceId ? { ...s, selected: !s.selected } : s)
+    this.predefinedServices.update((services: PredefinedService[]) =>
+      services.map((s: PredefinedService) =>
+        s.id === serviceId ? { ...s, selected: !s.selected } : s
+      )
     );
   }
 
   updateServicePrice(serviceId: string, price: number | null) {
-    this.predefinedServices.update(services =>
-      services.map(s => s.id === serviceId ? { ...s, price } : s)
+    this.predefinedServices.update((services: PredefinedService[]) =>
+      services.map((s: PredefinedService) =>
+        s.id === serviceId ? { ...s, price } : s
+      )
     );
   }
 
@@ -210,8 +249,8 @@ export class RegisterComponent implements OnInit {
 
     if (this.selectedRole() === 'BARBER') {
       const selectedPredefined = this.predefinedServices()
-        .filter(s => s.selected && s.price)
-        .map(s => ({
+        .filter((s: PredefinedService) => s.selected && s.price)
+        .map((s: PredefinedService) => ({
           name: s.name,
           price: s.price!,
           description: ''
