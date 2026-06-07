@@ -12,6 +12,13 @@ export interface RegisterClientRequest {
   password: string;
 }
 
+// ✅ Interface service pour l'onboarding
+export interface OnboardingService {
+  name: string;
+  price: number;
+  description?: string;
+}
+
 export interface RegisterBarberRequest {
   name: string;
   email: string;
@@ -21,8 +28,9 @@ export interface RegisterBarberRequest {
   bio?: string;
   photoUrl?: string;
   price: number;
-  // ✅ Nouveau champ
   category?: string;
+  // ✅ Services onboarding
+  services?: OnboardingService[];
 }
 
 export interface AuthResponse {
