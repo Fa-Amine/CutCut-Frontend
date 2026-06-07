@@ -64,56 +64,13 @@ export class RegisterComponent implements OnInit {
   selectedCategory = signal<'HOMME' | 'FEMME'>('HOMME');
 
   // ✅ Services prédéfinis avec chemins corrects dans public/
-  predefinedServices = signal<PredefinedService[]>([
-    {
-      id: 'coupe',
-      name: 'Coupe de cheveux',
-      nameAr: 'قصة شعر',
-      icon: '/images/services/service-coupe.png',
-      price: null,
-      selected: false
-    },
-    {
-      id: 'barbe',
-      name: 'Barbe',
-      nameAr: 'حلاقة اللحية',
-      icon: '/images/services/service-barbe.png',
-      price: null,
-      selected: false
-    },
-    {
-      id: 'brushing',
-      name: 'Brushing',
-      nameAr: 'مكواة الشعر',
-      icon: '/images/services/service-brushing.png',
-      price: null,
-      selected: false
-    },
-    {
-      id: 'keratine',
-      name: 'Keratine / Proteine',
-      nameAr: 'كيراتين / بروتين',
-      icon: '/images/services/service-keratine.png',
-      price: null,
-      selected: false
-    },
-    {
-      id: 'coloration',
-      name: 'Coloration',
-      nameAr: 'صبغة شعر',
-      icon: '🎨',
-      price: null,
-      selected: false
-    },
-    {
-      id: 'soin',
-      name: 'Soin du visage',
-      nameAr: 'عناية بالوجه',
-      icon: '✨',
-      price: null,
-      selected: false
-    }
-  ]);
+  predefinedServicesList: PredefinedServiceItem[] = [
+  { id: 'coupe', name: 'Coupe de cheveux', nameAr: 'قصة شعر', icon: '/images/services/service-coupe.png', isImage: true },
+  { id: 'barbe', name: 'Barbe', nameAr: 'حلاقة اللحية', icon: '/images/services/service-barbe.png', isImage: true },
+  { id: 'brushing', name: 'Brushing', nameAr: 'مكواة الشعر', icon: '/images/services/service-brushing.png', isImage: true },
+  { id: 'keratine', name: 'Keratine / Proteine', nameAr: 'كيراتين / بروتين', icon: '/images/services/service-keratine.png', isImage: true },
+  { id: 'soin', name: 'Soin du visage', nameAr: 'عناية بالوجه', icon: '🧖', isImage: false }
+];
 
   customServices = signal<{ name: string; price: number | null }[]>([]);
   showAddCustomService = signal(false);

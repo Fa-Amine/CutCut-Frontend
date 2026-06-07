@@ -100,15 +100,13 @@ export class BarberProfileComponent implements AfterViewChecked {
   private readonly CLOUDINARY_UPLOAD_PRESET = 'barbergo_upload';
 
   // ✅ Liste des services prédéfinis
-  predefinedServicesList: PredefinedServiceItem[] = [
-    { id: 'coupe', name: 'Coupe de cheveux', nameAr: 'قصة شعر', icon: '/images/services/service-coupe.png', isImage: true },
-    { id: 'barbe', name: 'Barbe', nameAr: 'حلاقة اللحية', icon: '/images/services/service-barbe.png', isImage: true },
-    { id: 'brushing', name: 'Brushing', nameAr: 'مكواة الشعر', icon: '/images/services/service-brushing.png', isImage: true },
-    { id: 'keratine', name: 'Keratine / Proteine', nameAr: 'كيراتين / بروتين', icon: '/images/services/service-keratine.png', isImage: true },
-    { id: 'coloration', name: 'Coloration', nameAr: 'صبغة شعر', icon: '🎨', isImage: false },
-    { id: 'soin', name: 'Soin du visage', nameAr: 'عناية بالوجه', icon: '✨', isImage: false }
-  ];
-
+predefinedServicesList: PredefinedServiceItem[] = [
+  { id: 'coupe', name: 'Coupe de cheveux', nameAr: 'قصة شعر', icon: '/images/services/service-coupe.png', isImage: true },
+  { id: 'barbe', name: 'Barbe', nameAr: 'حلاقة اللحية', icon: '/images/services/service-barbe.png', isImage: true },
+  { id: 'brushing', name: 'Brushing', nameAr: 'مكواة الشعر', icon: '/images/services/service-brushing.png', isImage: true },
+  { id: 'keratine', name: 'Keratine / Proteine', nameAr: 'كيراتين / بروتين', icon: '/images/services/service-keratine.png', isImage: true },
+  { id: 'soin', name: 'Soin du visage', nameAr: 'عناية بالوجه', icon: '🧖', isImage: false }
+];
   profileForm = this.fb.group({
     name: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
