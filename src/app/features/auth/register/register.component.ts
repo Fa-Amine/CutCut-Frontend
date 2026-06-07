@@ -22,6 +22,16 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert/erro
 
 type RegisterRole = 'CLIENT' | 'BARBER';
 
+// ✅ Interface service prédéfini
+interface PredefinedService {
+  id: string;
+  name: string;
+  nameAr: string;
+  icon: string;
+  price: number | null;
+  selected: boolean;
+}
+
 function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
   const confirmPassword = control.get('confirmPassword')?.value;
@@ -33,17 +43,9 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
   selector: 'app-register',
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    RouterLink,
-    InputTextModule,
-    PasswordModule,
-    ButtonModule,
-    CardModule,
-    SelectButtonModule,
-    InputNumberModule,
-    TextareaModule,
+    CommonModule, FormsModule, ReactiveFormsModule, RouterLink,
+    InputTextModule, PasswordModule, ButtonModule, CardModule,
+    SelectButtonModule, InputNumberModule, TextareaModule,
     ErrorAlertComponent
   ],
   templateUrl: './register.component.html',
@@ -54,16 +56,71 @@ export class RegisterComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
-
   langService = inject(LanguageService);
 
   selectedRole = signal<RegisterRole>('CLIENT');
   isLoading = signal(false);
   errorMessage = signal('');
   fromBarberButton = signal(false);
-
-  // ✅ Catégorie barbier
   selectedCategory = signal<'HOMME' | 'FEMME'>('HOMME');
+
+  // ✅ Services prédéfinis
+  predefinedServices = signal<PredefinedService[]>([
+    {
+      id: 'coupe',
+      name: 'Coupe de cheveux',
+      nameAr: 'قصة شعر',
+      icon: '/assets/images/services/service-coupe.png',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'barbe',
+      name: 'Barbe',
+      nameAr: 'حلاقة اللحية',
+      icon: '/assets/images/services/service-barbe.png',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'brushing',
+      name: 'Brushing',
+      nameAr: 'مكواة الشعر',
+      icon: '/assets/images/services/service-brushing.png',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'keratine',
+      name: 'Keratine / Proteine',
+      nameAr: 'كيراتين / بروتين',
+      icon: '/assets/images/services/service-keratine.png',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'coloration',
+      name: 'Coloration',
+      nameAr: 'صبغة شعر',
+      icon: '🎨',
+      price: null,
+      selected: false
+    },
+    {
+      id: 'soin',
+      name: 'Soin du visage',
+      nameAr: 'عناية بالوجه',
+      icon: '✨',
+      price: null,
+      selected: false
+    }
+  ]);
+
+  // ✅ Services personnalisés ajoutés par le barbier
+  customServices = signal<{ name: string; price: number | null }[]>([]);
+  showAddCustomService = signal(false);
+  newCustomServiceName = '';
+  newCustomServicePrice: number | null = null;
 
   registerForm = this.fb.group(
     {
@@ -101,9 +158,42 @@ export class RegisterComponent implements OnInit {
     this.applyRoleValidators(role);
   }
 
-  // ✅ Choisir catégorie
   setCategory(category: 'HOMME' | 'FEMME') {
     this.selectedCategory.set(category);
+  }
+
+  // ✅ Toggle sélection service prédéfini
+  toggleService(serviceId: string) {
+    this.predefinedServices.update(services =>
+      services.map(s => s.id === serviceId ? { ...s, selected: !s.selected } : s)
+    );
+  }
+
+  // ✅ Mettre à jour le prix d'un service
+  updateServicePrice(serviceId: string, price: number | null) {
+    this.predefinedServices.update(services =>
+      services.map(s => s.id === serviceId ? { ...s, price } : s)
+    );
+  }
+
+  // ✅ Ajouter service personnalisé
+  addCustomService() {
+    if (!this.newCustomServiceName) return;
+    this.customServices.update(services => [
+      ...services,
+      { name: this.newCustomServiceName, price: this.newCustomServicePrice }
+    ]);
+    this.newCustomServiceName = '';
+    this.newCustomServicePrice = null;
+    this.showAddCustomService.set(false);
+  }
+
+  removeCustomService(index: number) {
+    this.customServices.update(services => services.filter((_, i) => i !== index));
+  }
+
+  isImagePath(icon: string): boolean {
+    return icon.startsWith('/');
   }
 
   private applyRoleValidators(role: RegisterRole) {
@@ -114,9 +204,10 @@ export class RegisterComponent implements OnInit {
 
     if (role === 'BARBER') {
       shopName?.setValidators([Validators.required]);
-      price?.setValidators([Validators.required, Validators.min(0)]);
       bio?.clearValidators();
       photoUrl?.clearValidators();
+      price?.clearValidators();
+      price?.setValue(null);
     } else {
       shopName?.clearValidators();
       bio?.clearValidators();
@@ -166,6 +257,28 @@ export class RegisterComponent implements OnInit {
     const formValue = this.registerForm.getRawValue();
 
     if (this.selectedRole() === 'BARBER') {
+      // ✅ Construire la liste des services à envoyer
+      const selectedPredefined = this.predefinedServices()
+        .filter(s => s.selected && s.price)
+        .map(s => ({
+          name: s.name,
+          price: s.price!,
+          description: ''
+        }));
+
+      const customServicesFormatted = this.customServices()
+        .filter(s => s.name && s.price)
+        .map(s => ({
+          name: s.name,
+          price: s.price!,
+          description: ''
+        }));
+
+      const allServices = [...selectedPredefined, ...customServicesFormatted];
+
+      // ✅ Prix global = prix du premier service ou 0
+      const globalPrice = allServices.length > 0 ? allServices[0].price : 0;
+
       this.authService.registerBarber({
         name: formValue.name!,
         email: formValue.email!,
@@ -174,9 +287,9 @@ export class RegisterComponent implements OnInit {
         shopName: formValue.shopName!,
         bio: formValue.bio || '',
         photoUrl: formValue.photoUrl || '',
-        price: Number(formValue.price),
-        // ✅ Envoyer la catégorie
-        category: this.selectedCategory()
+        price: globalPrice,
+        category: this.selectedCategory(),
+        services: allServices
       }).subscribe({
         next: () => {
           this.isLoading.set(false);
