@@ -72,9 +72,10 @@
           </div>
 
           <div class="booking-status">
+            <!-- ✅ Passer booking complet pour le label dynamique -->
             <p-tag
-              [value]="getStatusLabel(booking.status)"
-              [severity]="getStatusSeverity(booking.status)">
+              [value]="getStatusLabel(booking)"
+              [severity]="getStatusSeverity(booking)">
             </p-tag>
           </div>
         </div>
@@ -82,6 +83,7 @@
         <div class="booking-actions"
           *ngIf="booking.status === 'PENDING' || booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED'">
 
+          <!-- ✅ Accepter seulement si PENDING -->
           <button
             *ngIf="booking.status === 'PENDING'"
             pButton type="button"
@@ -89,6 +91,7 @@
             (click)="acceptBooking(booking.id)">
           </button>
 
+          <!-- ✅ Annuler avec timer -->
           <ng-container *ngIf="canCancelBooking(booking)">
             <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
               <button
@@ -106,13 +109,21 @@
             </div>
           </ng-container>
 
+          <!-- ✅ Terminer seulement si RDV passé -->
           <button
-            *ngIf="booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED'"
+            *ngIf="(booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED') && canCompleteBooking(booking)"
             pButton type="button"
             severity="success"
             [label]="langService.t().completed"
             (click)="completeBooking(booking.id)">
           </button>
+
+          <!-- ✅ Message si RDV pas encore passé -->
+          <span
+            *ngIf="(booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED') && !canCompleteBooking(booking)"
+            style="font-size:0.82rem; color:#0369a1; font-weight:600; padding:4px 8px; background:#eff6ff; border-radius:8px;">
+            {{ langService.isArabic() ? 'في انتظار موعد الحجز' : 'En attente du RDV' }}
+          </span>
 
         </div>
       </div>

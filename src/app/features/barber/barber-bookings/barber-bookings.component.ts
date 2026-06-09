@@ -16,14 +16,8 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
   selector: 'app-barber-bookings',
   standalone: true,
   imports: [
-    CommonModule,
-    ButtonModule,
-    TagModule,
-    AvatarModule,
-    MessageModule,
-    LoadingSpinnerComponent,
-    ErrorAlertComponent,
-    EmptyStateComponent
+    CommonModule, ButtonModule, TagModule, AvatarModule, MessageModule,
+    LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent
   ],
   templateUrl: './barber-bookings.component.html',
   styleUrl: './barber-bookings.component.css'
@@ -41,6 +35,7 @@ export class BarberBookingsComponent implements OnDestroy {
 
   private timer: any;
 
+  // ✅ Tri : nouvelles en premier, puis par statut
   sortedBookings = computed(() => {
     const order: Record<string, number> = {
       'PENDING': 0,
@@ -51,9 +46,12 @@ export class BarberBookingsComponent implements OnDestroy {
       'CANCELLED': 3,
       'CANCELLED_BY_CLIENT': 3
     };
-    return [...this.bookings()].sort((a, b) =>
-      (order[a.status] ?? 9) - (order[b.status] ?? 9)
-    );
+    return [...this.bookings()].sort((a, b) => {
+      const statusDiff = (order[a.status] ?? 9) - (order[b.status] ?? 9);
+      if (statusDiff !== 0) return statusDiff;
+      // ✅ A même statut, les plus récentes en premier
+      return new Date(b.slot.startTime).getTime() - new Date(a.slot.startTime).getTime();
+    });
   });
 
   todayBookings = computed(() => {
@@ -88,6 +86,13 @@ export class BarberBookingsComponent implements OnDestroy {
     const confirmedAt = new Date(booking.confirmedAt).getTime();
     const tenMinutes = 10 * 60 * 1000;
     return (this.now() - confirmedAt) < tenMinutes;
+  }
+
+  // ✅ Bouton "Terminer" seulement si RDV passé
+  canCompleteBooking(booking: BookingResponse): boolean {
+    if (booking.status !== 'CONFIRMED' && booking.status !== 'ACCEPTED') return false;
+    const slotTime = new Date(booking.slot.startTime).getTime();
+    return this.now() >= slotTime;
   }
 
   getRemainingTime(booking: BookingResponse): string {
@@ -128,7 +133,6 @@ export class BarberBookingsComponent implements OnDestroy {
         this.bookings.update((items) =>
           items.map((item) => (item.id === bookingId ? updatedBooking : item))
         );
-        this.errorMessage.set('');
         this.successMessage.set('Reservation acceptee.');
         setTimeout(() => this.successMessage.set(''), 2500);
         this.loadBookings();
@@ -149,7 +153,6 @@ export class BarberBookingsComponent implements OnDestroy {
           this.bookings.update((items) =>
             items.map((item) => (item.id === bookingId ? updatedBooking : item))
           );
-          this.errorMessage.set('');
           this.successMessage.set('Reservation annulee.');
           setTimeout(() => this.successMessage.set(''), 2500);
           this.loadBookings();
@@ -164,7 +167,6 @@ export class BarberBookingsComponent implements OnDestroy {
           this.bookings.update((items) =>
             items.map((item) => (item.id === bookingId ? updatedBooking : item))
           );
-          this.errorMessage.set('');
           this.successMessage.set('Reservation rejetee.');
           setTimeout(() => this.successMessage.set(''), 2500);
           this.loadBookings();
@@ -186,7 +188,6 @@ export class BarberBookingsComponent implements OnDestroy {
         this.bookings.update((items) =>
           items.map((item) => (item.id === bookingId ? updatedBooking : item))
         );
-        this.errorMessage.set('');
         this.successMessage.set('Reservation marquee comme terminee.');
         setTimeout(() => this.successMessage.set(''), 2500);
         this.loadBookings();
@@ -197,7 +198,14 @@ export class BarberBookingsComponent implements OnDestroy {
     });
   }
 
-  getStatusLabel(status: BookingResponse['status']) {
+  getStatusLabel(booking: BookingResponse): string {
+    const status = booking.status;
+    const slotTime = new Date(booking.slot.startTime).getTime();
+    const now = this.now();
+
+    if ((status === 'CONFIRMED' || status === 'ACCEPTED') && slotTime > now) {
+      return this.langService.isArabic() ? 'في انتظار الموعد' : 'En attente du RDV';
+    }
     switch (status) {
       case 'ACCEPTED':
       case 'CONFIRMED': return this.langService.t().confirmed;
@@ -209,7 +217,14 @@ export class BarberBookingsComponent implements OnDestroy {
     }
   }
 
-  getStatusSeverity(status: BookingResponse['status']): 'warn' | 'success' | 'contrast' | 'danger' {
+  getStatusSeverity(booking: BookingResponse): 'warn' | 'success' | 'contrast' | 'danger' | 'info' {
+    const status = booking.status;
+    const slotTime = new Date(booking.slot.startTime).getTime();
+    const now = this.now();
+
+    if ((status === 'CONFIRMED' || status === 'ACCEPTED') && slotTime > now) {
+      return 'info';
+    }
     switch (status) {
       case 'ACCEPTED':
       case 'CONFIRMED': return 'success';
@@ -222,13 +237,14 @@ export class BarberBookingsComponent implements OnDestroy {
   }
 
   formatDate(dateTime: string): string {
-    return new Date(dateTime).toLocaleDateString();
+    const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
+    return new Date(dateTime).toLocaleDateString(locale);
   }
 
   formatTime(dateTime: string): string {
-    return new Date(dateTime).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
+    const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
+    return new Date(dateTime).toLocaleTimeString(locale, {
+      hour: '2-digit', minute: '2-digit'
     });
   }
 
