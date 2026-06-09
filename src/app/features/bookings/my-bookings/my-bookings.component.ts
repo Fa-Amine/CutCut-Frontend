@@ -14,8 +14,9 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert/erro
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { ReviewService } from '../../../core/services/review.service';
 
-type UiBookingStatus = 'CONFIRMED' | 'PENDING' | 'CANCELLED' | 'COMPLETED';
-type FilterType = 'ALL' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+// ✅ Statuts UI enrichis
+type UiBookingStatus = 'PENDING' | 'CONFIRMED' | 'AWAITING' | 'COMPLETED' | 'CANCELLED';
+type FilterType = 'ALL' | 'PENDING' | 'CONFIRMED' | 'AWAITING' | 'COMPLETED' | 'CANCELLED';
 
 @Component({
   selector: 'app-my-bookings',
@@ -38,8 +39,6 @@ export class MyBookingsComponent {
   errorMessage = signal('');
   successMessage = signal('');
   bookings = signal<BookingResponse[]>([]);
-
-  // ✅ Filtre actif
   activeFilter = signal<FilterType>('ALL');
 
   reviewingBookingId = signal<number | null>(null);
@@ -47,58 +46,33 @@ export class MyBookingsComponent {
   reviewComment = signal('');
   reviewedBookings = signal<Set<number>>(new Set());
 
-  // ✅ Toutes les réservations filtrées
   filteredBookings = computed(() => {
     const filter = this.activeFilter();
     return this.bookings().filter(booking => {
-      const mapped = this.mapStatus(booking.status);
+      const mapped = this.mapStatus(booking);
       if (filter === 'ALL') return true;
-      if (filter === 'CONFIRMED') return mapped === 'CONFIRMED' || mapped === 'PENDING';
-      if (filter === 'COMPLETED') return mapped === 'COMPLETED';
-      if (filter === 'CANCELLED') return mapped === 'CANCELLED';
-      return true;
+      return mapped === filter;
     });
   });
 
-  // ✅ Compter par statut
   countAll = computed(() => this.bookings().length);
-  countConfirmed = computed(() =>
-    this.bookings().filter(b => {
-      const m = this.mapStatus(b.status);
-      return m === 'CONFIRMED' || m === 'PENDING';
-    }).length
-  );
-  countCompleted = computed(() =>
-    this.bookings().filter(b => this.mapStatus(b.status) === 'COMPLETED').length
-  );
-  countCancelled = computed(() =>
-    this.bookings().filter(b => this.mapStatus(b.status) === 'CANCELLED').length
-  );
+  countPending = computed(() => this.bookings().filter(b => this.mapStatus(b) === 'PENDING').length);
+  countConfirmed = computed(() => this.bookings().filter(b => this.mapStatus(b) === 'CONFIRMED').length);
+  countAwaiting = computed(() => this.bookings().filter(b => this.mapStatus(b) === 'AWAITING').length);
+  countCompleted = computed(() => this.bookings().filter(b => this.mapStatus(b) === 'COMPLETED').length);
+  countCancelled = computed(() => this.bookings().filter(b => this.mapStatus(b) === 'CANCELLED').length);
 
   upcomingBookings = computed(() =>
-    this.filteredBookings().filter((booking) => {
-      const start = new Date(booking.slot.startTime).getTime();
-      const status = booking.status;
-      return (
-        start >= Date.now() &&
-        status !== 'REJECTED' &&
-        status !== 'CANCELLED' &&
-        status !== 'CANCELLED_BY_CLIENT'
-      );
+    this.filteredBookings().filter(booking => {
+      const status = this.mapStatus(booking);
+      return status === 'PENDING' || status === 'CONFIRMED' || status === 'AWAITING';
     })
   );
 
   pastBookings = computed(() =>
-    this.filteredBookings().filter((booking) => {
-      const start = new Date(booking.slot.startTime).getTime();
-      const status = booking.status;
-      return (
-        start < Date.now() ||
-        status === 'REJECTED' ||
-        status === 'CANCELLED' ||
-        status === 'CANCELLED_BY_CLIENT' ||
-        status === 'COMPLETED'
-      );
+    this.filteredBookings().filter(booking => {
+      const status = this.mapStatus(booking);
+      return status === 'COMPLETED' || status === 'CANCELLED';
     })
   );
 
@@ -145,8 +119,8 @@ export class MyBookingsComponent {
     this.successMessage.set('');
     this.bookingService.cancelBookingByClient(bookingId, { clientId }).subscribe({
       next: (updatedBooking) => {
-        this.bookings.update((items) =>
-          items.map((item) => (item.id === bookingId ? updatedBooking : item))
+        this.bookings.update(items =>
+          items.map(item => item.id === bookingId ? updatedBooking : item)
         );
         this.successMessage.set('Reservation annulee avec succes.');
         setTimeout(() => this.successMessage.set(''), 2500);
@@ -183,32 +157,39 @@ export class MyBookingsComponent {
     });
   }
 
-  getStatusLabel(status: BookingResponse['status']) {
-    const mapped = this.mapStatus(status);
+  // ✅ Labels traduits avec nouveaux statuts
+  getStatusLabel(booking: BookingResponse): string {
+    const mapped = this.mapStatus(booking);
     switch (mapped) {
-      case 'CONFIRMED': return this.langService.t().confirmed;
-      case 'PENDING': return this.langService.t().pending;
-      case 'CANCELLED': return this.langService.t().cancelled;
-      case 'COMPLETED': return this.langService.t().completed;
+      case 'PENDING': return this.langService.isArabic() ? 'قيد الانتظار' : 'En attente';
+      case 'CONFIRMED': return this.langService.isArabic() ? 'مؤكد' : 'Confirmee';
+      case 'AWAITING': return this.langService.isArabic() ? 'في انتظار الموعد' : 'En attente du RDV';
+      case 'COMPLETED': return this.langService.isArabic() ? 'مكتمل' : 'Terminee';
+      case 'CANCELLED': return this.langService.isArabic() ? 'ملغى' : 'Annulee';
+      default: return '';
     }
   }
 
-  getStatusSeverity(status: BookingResponse['status']): 'success' | 'warn' | 'danger' | 'contrast' {
-    const mapped = this.mapStatus(status);
+  getStatusSeverity(booking: BookingResponse): 'success' | 'warn' | 'danger' | 'contrast' | 'info' {
+    const mapped = this.mapStatus(booking);
     switch (mapped) {
-      case 'CONFIRMED': return 'success';
       case 'PENDING': return 'warn';
-      case 'CANCELLED': return 'danger';
+      case 'CONFIRMED': return 'success';
+      case 'AWAITING': return 'info';
       case 'COMPLETED': return 'contrast';
+      case 'CANCELLED': return 'danger';
+      default: return 'warn';
     }
   }
 
   formatDate(dateTime: string): string {
-    return new Date(dateTime).toLocaleDateString();
+    const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
+    return new Date(dateTime).toLocaleDateString(locale);
   }
 
   formatTime(dateTime: string): string {
-    return new Date(dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
+    return new Date(dateTime).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   }
 
   getInitials(name: string): string {
@@ -216,14 +197,24 @@ export class MyBookingsComponent {
       .map((part) => part[0]?.toUpperCase() ?? '').join('');
   }
 
-  private mapStatus(status: BookingResponse['status']): UiBookingStatus {
+  // ✅ Logique statut enrichie
+  mapStatus(booking: BookingResponse): UiBookingStatus {
+    const status = booking.status;
+    const slotTime = new Date(booking.slot.startTime).getTime();
+    const now = Date.now();
+
     switch (status) {
+      case 'PENDING': return 'PENDING';
+      case 'CONFIRMED':
       case 'ACCEPTED':
-      case 'CONFIRMED': return 'CONFIRMED';
+        // ✅ Si confirmé mais RDV pas encore passé → En attente du RDV
+        if (slotTime > now) return 'AWAITING';
+        // ✅ Si confirmé et RDV passé → Terminée
+        return 'COMPLETED';
+      case 'COMPLETED': return 'COMPLETED';
       case 'REJECTED':
       case 'CANCELLED':
       case 'CANCELLED_BY_CLIENT': return 'CANCELLED';
-      case 'COMPLETED': return 'COMPLETED';
       default: return 'PENDING';
     }
   }
