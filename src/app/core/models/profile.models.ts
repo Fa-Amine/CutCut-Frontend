@@ -4,6 +4,7 @@ export interface ClientProfile {
   email: string;
   phone: string;
   role?: 'CLIENT';
+  photoUrl?: string;
 }
 
 export interface BarberProfile {
@@ -28,6 +29,7 @@ export interface UpdateClientRequest {
   name: string;
   email: string;
   phone: string;
+  photoUrl?: string;
 }
 
 export interface UpdateBarberRequest {
