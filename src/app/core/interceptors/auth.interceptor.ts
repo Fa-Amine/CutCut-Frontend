@@ -6,7 +6,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const sessionService = inject(SessionService);
   const userId = sessionService.userId();
 
-  if (!userId || req.url.startsWith('/assets')) {
+  // ✅ Ne pas ajouter le header sur Cloudinary et autres API externes
+  if (!userId
+    || req.url.startsWith('/assets')
+    || req.url.includes('cloudinary.com')
+    || req.url.includes('nominatim.openstreetmap.org')
+    || req.url.includes('unpkg.com')
+  ) {
     return next(req);
   }
 
@@ -15,5 +21,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       'X-User-Id': String(userId)
     }
   });
+
   return next(authReq);
 };
