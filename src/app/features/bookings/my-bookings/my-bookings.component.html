@@ -12,26 +12,32 @@
     <div class="filter-bar">
       <button class="filter-btn" [class.active]="activeFilter() === 'ALL'"
         (click)="setFilter('ALL')">
-        📋 Toutes
+        {{ langService.isArabic() ? 'الكل' : 'Toutes' }}
         <span class="filter-count">{{ countAll() }}</span>
       </button>
-      <button class="filter-btn" [class.active]="activeFilter() === 'CONFIRMED'"
-        (click)="setFilter('CONFIRMED')">
-        ✅ Acceptées
-        <span class="filter-count">{{ countConfirmed() }}</span>
+      <button class="filter-btn" [class.active]="activeFilter() === 'PENDING'"
+        (click)="setFilter('PENDING')">
+        {{ langService.isArabic() ? 'قيد الانتظار' : 'En attente' }}
+        <span class="filter-count">{{ countPending() }}</span>
+      </button>
+      <button class="filter-btn" [class.active]="activeFilter() === 'AWAITING'"
+        (click)="setFilter('AWAITING')">
+        {{ langService.isArabic() ? 'موعد قادم' : 'RDV confirme' }}
+        <span class="filter-count">{{ countAwaiting() }}</span>
       </button>
       <button class="filter-btn" [class.active]="activeFilter() === 'COMPLETED'"
         (click)="setFilter('COMPLETED')">
-        🏁 Terminées
+        {{ langService.isArabic() ? 'منتهي' : 'Terminees' }}
         <span class="filter-count">{{ countCompleted() }}</span>
       </button>
       <button class="filter-btn" [class.active]="activeFilter() === 'CANCELLED'"
         (click)="setFilter('CANCELLED')">
-        ❌ Annulées
+        {{ langService.isArabic() ? 'ملغى' : 'Annulees' }}
         <span class="filter-count">{{ countCancelled() }}</span>
       </button>
     </div>
 
+    <!-- RESERVATIONS A VENIR -->
     <section class="reservation-section">
       <div class="section-title-row">
         <h2>{{ langService.t().upcomingReservations }}</h2>
@@ -60,7 +66,7 @@
                 <p>{{ booking.barber.shopName || 'CutCut' }}</p>
               </div>
             </div>
-            <p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag>
+            <p-tag [value]="getStatusLabel(booking)" [severity]="getStatusSeverity(booking)"></p-tag>
           </div>
 
           <div class="reservation-details">
@@ -74,16 +80,25 @@
             </div>
           </div>
 
-          <div class="reservation-actions"
-            *ngIf="booking.status === 'PENDING' || booking.status === 'CONFIRMED'">
-            <button pButton type="button" [label]="langService.t().cancelReservation"
-              severity="danger" [outlined]="true" (click)="cancelBooking(booking.id)">
+          <!-- ✅ Annulation seulement si PENDING -->
+          <div class="reservation-actions" *ngIf="booking.status === 'PENDING'">
+            <button pButton type="button"
+              [label]="langService.t().cancelReservation"
+              severity="danger" [outlined]="true"
+              (click)="cancelBooking(booking.id)">
             </button>
+          </div>
+
+          <!-- ✅ Info RDV confirmé -->
+          <div *ngIf="mapStatus(booking) === 'AWAITING'"
+            style="margin-top:0.5rem; padding:0.6rem 0.75rem; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; color:#1d4ed8; font-size:0.85rem; font-weight:600;">
+            {{ langService.isArabic() ? 'موعدك مؤكد ! في انتظار يوم الموعد.' : 'Votre RDV est confirme ! En attente du jour du rendez-vous.' }}
           </div>
         </div>
       </div>
     </section>
 
+    <!-- RESERVATIONS PASSEES -->
     <section class="reservation-section">
       <div class="section-title-row">
         <h2>{{ langService.t().pastReservations }}</h2>
@@ -109,7 +124,7 @@
                 <p>{{ booking.barber.shopName || 'CutCut' }}</p>
               </div>
             </div>
-            <p-tag [value]="getStatusLabel(booking.status)" [severity]="getStatusSeverity(booking.status)"></p-tag>
+            <p-tag [value]="getStatusLabel(booking)" [severity]="getStatusSeverity(booking)"></p-tag>
           </div>
 
           <div class="reservation-details">
@@ -123,16 +138,20 @@
             </div>
           </div>
 
-          <div class="reservation-actions" *ngIf="booking.status === 'COMPLETED'">
+          <!-- ✅ Avis seulement si COMPLETED -->
+          <div class="reservation-actions" *ngIf="mapStatus(booking) === 'COMPLETED'">
             <ng-container *ngIf="!reviewedBookings().has(booking.id)">
               <button *ngIf="reviewingBookingId() !== booking.id"
-                pButton type="button" label="⭐ Laisser un avis"
+                pButton type="button"
+                [label]="langService.isArabic() ? 'اترك تقييما' : 'Laisser un avis'"
                 severity="info" (click)="startReview(booking.id)">
               </button>
 
               <div *ngIf="reviewingBookingId() === booking.id"
                 style="background:#fafafa; border:1px solid #e5e5e5; border-radius:12px; padding:1rem; margin-top:0.5rem;">
-                <p style="font-weight:700; color:#171717; margin-bottom:0.5rem;">⭐ Votre note</p>
+                <p style="font-weight:700; color:#171717; margin-bottom:0.5rem;">
+                  {{ langService.isArabic() ? 'تقييمك' : 'Votre note' }}
+                </p>
                 <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
                   <button *ngFor="let star of [1,2,3,4,5]"
                     (click)="reviewStars.set(star)"
@@ -140,20 +159,27 @@
                     [style.opacity]="star <= reviewStars() ? '1' : '0.3'">⭐</button>
                 </div>
                 <textarea [(ngModel)]="reviewComment"
-                  placeholder="Votre commentaire (optionnel)" rows="3"
-                  style="width:100%; padding:8px; border:1px solid #e5e5e5; border-radius:8px; margin-bottom:0.75rem; resize:none;">
+                  [placeholder]="langService.isArabic() ? 'تعليقك (اختياري)' : 'Votre commentaire (optionnel)'"
+                  rows="3"
+                  style="width:100%; padding:8px; border:1px solid #e5e5e5; border-radius:8px; margin-bottom:0.75rem; resize:none; font-size:16px;">
                 </textarea>
                 <div style="display:flex; gap:0.5rem;">
-                  <button pButton type="button" label="Envoyer" (click)="submitReview(booking.id)"></button>
-                  <button pButton type="button" label="Annuler" severity="secondary"
-                    [outlined]="true" (click)="cancelReview()"></button>
+                  <button pButton type="button"
+                    [label]="langService.isArabic() ? 'إرسال' : 'Envoyer'"
+                    (click)="submitReview(booking.id)">
+                  </button>
+                  <button pButton type="button"
+                    [label]="langService.isArabic() ? 'إلغاء' : 'Annuler'"
+                    severity="secondary" [outlined]="true"
+                    (click)="cancelReview()">
+                  </button>
                 </div>
               </div>
             </ng-container>
 
             <div *ngIf="reviewedBookings().has(booking.id)"
               style="color:#16a34a; font-weight:600; padding:0.5rem;">
-              ✅ Avis envoyé !
+              {{ langService.isArabic() ? 'تم إرسال التقييم !' : 'Avis envoye !' }}
             </div>
           </div>
         </div>
