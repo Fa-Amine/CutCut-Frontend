@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -44,6 +44,10 @@ interface DayGroup {
   styleUrl: './barber-details.component.css'
 })
 export class BarberDetailsComponent {
+  @ViewChild('sectionDay') sectionDay!: ElementRef;
+  @ViewChild('sectionSlot') sectionSlot!: ElementRef;
+  @ViewChild('sectionSummary') sectionSummary!: ElementRef;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private barberService = inject(BarberService);
@@ -126,7 +130,12 @@ export class BarberDetailsComponent {
     this.loadPageData(id);
   }
 
-  // ✅ tryInitMap simplifié - Leaflet déjà chargé dans index.html
+  private scrollToSection(el: ElementRef) {
+    setTimeout(() => {
+      el?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
   tryInitMap() {
     const barber = this.barber();
     if (!barber?.latitude || !barber?.longitude) return;
@@ -159,7 +168,6 @@ export class BarberDetailsComponent {
         this.barber.set(barberResponse);
         this.reloadSlots(barberId, () => {
           this.isLoading.set(false);
-          // ✅ Init map après rendu
           setTimeout(() => this.tryInitMap(), 300);
         });
         this.loadPhotos(barberId);
@@ -186,6 +194,8 @@ export class BarberDetailsComponent {
       this.selectedServiceIds.set(current.filter(id => id !== serviceId));
     } else {
       this.selectedServiceIds.set([...current, serviceId]);
+      // Scroll vers les jours après choix du service
+      this.scrollToSection(this.sectionDay);
     }
   }
 
@@ -241,12 +251,16 @@ export class BarberDetailsComponent {
     this.selectedDay.set(day);
     this.selectedSlot.set(null);
     this.errorMessage.set('');
+    // Scroll vers les créneaux après choix du jour
+    this.scrollToSection(this.sectionSlot);
   }
 
   chooseSlot(slot: AvailabilitySlot) {
     if (slot.booked) return;
     this.selectedSlot.set(slot);
     this.errorMessage.set('');
+    // Scroll vers le résumé après choix du créneau
+    this.scrollToSection(this.sectionSummary);
   }
 
   confirmBooking() {

@@ -61,7 +61,6 @@
               <p>{{ barber()!.address }}</p>
             </div>
 
-            <!-- ✅ MAP LEAFLET -->
             <div class="barber-map" *ngIf="barber()!.latitude && barber()!.longitude">
               <div id="view-map"
                 style="width:100%; height:250px; border:1px solid #e5e5e5; border-radius:12px; margin-top:8px; z-index:1;">
@@ -73,7 +72,6 @@
               </a>
             </div>
 
-            <!-- PHOTOS -->
             <div *ngIf="photos().length > 0"
               style="margin-top:1.5rem; border-top:1px solid rgba(26,26,26,0.08); padding-top:1rem;">
               <h3 style="color:#1A1A1A; font-size:1.1rem; margin-bottom:1rem;">{{ langService.t().photosLabel }}</h3>
@@ -85,7 +83,6 @@
               </div>
             </div>
 
-            <!-- AVIS -->
             <div style="margin-top:1.5rem; border-top:1px solid rgba(26,26,26,0.08); padding-top:1rem;">
               <h3 style="color:#1A1A1A; font-size:1.1rem; margin-bottom:1rem;">
                 {{ langService.t().reviewsLabel }} ({{ reviews().length }})
@@ -115,7 +112,7 @@
           <div class="booking-card">
             <ng-container *ngIf="dayGroups().length; else noAvailability">
 
-              <!-- ✅ SERVICES -->
+              <!-- SERVICES -->
               <div class="section-block" *ngIf="services().length > 0">
                 <h3>{{ langService.t().chooseServices }}</h3>
                 <div class="services-list">
@@ -148,8 +145,8 @@
                 </div>
               </div>
 
-              <!-- ✅ JOURS -->
-              <div class="section-block">
+              <!-- JOURS -->
+              <div class="section-block" #sectionDay>
                 <h3>{{ langService.t().chooseDay }}</h3>
                 <div class="day-list">
                   <button *ngFor="let day of dayGroups()" type="button"
@@ -164,8 +161,8 @@
                 </div>
               </div>
 
-              <!-- ✅ SLOTS -->
-              <div class="section-block">
+              <!-- SLOTS -->
+              <div class="section-block" #sectionSlot>
                 <h3>{{ langService.t().chooseSlot }}</h3>
                 <div class="slot-list" *ngIf="selectedDay(); else chooseDayFirst">
                   <button
@@ -192,8 +189,8 @@
                 </ng-template>
               </div>
 
-              <!-- ✅ RESUME -->
-              <div class="booking-summary">
+              <!-- RESUME -->
+              <div class="booking-summary" #sectionSummary>
                 <h3>{{ langService.t().bookingSummary }}</h3>
                 <div class="summary-row">
                   <span>{{ langService.t().selectedDay }}</span>
