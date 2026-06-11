@@ -32,15 +32,23 @@
               <div>
                 <h2>{{ barber()!.name }}</h2>
                 <p>{{ barber()!.shopName || 'CutCut' }}</p>
+
+                <!-- ✅ Étoiles à côté du nom (petites + nombre d'avis) -->
+                <div *ngIf="barber()!.averageRating"
+                  style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                  <span style="font-size:0.95rem; color:#f59e0b; letter-spacing:1px; line-height:1;">
+                    {{ getStarDisplay(barber()!.averageRating!) }}
+                  </span>
+                  <span style="font-size:0.8rem; color:#737373; font-weight:600;">
+                    ({{ barber()!.reviewCount || 0 }} {{ langService.isArabic() ? 'تقييم' : 'avis' }})
+                  </span>
+                </div>
               </div>
             </div>
 
             <div class="barber-tags">
               <p-tag *ngIf="barber()!.price !== undefined && barber()!.price !== null"
                 [value]="barber()!.price + ' MAD'" severity="info"></p-tag>
-              <p-tag *ngIf="barber()!.averageRating"
-                [value]="'Note: ' + barber()!.averageRating + ' (' + (barber()!.reviewCount || 0) + ' avis)'"
-                severity="success"></p-tag>
             </div>
 
             <div *ngIf="!sessionService.isGuest() && sessionService.isClient()"
@@ -95,7 +103,7 @@
                 style="background:rgba(26,26,26,0.04); border:1px solid rgba(26,26,26,0.06); border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                   <strong style="color:#1A1A1A;">{{ review.client.name }}</strong>
-                  <span style="font-size:1.1rem;">{{ getStars(review.stars) }}</span>
+                  <span style="font-size:0.95rem; color:#f59e0b; letter-spacing:1px;">{{ getStarDisplay(review.stars) }}</span>
                 </div>
                 <p *ngIf="review.comment" style="color:rgba(26,26,26,0.5); margin:0; font-size:0.95rem;">
                   {{ review.comment }}
