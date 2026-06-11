@@ -27,7 +27,6 @@ interface PredefinedService {
   name: string;
   nameAr: string;
   icon: string;
-  price: number | null;
   selected: boolean;
 }
 
@@ -63,14 +62,13 @@ export class RegisterComponent implements OnInit {
   fromBarberButton = signal(false);
   selectedCategory = signal<'HOMME' | 'FEMME'>('HOMME');
 
-  // ✅ Signal avec interface correcte
+  // ✅ Services prédéfinis (sans price dans le signal)
   predefinedServices = signal<PredefinedService[]>([
     {
       id: 'coupe',
       name: 'Coupe de cheveux',
       nameAr: 'قصة شعر',
       icon: '/images/services/service-coupe.png',
-      price: null,
       selected: false
     },
     {
@@ -78,7 +76,6 @@ export class RegisterComponent implements OnInit {
       name: 'Barbe',
       nameAr: 'حلاقة اللحية',
       icon: '/images/services/service-barbe.png',
-      price: null,
       selected: false
     },
     {
@@ -86,7 +83,6 @@ export class RegisterComponent implements OnInit {
       name: 'Brushing',
       nameAr: 'مكواة الشعر',
       icon: '/images/services/service-brushing.png',
-      price: null,
       selected: false
     },
     {
@@ -94,7 +90,6 @@ export class RegisterComponent implements OnInit {
       name: 'Keratine / Proteine',
       nameAr: 'كيراتين / بروتين',
       icon: '/images/services/service-keratine.png',
-      price: null,
       selected: false
     },
     {
@@ -102,10 +97,12 @@ export class RegisterComponent implements OnInit {
       name: 'Soin du visage',
       nameAr: 'عناية بالوجه',
       icon: '🧖',
-      price: null,
       selected: false
     }
   ]);
+
+  // ✅ Prix stockés séparément (objet normal, pas signal) pour éviter le reset curseur
+  servicePrices: Record<string, number | null> = {};
 
   customServices = signal<{ name: string; price: number | null }[]>([]);
   showAddCustomService = signal(false);
@@ -156,14 +153,6 @@ export class RegisterComponent implements OnInit {
     this.predefinedServices.update((services: PredefinedService[]) =>
       services.map((s: PredefinedService) =>
         s.id === serviceId ? { ...s, selected: !s.selected } : s
-      )
-    );
-  }
-
-  updateServicePrice(serviceId: string, price: number | null) {
-    this.predefinedServices.update((services: PredefinedService[]) =>
-      services.map((s: PredefinedService) =>
-        s.id === serviceId ? { ...s, price } : s
       )
     );
   }
@@ -248,11 +237,12 @@ export class RegisterComponent implements OnInit {
     const formValue = this.registerForm.getRawValue();
 
     if (this.selectedRole() === 'BARBER') {
+      // ✅ Lire le prix depuis servicePrices
       const selectedPredefined = this.predefinedServices()
-        .filter((s: PredefinedService) => s.selected && s.price)
+        .filter((s: PredefinedService) => s.selected && this.servicePrices[s.id])
         .map((s: PredefinedService) => ({
           name: s.name,
-          price: s.price!,
+          price: this.servicePrices[s.id]!,
           description: ''
         }));
 
