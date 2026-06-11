@@ -25,7 +25,6 @@ import { HomeServiceRequest } from '../../../core/models/barber.models';
 
 declare const L: any;
 
-// ✅ Interface service prédéfini
 interface PredefinedServiceItem {
   id: string;
   name: string;
@@ -75,9 +74,9 @@ export class BarberProfileComponent implements AfterViewChecked {
   editingServiceId = signal<number | null>(null);
   newServiceName = '';
   newServicePrice: number = 0;
-  newServiceDesc = '';
+  newServiceImageUrl = signal('');
+  isUploadingServiceImage = signal(false);
 
-  // ✅ Prix service prédéfini sélectionné
   selectedPredefinedService = signal<PredefinedServiceItem | null>(null);
   predefinedServicePrice: number = 0;
   showPredefinedPriceInput = signal(false);
@@ -99,14 +98,14 @@ export class BarberProfileComponent implements AfterViewChecked {
   private readonly CLOUDINARY_CLOUD_NAME = 'delf4ovww';
   private readonly CLOUDINARY_UPLOAD_PRESET = 'barbergo_upload';
 
-  // ✅ Liste des services prédéfinis
-predefinedServicesList: PredefinedServiceItem[] = [
-  { id: 'coupe', name: 'Coupe de cheveux', nameAr: 'قصة شعر', icon: '/images/services/service-coupe.png', isImage: true },
-  { id: 'barbe', name: 'Barbe', nameAr: 'حلاقة اللحية', icon: '/images/services/service-barbe.png', isImage: true },
-  { id: 'brushing', name: 'Brushing', nameAr: 'مكواة الشعر', icon: '/images/services/service-brushing.png', isImage: true },
-  { id: 'keratine', name: 'Keratine / Proteine', nameAr: 'كيراتين / بروتين', icon: '/images/services/service-keratine.png', isImage: true },
-  { id: 'soin', name: 'Soin du visage', nameAr: 'عناية بالوجه', icon: '🧖', isImage: false }
-];
+  predefinedServicesList: PredefinedServiceItem[] = [
+    { id: 'coupe', name: 'Coupe de cheveux', nameAr: 'قصة شعر', icon: '/images/services/service-coupe.png', isImage: true },
+    { id: 'barbe', name: 'Barbe', nameAr: 'حلاقة اللحية', icon: '/images/services/service-barbe.png', isImage: true },
+    { id: 'brushing', name: 'Brushing', nameAr: 'مكواة الشعر', icon: '/images/services/service-brushing.png', isImage: true },
+    { id: 'keratine', name: 'Keratine / Proteine', nameAr: 'كيراتين / بروتين', icon: '/images/services/service-keratine.png', isImage: true },
+    { id: 'soin', name: 'Soin du visage', nameAr: 'عناية بالوجه', icon: '🧖', isImage: false }
+  ];
+
   profileForm = this.fb.group({
     name: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
@@ -236,7 +235,6 @@ predefinedServicesList: PredefinedServiceItem[] = [
     });
   }
 
-  // ✅ Sélectionner un service prédéfini
   selectPredefinedService(service: PredefinedServiceItem) {
     this.selectedPredefinedService.set(service);
     this.predefinedServicePrice = 0;
@@ -244,18 +242,16 @@ predefinedServicesList: PredefinedServiceItem[] = [
     this.showAddService.set(false);
   }
 
-  // ✅ Confirmer ajout service prédéfini
   confirmPredefinedService() {
     const service = this.selectedPredefinedService();
     const barberId = this.sessionService.userId();
     if (!service || !barberId || !this.predefinedServicePrice) return;
-
+    const imageUrl = service.isImage ? service.icon : '';
     const payload = {
       name: this.langService.isArabic() ? service.nameAr : service.name,
       price: this.predefinedServicePrice,
-      description: ''
+      imageUrl: imageUrl
     };
-
     this.barberServiceService.addService(barberId, payload).subscribe({
       next: (newService) => {
         this.barberServices.update(services => [...services, newService]);
@@ -272,13 +268,33 @@ predefinedServicesList: PredefinedServiceItem[] = [
     this.showPredefinedPriceInput.set(false);
   }
 
+  onServiceImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    this.isUploadingServiceImage.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+    this.http.post<any>(
+      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      formData
+    ).subscribe({
+      next: (response) => {
+        this.newServiceImageUrl.set(response.secure_url);
+        this.isUploadingServiceImage.set(false);
+      },
+      error: () => { this.isUploadingServiceImage.set(false); }
+    });
+  }
+
   saveService() {
     const barberId = this.sessionService.userId();
     if (!barberId || !this.newServiceName || !this.newServicePrice) return;
     const payload = {
       name: this.newServiceName,
       price: this.newServicePrice,
-      description: this.newServiceDesc
+      imageUrl: this.newServiceImageUrl()
     };
     if (this.editingServiceId()) {
       this.barberServiceService.updateService(barberId, this.editingServiceId()!, payload).subscribe({
@@ -305,7 +321,7 @@ predefinedServicesList: PredefinedServiceItem[] = [
     this.editingServiceId.set(service.id);
     this.newServiceName = service.name;
     this.newServicePrice = service.price;
-    this.newServiceDesc = service.description || '';
+    this.newServiceImageUrl.set(service.imageUrl || '');
     this.showAddService.set(true);
     this.cancelPredefinedForm();
   }
@@ -326,7 +342,7 @@ predefinedServicesList: PredefinedServiceItem[] = [
     this.editingServiceId.set(null);
     this.newServiceName = '';
     this.newServicePrice = 0;
-    this.newServiceDesc = '';
+    this.newServiceImageUrl.set('');
   }
 
   loadHomeServiceRequest(barberId: number) {

@@ -173,7 +173,7 @@
             </button>
           </div>
 
-          <!-- ✅ Formulaire ajout manuel -->
+          <!-- ✅ Formulaire ajout manuel AVEC IMAGE -->
           <div class="service-form" *ngIf="showAddService()">
             <div class="service-form-grid">
               <div>
@@ -184,15 +184,43 @@
                 <label>{{ langService.t().servicePriceLabel }}</label>
                 <input pInputText type="number" [(ngModel)]="newServicePrice" [placeholder]="langService.t().servicePriceLabel" class="w-full" />
               </div>
-              <div class="full-width">
-                <label>{{ langService.t().serviceDescLabel }}</label>
-                <input pInputText [(ngModel)]="newServiceDesc" [placeholder]="langService.t().serviceDescLabel" class="w-full" />
+            </div>
+
+            <!-- ✅ Upload image du service -->
+            <div class="full-width" style="margin-top:1rem;">
+              <label style="display:block; font-size:0.82rem; font-weight:600; color:#171717; margin-bottom:8px;">
+                {{ langService.isArabic() ? 'صورة الخدمة (اختياري)' : 'Image du service (optionnel)' }}
+              </label>
+              <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+                <!-- Aperçu image -->
+                <div *ngIf="newServiceImageUrl()"
+                  style="width:64px; height:64px; border-radius:10px; overflow:hidden; border:1.5px solid #e5e5e5; flex-shrink:0;">
+                  <img [src]="newServiceImageUrl()" alt="Service"
+                    style="width:100%; height:100%; object-fit:cover;" />
+                </div>
+                <!-- Placeholder vide -->
+                <div *ngIf="!newServiceImageUrl()"
+                  style="width:64px; height:64px; border-radius:10px; border:1.5px dashed #d4d4d4; display:flex; align-items:center; justify-content:center; background:#fafafa; flex-shrink:0;">
+                  <span style="font-size:1.5rem; opacity:0.4;">📷</span>
+                </div>
+                <!-- Bouton upload -->
+                <label for="serviceImageInput"
+                  style="cursor:pointer; background:#171717; color:#FAFAF7; padding:8px 16px; border-radius:999px; font-size:0.85rem; font-weight:600;">
+                  {{ isUploadingServiceImage()
+                      ? (langService.isArabic() ? 'جار الرفع...' : 'Upload...')
+                      : (newServiceImageUrl()
+                          ? (langService.isArabic() ? 'تغيير الصورة' : 'Changer l\'image')
+                          : (langService.isArabic() ? 'إضافة صورة' : 'Ajouter une image')) }}
+                </label>
+                <input id="serviceImageInput" type="file" accept="image/*" style="display:none"
+                  (change)="onServiceImageSelected($event)" />
               </div>
             </div>
-            <div class="service-form-actions">
+
+            <div class="service-form-actions" style="margin-top:1rem;">
               <button pButton type="button"
                 [label]="editingServiceId() ? langService.t().editBtn : langService.t().addBtn"
-                [disabled]="!newServiceName || !newServicePrice"
+                [disabled]="!newServiceName || !newServicePrice || isUploadingServiceImage()"
                 (click)="saveService()">
               </button>
               <button pButton type="button" [label]="langService.t().cancelBtn"
@@ -202,12 +230,17 @@
             </div>
           </div>
 
-          <!-- ✅ Liste services existants -->
+          <!-- ✅ Liste services existants AVEC IMAGE -->
           <div class="services-list" *ngIf="barberServices().length > 0">
             <div class="service-row" *ngFor="let service of barberServices()">
-              <div class="service-row-info">
+              <div class="service-row-info" style="display:flex; align-items:center; gap:0.75rem;">
+                <!-- Image du service -->
+                <div *ngIf="service.imageUrl"
+                  style="width:48px; height:48px; border-radius:10px; overflow:hidden; border:1px solid #e5e5e5; flex-shrink:0;">
+                  <img [src]="service.imageUrl" [alt]="service.name"
+                    style="width:100%; height:100%; object-fit:cover;" />
+                </div>
                 <span class="service-row-name">{{ service.name }}</span>
-                <span *ngIf="service.description" class="service-row-desc">{{ service.description }}</span>
               </div>
               <div class="service-row-right">
                 <span class="service-row-price">{{ service.price }} MAD</span>
