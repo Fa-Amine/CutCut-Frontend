@@ -60,9 +60,10 @@ export class RegisterComponent implements OnInit {
   isLoading = signal(false);
   errorMessage = signal('');
   fromBarberButton = signal(false);
-  selectedCategory = signal<'HOMME' | 'FEMME'>('HOMME');
 
-  // ✅ Services prédéfinis (sans price dans le signal)
+  // ✅ Ajout de l'option BOTH (Les deux)
+  selectedCategory = signal<'HOMME' | 'FEMME' | 'BOTH'>('HOMME');
+
   predefinedServices = signal<PredefinedService[]>([
     {
       id: 'coupe',
@@ -145,7 +146,8 @@ export class RegisterComponent implements OnInit {
     this.applyRoleValidators(role);
   }
 
-  setCategory(category: 'HOMME' | 'FEMME') {
+  // ✅ Accepte HOMME / FEMME / BOTH
+  setCategory(category: 'HOMME' | 'FEMME' | 'BOTH') {
     this.selectedCategory.set(category);
   }
 
@@ -237,7 +239,6 @@ export class RegisterComponent implements OnInit {
     const formValue = this.registerForm.getRawValue();
 
     if (this.selectedRole() === 'BARBER') {
-      // ✅ Lire le prix depuis servicePrices
       const selectedPredefined = this.predefinedServices()
         .filter((s: PredefinedService) => s.selected && this.servicePrices[s.id])
         .map((s: PredefinedService) => ({
