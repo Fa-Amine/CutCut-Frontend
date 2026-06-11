@@ -137,12 +137,14 @@
                     </span>
                   </div>
 
-                  <!-- Prix input -->
+                  <!-- ✅ Prix input - fix avec ngModel au lieu de [value] -->
                   <div class="service-onboarding-right" *ngIf="service.selected">
                     <input
                       type="number"
-                      [value]="service.price"
-                      (input)="updateServicePrice(service.id, +$any($event.target).value || null)"
+                      inputmode="numeric"
+                      [ngModel]="service.price"
+                      (ngModelChange)="updateServicePrice(service.id, $event)"
+                      [ngModelOptions]="{standalone:true}"
                       placeholder="Prix MAD"
                       style="width:100px; padding:6px 10px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit; text-align:center;"
                     />
@@ -175,7 +177,7 @@
                   <input type="text" [(ngModel)]="newCustomServiceName" [ngModelOptions]="{standalone:true}"
                     placeholder="Nom du service"
                     style="flex:1; min-width:140px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
-                  <input type="number" [(ngModel)]="newCustomServicePrice" [ngModelOptions]="{standalone:true}"
+                  <input type="number" inputmode="numeric" [(ngModel)]="newCustomServicePrice" [ngModelOptions]="{standalone:true}"
                     placeholder="Prix MAD"
                     style="width:100px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
                 </div>

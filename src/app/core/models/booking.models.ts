@@ -34,11 +34,12 @@ export interface BookingClient {
   phone?: string;
 }
 
-// ✅ Nouveau modèle service
+// ✅ Modèle service avec image
 export interface BarberServiceItem {
   id: number;
   name: string;
   price: number;
+  imageUrl?: string;
   description?: string;
 }
 
