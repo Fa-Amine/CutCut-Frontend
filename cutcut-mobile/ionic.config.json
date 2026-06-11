@@ -1,0 +1,7 @@
+{
+  "name": "cutcut-mobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
