@@ -194,7 +194,6 @@ export class BarberDetailsComponent {
       this.selectedServiceIds.set(current.filter(id => id !== serviceId));
     } else {
       this.selectedServiceIds.set([...current, serviceId]);
-      // Scroll vers les jours après choix du service
       this.scrollToSection(this.sectionDay);
     }
   }
@@ -221,6 +220,14 @@ export class BarberDetailsComponent {
   }
 
   getStars(count: number): string { return '⭐'.repeat(count); }
+
+  // ✅ Étoiles pleines + vides selon la note (ex: 4/5 → ★★★★☆)
+  getStarDisplay(rating: number): string {
+    const rounded = Math.round(rating);
+    const full = Math.max(0, Math.min(5, rounded));
+    const empty = 5 - full;
+    return '★'.repeat(full) + '☆'.repeat(empty);
+  }
 
   private reloadSlots(barberId: number, onDone?: () => void) {
     this.availabilityService.getAllSlotsByBarber(barberId).subscribe({
@@ -251,7 +258,6 @@ export class BarberDetailsComponent {
     this.selectedDay.set(day);
     this.selectedSlot.set(null);
     this.errorMessage.set('');
-    // Scroll vers les créneaux après choix du jour
     this.scrollToSection(this.sectionSlot);
   }
 
@@ -259,7 +265,6 @@ export class BarberDetailsComponent {
     if (slot.booked) return;
     this.selectedSlot.set(slot);
     this.errorMessage.set('');
-    // Scroll vers le résumé après choix du créneau
     this.scrollToSection(this.sectionSummary);
   }
 
