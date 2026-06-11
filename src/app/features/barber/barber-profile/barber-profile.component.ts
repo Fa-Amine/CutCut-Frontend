@@ -1,4 +1,4 @@
-import { Component, inject, signal, AfterViewChecked } from '@angular/core';
+import { Component, inject, signal, AfterViewChecked, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { AvatarModule } from 'primeng/avatar';
@@ -69,11 +69,15 @@ export class BarberProfileComponent implements AfterViewChecked {
   photos = signal<BarberPhoto[]>([]);
   newCaption = signal('');
 
+  // Preview photo avant sauvegarde
+  previewPhotoUrl = signal('');
+
   barberServices = signal<BarberServiceItem[]>([]);
   showAddService = signal(false);
   editingServiceId = signal<number | null>(null);
   newServiceName = '';
   newServicePrice: number = 0;
+  newServiceDescription = '';
   newServiceImageUrl = signal('');
   isUploadingServiceImage = signal(false);
 
@@ -213,6 +217,7 @@ export class BarberProfileComponent implements AfterViewChecked {
         });
         this.isLocating.set(false);
         this.successMessage.set('Position detectee !');
+        setTimeout(() => this.successMessage.set(''), 3000);
       },
       (error) => {
         this.isLocating.set(false);
@@ -294,6 +299,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     const payload = {
       name: this.newServiceName,
       price: this.newServicePrice,
+      description: this.newServiceDescription || '',
       imageUrl: this.newServiceImageUrl()
     };
     if (this.editingServiceId()) {
@@ -304,6 +310,7 @@ export class BarberProfileComponent implements AfterViewChecked {
           );
           this.cancelServiceForm();
           this.successMessage.set('Service modifie !');
+          setTimeout(() => this.successMessage.set(''), 3000);
         }
       });
     } else {
@@ -312,6 +319,7 @@ export class BarberProfileComponent implements AfterViewChecked {
           this.barberServices.update(services => [...services, newService]);
           this.cancelServiceForm();
           this.successMessage.set('Service ajoute !');
+          setTimeout(() => this.successMessage.set(''), 3000);
         }
       });
     }
@@ -321,6 +329,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.editingServiceId.set(service.id);
     this.newServiceName = service.name;
     this.newServicePrice = service.price;
+    this.newServiceDescription = (service as any).description || '';
     this.newServiceImageUrl.set(service.imageUrl || '');
     this.showAddService.set(true);
     this.cancelPredefinedForm();
@@ -333,6 +342,7 @@ export class BarberProfileComponent implements AfterViewChecked {
       next: () => {
         this.barberServices.update(services => services.filter(s => s.id !== serviceId));
         this.successMessage.set('Service supprime !');
+        setTimeout(() => this.successMessage.set(''), 3000);
       }
     });
   }
@@ -342,6 +352,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.editingServiceId.set(null);
     this.newServiceName = '';
     this.newServicePrice = 0;
+    this.newServiceDescription = '';
     this.newServiceImageUrl.set('');
   }
 
@@ -396,10 +407,19 @@ export class BarberProfileComponent implements AfterViewChecked {
     });
   }
 
+  // ✅ Upload photo avec preview immédiat
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
     const file = input.files[0];
+
+    // Preview local immédiat
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.previewPhotoUrl.set(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
     this.isUploadingPhoto.set(true);
     this.errorMessage.set('');
     const formData = new FormData();
@@ -411,10 +431,13 @@ export class BarberProfileComponent implements AfterViewChecked {
     ).subscribe({
       next: (response) => {
         this.profileForm.patchValue({ photoUrl: response.secure_url });
+        this.previewPhotoUrl.set('');
         this.isUploadingPhoto.set(false);
         this.successMessage.set('Photo uploadee !');
+        setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: () => {
+        this.previewPhotoUrl.set('');
         this.isUploadingPhoto.set(false);
         this.errorMessage.set('Impossible d\'uploader la photo.');
       }
@@ -444,6 +467,7 @@ export class BarberProfileComponent implements AfterViewChecked {
             this.newCaption.set('');
             this.isUploadingGallery.set(false);
             this.successMessage.set('Photo ajoutee !');
+            setTimeout(() => this.successMessage.set(''), 3000);
           },
           error: () => { this.isUploadingGallery.set(false); }
         });
@@ -459,6 +483,7 @@ export class BarberProfileComponent implements AfterViewChecked {
       next: () => {
         this.photos.update(photos => photos.filter(p => p.id !== photoId));
         this.successMessage.set('Photo supprimee !');
+        setTimeout(() => this.successMessage.set(''), 3000);
       }
     });
   }
@@ -523,6 +548,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.successMessage.set('');
     this.errorMessage.set('');
     this.locationError.set('');
+    this.previewPhotoUrl.set('');
   }
 
   cancelEdit() {
@@ -545,6 +571,7 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.isEditMode.set(false);
     this.errorMessage.set('');
     this.locationError.set('');
+    this.previewPhotoUrl.set('');
   }
 
   saveProfile() {
@@ -555,6 +582,11 @@ export class BarberProfileComponent implements AfterViewChecked {
     }
     if (this.profileForm.invalid) {
       this.profileForm.markAllAsTouched();
+      this.errorMessage.set('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+    if (this.isUploadingPhoto()) {
+      this.errorMessage.set('Veuillez attendre la fin de l\'upload de la photo.');
       return;
     }
     this.isSaving.set(true);
@@ -577,7 +609,8 @@ export class BarberProfileComponent implements AfterViewChecked {
         this.updateMapUrl(response.latitude, response.longitude);
         this.isSaving.set(false);
         this.isEditMode.set(false);
-        this.successMessage.set('Profil mis a jour !');
+        this.successMessage.set('Profil mis a jour avec succes !');
+        setTimeout(() => this.successMessage.set(''), 4000);
       },
       error: (error) => {
         this.isSaving.set(false);
@@ -589,5 +622,10 @@ export class BarberProfileComponent implements AfterViewChecked {
   getInitials(name: string): string {
     return name.split(' ').filter(Boolean).slice(0, 2)
       .map((part) => part[0]?.toUpperCase() ?? '').join('');
+  }
+
+  // ✅ Photo à afficher (preview ou photo sauvegardée)
+  get displayPhotoUrl(): string {
+    return this.previewPhotoUrl() || this.profileForm.value.photoUrl || this.profile()?.photoUrl || '';
   }
 }
