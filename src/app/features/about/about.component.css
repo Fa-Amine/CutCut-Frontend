@@ -1,0 +1,219 @@
+:host { display: block; }
+
+.about-page {
+  background: #FAFAF7;
+  min-height: calc(100vh - 76px);
+  padding: 3rem 1.5rem 5rem;
+}
+
+.about-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.about-hero {
+  text-align: center;
+  padding: 3rem 0 4rem;
+}
+
+.page-kicker {
+  display: inline-block;
+  color: rgba(26,26,26,0.45);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 1rem;
+}
+
+.about-hero h1 {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-family: Georgia, serif;
+  font-weight: 900;
+  color: #1A1A1A;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.about-hero p {
+  color: rgba(26,26,26,0.5);
+  font-size: 1.1rem;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.about-section {
+  margin-bottom: 4rem;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.about-card {
+  background: #F0EDE8;
+  border: 1px solid rgba(26,26,26,0.08);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.about-card:hover {
+  transform: translateY(-4px);
+}
+
+.about-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.about-card h3 {
+  font-family: Georgia, serif;
+  font-weight: 800;
+  color: #1A1A1A;
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.about-card p {
+  color: rgba(26,26,26,0.5);
+  line-height: 1.7;
+  font-size: 0.92rem;
+  margin: 0;
+}
+
+.about-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  background: #1A1A1A;
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  margin-bottom: 4rem;
+  text-align: center;
+}
+
+.stat-item strong {
+  display: block;
+  font-size: 2.5rem;
+  font-family: Georgia, serif;
+  font-weight: 900;
+  color: #FAFAF7;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.5rem;
+}
+
+.stat-item span {
+  color: rgba(255,255,255,0.45);
+  font-size: 0.82rem;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.contact-section {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.contact-section h2 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-family: Georgia, serif;
+  font-weight: 900;
+  color: #1A1A1A;
+  letter-spacing: -0.04em;
+  margin: 0.75rem 0 1rem;
+}
+
+.contact-section p {
+  color: rgba(26,26,26,0.5);
+  font-size: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.contact-card {
+  background: #F0EDE8;
+  border: 1px solid rgba(26,26,26,0.08);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.contact-card:hover {
+  transform: translateY(-4px);
+}
+
+.contact-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.contact-card h4 {
+  font-weight: 800;
+  color: #1A1A1A;
+  margin: 0 0 0.5rem;
+  font-family: Georgia, serif;
+}
+
+.contact-card a,
+.contact-card span {
+  color: rgba(26,26,26,0.55);
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.contact-card a:hover {
+  color: #1A1A1A;
+}
+
+.about-cta {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #F0EDE8;
+  border-radius: 24px;
+}
+
+.about-cta h2 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-family: Georgia, serif;
+  font-weight: 900;
+  color: #1A1A1A;
+  letter-spacing: -0.04em;
+  margin: 0 0 0.75rem;
+}
+
+.about-cta p {
+  color: rgba(26,26,26,0.5);
+  margin-bottom: 2rem;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .about-grid,
+  .contact-grid { grid-template-columns: 1fr; }
+  .about-stats { grid-template-columns: repeat(2, 1fr); }
+  .cta-buttons { flex-direction: column; align-items: center; }
+}
+
+@media (max-width: 480px) {
+  .about-stats { grid-template-columns: 1fr; }
+}

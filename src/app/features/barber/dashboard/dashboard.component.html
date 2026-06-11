@@ -1,0 +1,137 @@
+<section class="dashboard-page">
+  <div class="dashboard-shell">
+    <div class="page-header">
+      <span class="page-kicker">{{ langService.t().dashboard }}</span>
+      <h1>{{ langService.t().barberDashboardTitle }}</h1>
+      <p>{{ langService.t().barberDashboardSubtitle }}</p>
+    </div>
+
+    <app-loading-spinner *ngIf="isLoading()" message="Chargement du tableau de bord..."></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+
+    <ng-container *ngIf="!isLoading() && !errorMessage() && dashboard() as stats">
+
+      <!-- STATS GRID -->
+      <div class="stats-grid">
+        <p-card>
+          <div class="stat-card">
+            <span>Total réservations</span>
+            <strong>{{ stats.totalBookings }}</strong>
+          </div>
+        </p-card>
+        <p-card>
+          <div class="stat-card">
+            <span>Terminées</span>
+            <strong>{{ stats.completedBookings }}</strong>
+          </div>
+        </p-card>
+        <p-card>
+          <div class="stat-card">
+            <span>En attente</span>
+            <strong>{{ pendingBookings() }}</strong>
+          </div>
+        </p-card>
+        <p-card>
+          <div class="stat-card wallet-stat">
+            <span>💰 Wallet</span>
+            <strong>{{ stats.currentBalance }} MAD</strong>
+          </div>
+        </p-card>
+      </div>
+
+      <!-- DASHBOARD CONTENT -->
+      <div class="dashboard-content">
+
+        <!-- RESERVATIONS A VENIR -->
+        <p-card>
+          <div class="panel-card">
+            <div class="panel-head">
+              <div>
+                <span class="panel-kicker">PLANNING</span>
+                <h2>Prochains rendez-vous</h2>
+              </div>
+              <button pButton type="button" label="Voir tout"
+                class="p-button-text" routerLink="/barber/bookings">
+              </button>
+            </div>
+
+            <app-empty-state
+              *ngIf="!upcomingBookings().length"
+              [title]="langService.t().noReservations"
+              message="Aucun rendez-vous a venir.">
+            </app-empty-state>
+
+            <div class="booking-preview-list" *ngIf="upcomingBookings().length">
+              <div class="booking-preview-item" *ngFor="let booking of upcomingBookings()">
+                <div>
+                  <h3>{{ booking.client.name }}</h3>
+                  <p>{{ formatDate(booking.slot.startTime) }} • {{ formatTime(booking.slot.startTime) }}</p>
+                </div>
+                <p-tag
+                  [value]="getStatusLabel(booking.status)"
+                  [severity]="getStatusSeverity(booking.status)">
+                </p-tag>
+              </div>
+            </div>
+          </div>
+        </p-card>
+
+        <!-- WALLET -->
+        <p-card>
+          <div class="panel-card">
+            <span class="panel-kicker">WALLET</span>
+            <h2>Mon portefeuille</h2>
+
+            <div class="wallet-balance-box">
+              <span>Solde actuel</span>
+              <strong class="wallet-amount">{{ stats.currentBalance }} MAD</strong>
+              <p>+200 DH par réservation confirmée</p>
+            </div>
+
+            <div class="earnings-box">
+              <div class="earnings-row">
+                <span>Total commissions</span>
+                <strong>{{ stats.totalCommission }} MAD</strong>
+              </div>
+              <div class="earnings-row">
+                <span>Reservations confirmées</span>
+                <strong>{{ confirmedBookings() }}</strong>
+              </div>
+            </div>
+
+            <!-- HISTORIQUE TRANSACTIONS -->
+            <div class="transactions-section" *ngIf="walletTransactions().length > 0">
+              <span class="panel-kicker">HISTORIQUE</span>
+              <div class="transaction-list">
+                <div class="transaction-item" *ngFor="let tx of walletTransactions().slice(0, 5)">
+                  <div class="tx-icon">{{ getTransactionIcon(tx.type) }}</div>
+                  <div class="tx-info">
+                    <span>{{ getTransactionLabel(tx.type) }}</span>
+                    <small>{{ formatDate(tx.createdAt) }}</small>
+                  </div>
+                  <div class="tx-amount"
+                    [style.color]="tx.type === 'REFUND' ? '#dc2626' : '#16a34a'">
+                    {{ tx.type === 'REFUND' ? '-' : '+' }}{{ tx.amount }} MAD
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="dashboard-actions">
+              <button pButton type="button"
+                [label]="langService.t().manageAvailability"
+                routerLink="/barber/availability">
+              </button>
+              <button pButton type="button"
+                [label]="langService.t().businessProfile"
+                severity="secondary" [outlined]="true"
+                routerLink="/barber/profile">
+              </button>
+            </div>
+          </div>
+        </p-card>
+
+      </div>
+    </ng-container>
+  </div>
+</section>

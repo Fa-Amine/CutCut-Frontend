@@ -1,0 +1,286 @@
+<section class="barber-profile-page">
+  <div class="barber-profile-shell">
+    <div class="page-header">
+      <span class="page-kicker">{{ langService.t().barberProfileNav }}</span>
+      <h1>{{ langService.t().barberProfileNav }}</h1>
+      <p>{{ langService.t().barberProfileSubtitleText }}</p>
+    </div>
+
+    <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
+    <app-loading-spinner *ngIf="isLoading()" message="Chargement du profil barbier..."></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+
+    <p-card *ngIf="!isLoading() && !errorMessage() && profile()">
+      <div class="profile-card">
+
+        <div class="profile-top">
+          <div class="photo-container">
+            <ng-container *ngIf="profileForm.value.photoUrl || profile()!.photoUrl; else barberAvatar">
+              <img [src]="profileForm.value.photoUrl || profile()!.photoUrl!" [alt]="profile()!.name" class="barber-photo-large" />
+            </ng-container>
+            <ng-template #barberAvatar>
+              <p-avatar [label]="getInitials(profile()!.name)" shape="circle" size="xlarge"></p-avatar>
+            </ng-template>
+            <div *ngIf="isEditMode()" class="photo-upload-btn" style="margin-top:8px;">
+              <label for="photoInput" style="cursor:pointer; background:#1A1A1A; color:#FAFAF7; padding:6px 12px; border-radius:8px; font-size:0.85rem;">
+                {{ langService.t().changePhoto }}
+              </label>
+              <input id="photoInput" type="file" accept="image/*" style="display:none" (change)="onPhotoSelected($event)" />
+              <span *ngIf="isUploadingPhoto()" style="color:#64748b; font-size:0.85rem; margin-left:8px;">{{ langService.t().uploadingPhoto }}</span>
+            </div>
+          </div>
+          <div>
+            <h2>{{ profile()!.name }}</h2>
+            <p>{{ profile()!.shopName || 'CutCut' }}</p>
+          </div>
+        </div>
+
+        <div class="profile-tags">
+          <p-tag *ngIf="profile()!.price !== undefined && profile()!.price !== null"
+            [value]="profile()!.price + ' MAD'" severity="info"></p-tag>
+          <p-tag *ngIf="profile()!.averageRating !== undefined && profile()!.averageRating !== null"
+            [value]="'Note: ' + profile()!.averageRating" severity="success"></p-tag>
+        </div>
+
+        <form [formGroup]="profileForm" class="profile-grid">
+          <div class="info-box">
+            <span>{{ langService.t().nameLabel }}</span>
+            <strong *ngIf="!isEditMode()">{{ profile()!.name }}</strong>
+            <input *ngIf="isEditMode()" pInputText formControlName="name" class="w-full" />
+          </div>
+          <div class="info-box">
+            <span>{{ langService.t().emailLabel }}</span>
+            <strong *ngIf="!isEditMode()">{{ profile()!.email }}</strong>
+            <input *ngIf="isEditMode()" pInputText formControlName="email" class="w-full" />
+          </div>
+          <div class="info-box">
+            <span>{{ langService.t().phoneLabel }}</span>
+            <strong *ngIf="!isEditMode()">{{ profile()!.phone }}</strong>
+            <input *ngIf="isEditMode()" pInputText formControlName="phone" class="w-full" />
+          </div>
+          <div class="info-box">
+            <span>{{ langService.t().salonLabel }}</span>
+            <strong *ngIf="!isEditMode()">{{ profile()!.shopName || '-' }}</strong>
+            <input *ngIf="isEditMode()" pInputText formControlName="shopName" class="w-full" />
+          </div>
+          <div class="info-box">
+            <span>{{ langService.t().priceLabel }}</span>
+            <strong *ngIf="!isEditMode()">{{ profile()!.price ?? 0 }} MAD</strong>
+            <p-inputNumber *ngIf="isEditMode()" formControlName="price" mode="decimal" [useGrouping]="false"></p-inputNumber>
+          </div>
+          <div class="info-box">
+            <span>{{ langService.t().walletLabel }}</span>
+            <strong>{{ profile()!.walletBalance ?? 0 }} MAD</strong>
+          </div>
+          <div class="info-box full-width">
+            <span>{{ langService.t().bioLabel }}</span>
+            <strong *ngIf="!isEditMode()">{{ profile()!.bio || '-' }}</strong>
+            <textarea *ngIf="isEditMode()" pTextarea rows="4" formControlName="bio" class="w-full"></textarea>
+          </div>
+          <div class="info-box full-width">
+            <span>{{ langService.t().addressLabel }}</span>
+            <strong *ngIf="!isEditMode()">{{ profile()!.address || '-' }}</strong>
+            <input *ngIf="isEditMode()" pInputText formControlName="address" class="w-full" [placeholder]="langService.t().addressLabel" />
+          </div>
+        </form>
+
+        <div class="info-box full-width" *ngIf="isEditMode()">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+            <span>{{ langService.t().clickMapPosition }}</span>
+            <button type="button" (click)="useMyLocation()" [disabled]="isLocating()"
+              style="background:#1A1A1A; color:#FAFAF7; border:none; padding:8px 16px; border-radius:999px; cursor:pointer; font-size:0.85rem; font-weight:600; font-family:inherit;">
+              {{ isLocating() ? langService.t().locatingBtn : langService.t().useMyLocationBtn }}
+            </button>
+          </div>
+          <p *ngIf="locationError()" style="color:#e53e3e; font-size:0.82rem; margin:0 0 8px;">
+            {{ locationError() }}
+          </p>
+          <div id="edit-map" style="width:100%; height:350px; border:1px solid rgba(26,26,26,0.15); border-radius:12px;"></div>
+        </div>
+
+        <div class="info-box full-width" *ngIf="!isEditMode() && mapUrl()">
+          <span>{{ langService.t().locationOnMap }}</span>
+          <iframe [src]="mapUrl() | safeUrl" width="100%" height="300"
+            style="border:1px solid rgba(26,26,26,0.1); border-radius:12px; margin-top:8px" loading="lazy"></iframe>
+        </div>
+
+        <div class="profile-actions">
+          <button *ngIf="!isEditMode()" pButton type="button" [label]="langService.t().editBtn" (click)="startEdit()"></button>
+          <ng-container *ngIf="isEditMode()">
+            <button pButton type="button" [label]="langService.t().saveBtn" [disabled]="isSaving() || isUploadingPhoto()" (click)="saveProfile()"></button>
+            <button pButton type="button" [label]="langService.t().cancelBtn" severity="secondary" [outlined]="true" (click)="cancelEdit()"></button>
+          </ng-container>
+        </div>
+
+        <!-- ✅ SERVICES -->
+        <div class="services-section">
+          <div class="services-header">
+            <h3>{{ langService.t().myServices }}</h3>
+          </div>
+
+          <!-- ✅ Services prédéfinis avec icônes -->
+          <div style="margin-bottom:1.5rem;">
+            <p style="color:#737373; font-size:0.85rem; margin-bottom:0.75rem; font-weight:600;">
+              {{ langService.isArabic() ? 'إضافة سريعة :' : 'Ajout rapide :' }}
+            </p>
+            <div class="predefined-services-grid">
+              <div *ngFor="let ps of predefinedServicesList"
+                class="predefined-service-card"
+                (click)="selectPredefinedService(ps)">
+                <div class="predefined-service-icon">
+                  <img *ngIf="ps.isImage" [src]="ps.icon" [alt]="ps.name"
+                    style="width:36px; height:36px; object-fit:contain;" />
+                  <span *ngIf="!ps.isImage" style="font-size:1.8rem;">{{ ps.icon }}</span>
+                </div>
+                <span class="predefined-service-name">
+                  {{ langService.isArabic() ? ps.nameAr : ps.name }}
+                </span>
+                <span style="font-size:1.2rem; color:#171717; font-weight:700;">+</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ Input prix service prédéfini sélectionné -->
+          <div *ngIf="showPredefinedPriceInput()"
+            style="background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:12px; padding:1rem; margin-bottom:1rem;">
+            <p style="font-weight:700; color:#0369a1; margin:0 0 0.75rem; font-size:0.9rem;">
+              {{ langService.isArabic() ? selectedPredefinedService()?.nameAr : selectedPredefinedService()?.name }}
+              — {{ langService.isArabic() ? 'أدخل سعرك :' : 'Entrez votre prix :' }}
+            </p>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <input type="number"
+                [(ngModel)]="predefinedServicePrice"
+                [placeholder]="langService.isArabic() ? 'السعر MAD' : 'Prix MAD'"
+                style="width:130px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
+              <button pButton type="button"
+                [label]="langService.t().addBtn"
+                [disabled]="!predefinedServicePrice"
+                (click)="confirmPredefinedService()">
+              </button>
+              <button pButton type="button"
+                [label]="langService.t().cancelBtn"
+                severity="secondary" [outlined]="true"
+                (click)="cancelPredefinedForm()">
+              </button>
+            </div>
+          </div>
+
+          <!-- ✅ Bouton ajout manuel -->
+          <div style="margin-bottom:0.75rem;">
+            <button pButton type="button" [label]="langService.t().addServiceBtn"
+              severity="secondary" [outlined]="true"
+              (click)="showAddService.set(!showAddService()); cancelPredefinedForm()">
+            </button>
+          </div>
+
+          <!-- ✅ Formulaire ajout manuel -->
+          <div class="service-form" *ngIf="showAddService()">
+            <div class="service-form-grid">
+              <div>
+                <label>{{ langService.t().serviceNameLabel }}</label>
+                <input pInputText [(ngModel)]="newServiceName" [placeholder]="langService.t().serviceNameLabel" class="w-full" />
+              </div>
+              <div>
+                <label>{{ langService.t().servicePriceLabel }}</label>
+                <input pInputText type="number" [(ngModel)]="newServicePrice" [placeholder]="langService.t().servicePriceLabel" class="w-full" />
+              </div>
+              <div class="full-width">
+                <label>{{ langService.t().serviceDescLabel }}</label>
+                <input pInputText [(ngModel)]="newServiceDesc" [placeholder]="langService.t().serviceDescLabel" class="w-full" />
+              </div>
+            </div>
+            <div class="service-form-actions">
+              <button pButton type="button"
+                [label]="editingServiceId() ? langService.t().editBtn : langService.t().addBtn"
+                [disabled]="!newServiceName || !newServicePrice"
+                (click)="saveService()">
+              </button>
+              <button pButton type="button" [label]="langService.t().cancelBtn"
+                severity="secondary" [outlined]="true"
+                (click)="cancelServiceForm()">
+              </button>
+            </div>
+          </div>
+
+          <!-- ✅ Liste services existants -->
+          <div class="services-list" *ngIf="barberServices().length > 0">
+            <div class="service-row" *ngFor="let service of barberServices()">
+              <div class="service-row-info">
+                <span class="service-row-name">{{ service.name }}</span>
+                <span *ngIf="service.description" class="service-row-desc">{{ service.description }}</span>
+              </div>
+              <div class="service-row-right">
+                <span class="service-row-price">{{ service.price }} MAD</span>
+                <button (click)="editService(service)"
+                  style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:4px; color:#171717; font-family:inherit;">
+                  {{ langService.t().editBtn }}
+                </button>
+                <button (click)="deleteService(service.id)"
+                  style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:4px; color:#dc2626; font-family:inherit;">
+                  {{ langService.t().deleteBtn }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p *ngIf="barberServices().length === 0"
+            style="color:#a3a3a3; text-align:center; padding:1.5rem; font-size:0.9rem;">
+            {{ langService.t().noServiceAdded }}
+          </p>
+        </div>
+
+        <!-- ✅ SERVICE A DOMICILE - BIENTOT DISPONIBLE -->
+        <div class="home-service-section" style="opacity:0.55; pointer-events:none; user-select:none;">
+          <div class="home-service-header">
+            <div>
+              <h3 style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                {{ langService.t().homeServiceTitle }}
+                <span style="background:#f59e0b; color:white; font-size:0.68rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:0.05em; text-transform:uppercase;">
+                  {{ langService.t().comingSoon }}
+                </span>
+              </h3>
+              <p>{{ langService.t().homeServiceDesc }}</p>
+            </div>
+          </div>
+          <div style="background:#f5f5f5; border:1.5px dashed #d4d4d4; border-radius:12px; padding:2rem; text-align:center;">
+            <p style="color:#a3a3a3; font-size:0.9rem; margin:0; font-weight:500;">
+              {{ langService.t().comingSoonText }}
+            </p>
+          </div>
+        </div>
+
+        <!-- PHOTOS -->
+        <div class="gallery-section">
+          <h3>{{ langService.t().photosTitle }}</h3>
+          <div class="gallery-upload">
+            <input type="text" [placeholder]="langService.t().photoDescPlaceholder"
+              [value]="newCaption()"
+              (input)="newCaption.set($any($event.target).value)"
+              style="padding:8px; border:1px solid rgba(26,26,26,0.1); border-radius:8px; width:100%; margin-bottom:8px; background:#FAFAF7; box-sizing:border-box;" />
+            <label for="galleryInput" style="cursor:pointer; background:#1A1A1A; color:#FAFAF7; padding:8px 16px; border-radius:999px; font-size:0.9rem; display:inline-block;">
+              {{ langService.t().addPhotoBtn }}
+            </label>
+            <input id="galleryInput" type="file" accept="image/*" style="display:none" (change)="onGalleryPhotoSelected($event, 'gallery')" />
+            <span *ngIf="isUploadingGallery()" style="color:#64748b; font-size:0.85rem; margin-left:8px;">{{ langService.t().uploadingPhoto }}</span>
+          </div>
+          <div class="gallery-grid" *ngIf="photos().length > 0">
+            <div class="gallery-item" *ngFor="let photo of photos()">
+              <img [src]="photo.imageUrl" [alt]="photo.caption || 'Photo'" />
+              <div class="gallery-overlay">
+                <span *ngIf="photo.caption">{{ photo.caption }}</span>
+                <button (click)="deletePhoto(photo.id)"
+                  style="background:rgba(239,68,68,0.9); color:white; border:none; padding:4px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem;">
+                  {{ langService.t().deletePhoto }}
+                </button>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="photos().length === 0" style="color:rgba(26,26,26,0.4); text-align:center; padding:1rem;">
+            {{ langService.t().noPhotos }}
+          </p>
+        </div>
+
+      </div>
+    </p-card>
+  </div>
+</section>

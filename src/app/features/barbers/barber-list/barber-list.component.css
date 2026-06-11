@@ -1,0 +1,307 @@
+:host { display: block; }
+
+.barbers-page {
+  background: #ffffff;
+  min-height: calc(100vh - 72px);
+  padding: 2rem 1.25rem 3rem;
+}
+.barbers-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.page-header { margin-bottom: 1.5rem; }
+.page-kicker {
+  display: inline-block;
+  color: #a3a3a3;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  font-family: 'Courier New', monospace;
+}
+.page-header h1 {
+  margin: 0 0 0.6rem;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #171717;
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+.page-header p {
+  margin: 0;
+  color: #737373;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 720px;
+}
+.filters-card {
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 1rem;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.filter-group label {
+  font-weight: 600;
+  color: #171717;
+  font-size: 0.875rem;
+}
+.w-full { width: 100%; }
+
+/* ===========================
+   🗺️ MAP
+=========================== */
+.map-wrapper {
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+#barbers-map {
+  width: 100%;
+  height: calc(100vh - 280px);
+  min-height: 500px;
+}
+
+.map-hint {
+  text-align: center;
+  color: #a3a3a3;
+  font-size: 0.82rem;
+  padding: 0.6rem;
+  background: #fafafa;
+  border-top: 1px solid #e5e5e5;
+  font-family: 'Courier New', monospace;
+}
+
+/* Popup Leaflet custom */
+:host ::ng-deep .custom-popup .leaflet-popup-content-wrapper {
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
+  border: 1px solid #e5e5e5 !important;
+  padding: 0 !important;
+}
+:host ::ng-deep .custom-popup .leaflet-popup-content {
+  margin: 12px !important;
+}
+:host ::ng-deep .custom-popup .leaflet-popup-tip {
+  background: white !important;
+}
+:host ::ng-deep .leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+:host ::ng-deep .leaflet-control-zoom a {
+  background: white !important;
+  color: #171717 !important;
+  font-weight: 700 !important;
+}
+:host ::ng-deep .leaflet-control-zoom a:hover {
+  background: #f5f5f5 !important;
+}
+
+/* ===========================
+   GRID
+=========================== */
+.barbers-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+/* ===========================
+   BARBER CARD
+=========================== */
+.barber-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.barber-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-3px);
+}
+.barber-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.barber-ident {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.barber-ident h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #171717;
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+.barber-ident p {
+  margin: 0.25rem 0 0;
+  color: #a3a3a3;
+  font-size: 0.82rem;
+}
+.barber-photo {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  max-width: 56px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1.5px solid #e5e5e5;
+  flex-shrink: 0;
+}
+.barber-meta { margin-bottom: 1rem; }
+.specialty-chip {
+  display: inline-block;
+  padding: 0.4rem 0.75rem;
+  background: #f5f5f5;
+  color: #525252;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid #e5e5e5;
+}
+.barber-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ===========================
+   ❤️ FAVORI
+=========================== */
+.fav-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.fav-btn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* ===========================
+   VIEW TOGGLE
+=========================== */
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: #f5f5f5;
+  padding: 4px;
+  border-radius: 12px;
+  width: fit-content;
+  border: 1px solid #e5e5e5;
+}
+.view-toggle button {
+  padding: 0.55rem 1.25rem;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: transparent;
+  color: #a3a3a3;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.view-toggle button.active {
+  background: #171717;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 900px) {
+  .filters-grid, .barbers-grid { grid-template-columns: 1fr; }
+  #barbers-map { min-height: 400px; height: calc(100vh - 320px); }
+}
+@media (max-width: 640px) {
+  .barbers-page { padding: 1.25rem 1rem 2rem; }
+  .barber-actions { flex-direction: column; }
+  .barber-actions .p-button { width: 100%; }
+  #barbers-map { min-height: 350px; }
+}
+
+/* ===========================
+   FILTRE CATÉGORIE
+=========================== */
+.category-filter {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.category-filter button {
+  padding: 0.55rem 1.25rem;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: #ffffff;
+  color: #737373;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.category-filter button:hover {
+  border-color: #171717;
+  color: #171717;
+}
+
+.category-filter button.active {
+  background: #171717;
+  color: #ffffff;
+  border-color: #171717;
+}
+
+/* Badge catégorie */
+.category-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 1.1rem;
+  z-index: 10;
+}

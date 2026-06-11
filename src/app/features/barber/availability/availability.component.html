@@ -1,0 +1,91 @@
+<section class="availability-page" [dir]="langService.lang() === 'ar' ? 'rtl' : 'ltr'">
+  <div class="availability-shell">
+
+    <app-loading-spinner *ngIf="isSaving()" message="Enregistrement..."></app-loading-spinner>
+
+    <div class="page-header">
+      <span class="page-kicker">{{ langService.t().manageAvailability }}</span>
+      <h1>{{ langService.t().availabilityTitle }}</h1>
+      <p>{{ langService.t().availabilitySubtitle }}</p>
+    </div>
+
+    <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
+    <app-error-alert *ngIf="errorMessage()" [message]="errorMessage()"></app-error-alert>
+
+    <div class="schedule-card" *ngIf="!isLoading() && !isSaving()">
+      <div class="schedule-header">
+        <h2>{{ langService.t().workingDays }}</h2>
+      </div>
+
+      <!-- ✅ BOUTON APPLIQUER À TOUS -->
+      <div class="apply-all-banner">
+  <div class="apply-all-info">
+    <span class="apply-all-icon">⚡</span>
+    <div>
+      <strong>
+        {{ langService.lang() === 'ar' ? 'تطبيق نفس التوقيت على جميع الأيام' : 'Appliquer le même horaire à tous les jours' }}
+      </strong>
+      <p>
+        {{ langService.lang() === 'ar' ? 'قم بإعداد اليوم الأول، ثم انقر لنسخ التوقيت على جميع الأيام الأخرى.' : 'Configurez le premier jour, puis cliquez pour copier l\'horaire à tous les autres jours.' }}
+      </p>
+    </div>
+  </div>
+  <button class="apply-all-btn" type="button" (click)="applyFirstDayToAll()">
+    {{ langService.lang() === 'ar' ? 'تطبيق على الكل ⚡' : '⚡ Appliquer à tous' }}
+  </button>
+</div>
+
+      <!-- LISTE DES JOURS -->
+      <div class="days-list">
+        <div *ngFor="let day of weeklySchedule(); let i = index"
+          class="day-item"
+          [class.inactive-day]="!day.active"
+          [class.first-day]="i === 0">
+
+          <div class="day-info-col">
+            <p-inputSwitch [(ngModel)]="day.active"></p-inputSwitch>
+            <span class="day-name">{{ getDayName(day) }}</span>
+           <span *ngIf="i === 0" class="first-day-badge">
+  {{ langService.lang() === 'ar' ? 'نموذج' : 'Modèle' }}
+</span>
+          </div>
+
+          <div class="schedule-inputs-col" *ngIf="day.active">
+            <div class="input-row">
+              <span class="row-label">
+                {{ langService.lang() === 'ar' ? 'العمل' : 'Travail' }}
+              </span>
+              <div class="controls-wrapper">
+                <input type="time" [(ngModel)]="day.startTime" class="modern-input">
+                <span class="arrow-sep">→</span>
+                <input type="time" [(ngModel)]="day.endTime" class="modern-input">
+              </div>
+            </div>
+            <div class="input-row">
+              <span class="row-label">
+                ☕ {{ langService.lang() === 'ar' ? 'استراحة' : 'Pause' }}
+              </span>
+              <div class="controls-wrapper">
+                <input type="time" [(ngModel)]="day.breakStart" class="modern-input pause-style">
+                <span class="arrow-sep">→</span>
+                <input type="time" [(ngModel)]="day.breakEnd" class="modern-input pause-style">
+              </div>
+            </div>
+          </div>
+
+          <div class="off-label" *ngIf="!day.active">
+            {{ langService.lang() === 'ar' ? 'عطلة' : 'Repos' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button pButton type="button" class="save-schedule-btn"
+          [label]="isSaving() ? '...' : langService.t().saveAvailability"
+          [disabled]="isSaving()"
+          (click)="saveFullSchedule()">
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

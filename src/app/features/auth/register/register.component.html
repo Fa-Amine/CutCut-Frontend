@@ -1,0 +1,248 @@
+<section class="auth-page">
+  <div class="auth-container">
+    <div class="auth-left">
+      <div class="auth-illustration-card">
+        <img src="/assets/images/login-illustration.jpg"
+          [alt]="langService.lang() === 'fr' ? 'Illustration salon de coiffure' : 'رسم توضيحي'" />
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <p-card>
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+
+          <div class="form-header">
+            <h2>{{ selectedRole() === 'CLIENT' ? 'Inscription Client' : 'Inscription Barbier' }}</h2>
+            <p>{{ currentSubtitle }}</p>
+          </div>
+
+          <app-error-alert *ngIf="errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+
+          <!-- TOGGLE ROLE -->
+          <div class="role-toggle" *ngIf="!fromBarberButton()">
+            <button type="button"
+              [style.background]="selectedRole() === 'CLIENT' ? '#1A1A1A' : 'transparent'"
+              [style.color]="selectedRole() === 'CLIENT' ? '#FAFAF7' : '#1A1A1A'"
+              [style.border]="selectedRole() === 'CLIENT' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
+              style="padding:0.75rem 2rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
+              (click)="setRole('CLIENT')">
+              Client
+            </button>
+            <button type="button"
+              [style.background]="selectedRole() === 'BARBER' ? '#1A1A1A' : 'transparent'"
+              [style.color]="selectedRole() === 'BARBER' ? '#FAFAF7' : '#1A1A1A'"
+              [style.border]="selectedRole() === 'BARBER' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
+              style="padding:0.75rem 2rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
+              (click)="setRole('BARBER')">
+              Barbier
+            </button>
+          </div>
+
+          <!-- CHAMPS COMMUNS -->
+          <div class="form-group">
+            <label for="name">{{ langService.t().fullName }}</label>
+            <input id="name" type="text" pInputText formControlName="name"
+              [placeholder]="langService.t().fullNamePlaceholder" class="w-full" />
+            <small class="error-text" *ngIf="nameControl?.touched && nameControl?.hasError('required')">
+              {{ langService.t().fullNameRequired }}
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="email">{{ langService.t().email }}</label>
+            <input id="email" type="email" pInputText formControlName="email"
+              [placeholder]="langService.t().emailPlaceholder" class="w-full" />
+            <small class="error-text" *ngIf="emailControl?.touched && emailControl?.hasError('required')">
+              {{ langService.t().emailRequired }}
+            </small>
+            <small class="error-text" *ngIf="emailControl?.touched && emailControl?.hasError('email')">
+              {{ langService.t().emailInvalid }}
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">{{ langService.t().phoneNumber }}</label>
+            <input id="phone" type="text" pInputText formControlName="phone"
+              [placeholder]="langService.t().phoneNumberPlaceholder" class="w-full" />
+          </div>
+
+          <!-- CHAMPS BARBIER -->
+          <ng-container *ngIf="selectedRole() === 'BARBER'">
+
+            <!-- CATEGORIE -->
+            <div class="form-group">
+              <label>Je suis :</label>
+              <div class="category-toggle">
+                <button type="button"
+                  [style.background]="selectedCategory() === 'HOMME' ? '#1A1A1A' : 'transparent'"
+                  [style.color]="selectedCategory() === 'HOMME' ? '#FAFAF7' : '#1A1A1A'"
+                  [style.border]="selectedCategory() === 'HOMME' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
+                  style="padding:0.75rem 1.5rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
+                  (click)="setCategory('HOMME')">
+                  Barbier Homme
+                </button>
+                <button type="button"
+                  [style.background]="selectedCategory() === 'FEMME' ? '#1A1A1A' : 'transparent'"
+                  [style.color]="selectedCategory() === 'FEMME' ? '#FAFAF7' : '#1A1A1A'"
+                  [style.border]="selectedCategory() === 'FEMME' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
+                  style="padding:0.75rem 1.5rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
+                  (click)="setCategory('FEMME')">
+                  Coiffeuse Femme
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="shopName">{{ langService.t().shopName }}</label>
+              <input id="shopName" type="text" pInputText formControlName="shopName"
+                [placeholder]="langService.t().shopNamePlaceholder" class="w-full" />
+              <small class="error-text" *ngIf="shopNameControl?.touched && shopNameControl?.hasError('required')">
+                {{ langService.t().shopNameRequired }}
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label for="bio">{{ langService.t().shopBio }}</label>
+              <textarea id="bio" pTextarea rows="3" formControlName="bio"
+                [placeholder]="langService.t().shopBioPlaceholder" class="w-full">
+              </textarea>
+            </div>
+
+            <!-- ✅ SERVICES PREDÉFINIS -->
+            <div class="form-group">
+              <label style="font-weight:700; color:#171717; font-size:0.95rem;">
+                Vos services et tarifs
+              </label>
+              <p style="color:#737373; font-size:0.82rem; margin-bottom:1rem;">
+                Cochez les services que vous proposez et indiquez votre prix
+              </p>
+
+              <div class="services-onboarding-list">
+                <div *ngFor="let service of predefinedServices()"
+                  class="service-onboarding-item"
+                  [class.selected]="service.selected">
+
+                  <!-- Checkbox + Icon + Nom -->
+                  <div class="service-onboarding-left" (click)="toggleService(service.id)">
+                    <div class="service-check-box" [class.checked]="service.selected">
+                      {{ service.selected ? '✅' : '⬜' }}
+                    </div>
+                    <div class="service-icon-wrap">
+                      <img *ngIf="isImagePath(service.icon)" [src]="service.icon" [alt]="service.name"
+                        style="width:40px; height:40px; object-fit:contain;" />
+                      <span *ngIf="!isImagePath(service.icon)" style="font-size:1.8rem;">{{ service.icon }}</span>
+                    </div>
+                    <span class="service-onboarding-name">
+                      {{ langService.isArabic() ? service.nameAr : service.name }}
+                    </span>
+                  </div>
+
+                  <!-- Prix input -->
+                  <div class="service-onboarding-right" *ngIf="service.selected">
+                    <input
+                      type="number"
+                      [value]="service.price"
+                      (input)="updateServicePrice(service.id, +$any($event.target).value || null)"
+                      placeholder="Prix MAD"
+                      style="width:100px; padding:6px 10px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit; text-align:center;"
+                    />
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- ✅ Services personnalisés existants -->
+              <div *ngFor="let s of customServices(); let i = index"
+                class="service-onboarding-item selected"
+                style="margin-top:0.5rem;">
+                <div class="service-onboarding-left">
+                  <span style="font-size:1.5rem;">✂️</span>
+                  <span class="service-onboarding-name">{{ s.name }}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span style="font-weight:700; color:#171717;">{{ s.price }} MAD</span>
+                  <button type="button" (click)="removeCustomService(i)"
+                    style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:0.9rem; font-family:inherit;">
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+
+              <!-- ✅ Formulaire ajout service perso -->
+              <div *ngIf="showAddCustomService()"
+                style="margin-top:1rem; background:#f5f5f5; border-radius:12px; padding:1rem;">
+                <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                  <input type="text" [(ngModel)]="newCustomServiceName" [ngModelOptions]="{standalone:true}"
+                    placeholder="Nom du service"
+                    style="flex:1; min-width:140px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
+                  <input type="number" [(ngModel)]="newCustomServicePrice" [ngModelOptions]="{standalone:true}"
+                    placeholder="Prix MAD"
+                    style="width:100px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
+                </div>
+                <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+                  <button type="button" (click)="addCustomService()"
+                    [disabled]="!newCustomServiceName"
+                    style="background:#171717; color:white; border:none; padding:8px 20px; border-radius:999px; cursor:pointer; font-weight:700; font-family:inherit; font-size:0.9rem;">
+                    Ajouter
+                  </button>
+                  <button type="button" (click)="showAddCustomService.set(false)"
+                    style="background:transparent; color:#737373; border:1.5px solid #d4d4d4; padding:8px 20px; border-radius:999px; cursor:pointer; font-family:inherit; font-size:0.9rem;">
+                    Annuler
+                  </button>
+                </div>
+              </div>
+
+              <!-- ✅ Bouton ajouter service perso -->
+              <button type="button" (click)="showAddCustomService.set(!showAddCustomService())"
+                style="margin-top:1rem; width:100%; background:transparent; border:2px dashed #d4d4d4; padding:0.85rem; border-radius:12px; cursor:pointer; font-weight:700; font-size:0.9rem; font-family:inherit; color:#737373; transition:all 0.2s;"
+                onmouseover="this.style.borderColor='#171717'; this.style.color='#171717';"
+                onmouseout="this.style.borderColor='#d4d4d4'; this.style.color='#737373';">
+                + Ajouter un service personnalise
+              </button>
+            </div>
+
+          </ng-container>
+
+          <!-- MOT DE PASSE -->
+          <div class="form-group">
+            <label for="password">{{ langService.t().password }}</label>
+            <p-password inputId="password" formControlName="password"
+              [feedback]="false" [toggleMask]="true"
+              [placeholder]="langService.t().passwordPlaceholder"
+              styleClass="w-full" inputStyleClass="w-full">
+            </p-password>
+            <small class="error-text" *ngIf="passwordControl?.touched && passwordControl?.hasError('required')">
+              {{ langService.t().passwordRequired }}
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">{{ langService.t().confirmPassword }}</label>
+            <p-password inputId="confirmPassword" formControlName="confirmPassword"
+              [feedback]="false" [toggleMask]="true"
+              [placeholder]="langService.t().confirmPasswordPlaceholder"
+              styleClass="w-full" inputStyleClass="w-full">
+            </p-password>
+            <small class="error-text" *ngIf="confirmPasswordControl?.touched && confirmPasswordControl?.hasError('required')">
+              {{ langService.t().confirmPasswordRequired }}
+            </small>
+            <small class="error-text" *ngIf="passwordMismatch">
+              {{ langService.t().passwordMismatch }}
+            </small>
+          </div>
+
+          <button pButton type="submit" class="submit-btn"
+            [label]="isLoading() ? '...' : selectedRole() === 'CLIENT' ? 'Creer un compte client' : 'Creer un compte barbier'"
+            [disabled]="isLoading()">
+          </button>
+
+          <div class="auth-footer">
+            <span>{{ langService.t().haveAccount }}</span>
+            <a routerLink="/login">{{ langService.t().signIn }}</a>
+          </div>
+
+        </form>
+      </p-card>
+    </div>
+  </div>
+</section>

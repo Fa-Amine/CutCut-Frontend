@@ -1,0 +1,116 @@
+<section class="admin-dashboard-page">
+  <div class="admin-dashboard-shell">
+    <div class="page-header">
+      <span class="page-kicker">{{ langService.t().adminPanel }}</span>
+      <h1>{{ langService.t().adminDashboardTitle }}</h1>
+      <p>{{ langService.t().adminDashboardSubtitle }}</p>
+    </div>
+
+    <app-loading-spinner *ngIf="isLoading()" message="Chargement du tableau de bord..."></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+
+    <div class="stats-grid" *ngIf="!isLoading() && !errorMessage() && dashboard()">
+      <div class="stat-card" *ngFor="let card of statCards()">
+        <span>{{ card.label }}</span>
+        <strong>{{ card.value }}</strong>
+      </div>
+    </div>
+
+    <!-- ✅ SUCCESS MESSAGE -->
+    <div *ngIf="successMessage()" class="success-msg">
+      {{ successMessage() }}
+    </div>
+
+    <!-- ✅ HOME SERVICE REQUESTS -->
+    <div class="requests-section">
+      <div class="requests-header">
+        <h2>🏠 Demandes de service à domicile</h2>
+        <span class="requests-count">{{ homeRequests().length }} demande(s)</span>
+      </div>
+
+      <div *ngIf="isLoadingRequests()" style="text-align:center; padding:2rem; color:#64748b;">
+        Chargement...
+      </div>
+
+      <div *ngIf="!isLoadingRequests() && homeRequests().length === 0" class="empty-requests">
+        <span>📭</span>
+        <p>Aucune demande pour le moment.</p>
+      </div>
+
+      <div class="requests-list" *ngIf="!isLoadingRequests() && homeRequests().length > 0">
+        <div class="request-card" *ngFor="let req of homeRequests()">
+
+          <!-- Infos barbier -->
+          <div class="request-top">
+            <div class="request-barber">
+              <div class="barber-avatar-admin">
+                {{ req.barber?.name?.charAt(0)?.toUpperCase() }}
+              </div>
+              <div>
+                <h4>{{ req.barber?.name }}</h4>
+                <p>{{ req.barber?.shopName || 'CutCut' }}</p>
+              </div>
+            </div>
+            <span class="request-status"
+              [class.pending]="req.status === 'PENDING'"
+              [class.approved]="req.status === 'APPROVED'"
+              [class.rejected]="req.status === 'REJECTED'">
+              {{ getStatusBadge(req.status || '') }}
+            </span>
+          </div>
+
+          <!-- Documents -->
+          <div class="request-docs">
+            <a *ngIf="req.diplomaUrl" [href]="req.diplomaUrl" target="_blank" class="doc-link">
+              📄 Voir diplôme
+            </a>
+            <a *ngIf="req.cinUrl" [href]="req.cinUrl" target="_blank" class="doc-link">
+              🪪 Voir CIN
+            </a>
+            <a *ngIf="req.selfieUrl" [href]="req.selfieUrl" target="_blank" class="doc-link">
+              🤳 Voir selfie
+            </a>
+          </div>
+
+          <!-- Actions si PENDING -->
+          <div class="request-actions" *ngIf="req.status === 'PENDING'">
+            <ng-container *ngIf="rejectingId() !== req.id">
+              <button class="approve-btn" (click)="approveRequest(req.id!)">
+                ✅ Approuver
+              </button>
+              <button class="reject-btn" (click)="startReject(req.id!)">
+                ❌ Refuser
+              </button>
+            </ng-container>
+
+            <!-- Formulaire de refus -->
+            <div *ngIf="rejectingId() === req.id" class="reject-form">
+              <textarea
+                [(ngModel)]="rejectReason"
+                placeholder="Raison du refus..."
+                rows="2"
+                class="reject-textarea">
+              </textarea>
+              <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                <button class="reject-btn" (click)="confirmReject(req.id!)">
+                  Confirmer le refus
+                </button>
+                <button class="cancel-btn" (click)="cancelReject()">
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Raison si refusé -->
+          <div *ngIf="req.status === 'REJECTED' && req.rejectionReason"
+            style="margin-top:0.75rem; background:#fef2f2; border-radius:8px; padding:0.6rem 0.75rem; font-size:0.85rem; color:#dc2626;">
+            Raison : {{ req.rejectionReason }}
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

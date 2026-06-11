@@ -1,0 +1,290 @@
+:host { display: block; }
+
+.availability-page {
+  background: #FAFAF7;
+  min-height: 100vh;
+  padding: 2.5rem 1.25rem;
+}
+
+.availability-shell {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.page-header { margin-bottom: 1.5rem; }
+
+.page-kicker {
+  display: inline-block;
+  color: #a3a3a3;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  font-family: 'Courier New', monospace;
+}
+
+.page-header h1 {
+  margin: 0 0 0.6rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: #1A1A1A;
+  font-family: Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.schedule-card {
+  background: #F0EDE8;
+  border: 1px solid rgba(26,26,26,0.08);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(26,26,26,0.04);
+  padding: 2.5rem;
+}
+
+.schedule-header {
+  margin-bottom: 1.5rem;
+}
+
+.schedule-header h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: #1A1A1A;
+  margin: 0;
+  font-family: Georgia, serif;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+/* ===========================
+   ✅ APPLY ALL BANNER
+=========================== */
+.apply-all-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1A1A1A;
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.apply-all-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.apply-all-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.apply-all-info strong {
+  display: block;
+  color: #FAFAF7;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.apply-all-info p {
+  color: rgba(250,250,247,0.6);
+  font-size: 0.82rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.apply-all-btn {
+  background: #FAFAF7;
+  color: #1A1A1A;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.apply-all-btn:hover {
+  background: #e5e5e5;
+  transform: translateY(-1px);
+}
+
+.apply-all-btn:active {
+  transform: translateY(0);
+}
+
+/* ===========================
+   DAYS LIST
+=========================== */
+.days-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.day-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(26,26,26,0.06);
+  border-radius: 16px;
+  transition: all 0.2s;
+}
+
+.day-item:hover {
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ✅ Premier jour mis en évidence */
+.day-item.first-day {
+  background: white;
+  border: 2px solid #1A1A1A;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.day-info-col {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 140px;
+}
+
+.day-name {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #1A1A1A;
+  font-family: Georgia, serif;
+}
+
+/* ✅ Badge "Modèle" */
+.first-day-badge {
+  background: #1A1A1A;
+  color: #FAFAF7;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: 'Courier New', monospace;
+}
+
+.schedule-inputs-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.row-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(26,26,26,0.4);
+  letter-spacing: 0.08em;
+  min-width: 70px;
+  text-align: right;
+  font-family: 'Courier New', monospace;
+}
+
+.controls-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modern-input {
+  border: 1px solid rgba(26,26,26,0.15);
+  background: #FAFAF7;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1A1A1A !important;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 110px;
+}
+
+.modern-input:focus {
+  border-color: #1A1A1A;
+  background: white;
+}
+
+.pause-style {
+  background: rgba(26,26,26,0.04);
+}
+
+.arrow-sep {
+  color: rgba(26,26,26,0.25);
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.off-label {
+  font-size: 0.8rem;
+  color: rgba(26,26,26,0.3);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.inactive-day {
+  opacity: 0.45;
+}
+
+.footer-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+:host ::ng-deep .save-schedule-btn.p-button {
+  background: #1A1A1A !important;
+  color: #FAFAF7 !important;
+  border: none;
+  padding: 1.1rem 3rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+:host ::ng-deep .save-schedule-btn.p-button:hover {
+  background: #333 !important;
+  transform: translateY(-2px);
+}
+
+:host ::ng-deep .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+  background: #1A1A1A;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media (max-width: 768px) {
+  .availability-page { padding: 1.5rem 1rem 3rem; }
+  .schedule-card { padding: 1.5rem; }
+  .apply-all-banner { flex-direction: column; align-items: flex-start; }
+  .apply-all-btn { width: 100%; text-align: center; }
+  .day-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1rem; }
+  .input-row { justify-content: flex-start; }
+  .row-label { text-align: left; }
+  .modern-input { width: 95px; }
+}

@@ -1,0 +1,234 @@
+<div id="page-top"></div>
+<p-toast position="top-center"></p-toast>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" *ngIf="lightboxPhoto()" (click)="closeLightbox()">
+  <button class="lightbox-close" (click)="closeLightbox()">X</button>
+  <img [src]="lightboxPhoto()!" alt="Photo" (click)="$event.stopPropagation()" />
+</div>
+
+<section class="barber-details-page">
+  <div class="barber-details-shell">
+    <div class="page-header">
+      <span class="page-kicker">{{ langService.t().barbers }}</span>
+      <h1>{{ langService.t().barberDetailsTitle }}</h1>
+    </div>
+
+    <app-loading-spinner *ngIf="isLoading()" message="Chargement du barbier..."></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+
+    <div class="details-layout" *ngIf="!isLoading() && barber()">
+      <div class="info-column">
+        <p-card>
+          <div class="barber-profile-card">
+            <div class="barber-top">
+              <ng-container *ngIf="barber()!.photoUrl; else initialsAvatar">
+                <img [src]="barber()!.photoUrl!" [alt]="barber()!.name"
+                  style="width:72px; height:72px; min-width:72px; min-height:72px; max-width:72px; max-height:72px; border-radius:999px; object-fit:cover; flex-shrink:0; border:2px solid rgba(26,26,26,0.1);" />
+              </ng-container>
+              <ng-template #initialsAvatar>
+                <p-avatar [label]="getInitials(barber()!.name)" shape="circle" size="xlarge"></p-avatar>
+              </ng-template>
+              <div>
+                <h2>{{ barber()!.name }}</h2>
+                <p>{{ barber()!.shopName || 'CutCut' }}</p>
+              </div>
+            </div>
+
+            <div class="barber-tags">
+              <p-tag *ngIf="barber()!.price !== undefined && barber()!.price !== null"
+                [value]="barber()!.price + ' MAD'" severity="info"></p-tag>
+              <p-tag *ngIf="barber()!.averageRating"
+                [value]="'Note: ' + barber()!.averageRating + ' (' + (barber()!.reviewCount || 0) + ' avis)'"
+                severity="success"></p-tag>
+            </div>
+
+            <div *ngIf="!sessionService.isGuest() && sessionService.isClient()"
+              style="margin-top:0.5rem;">
+              <a [routerLink]="['/chat', barber()!.id]"
+                style="display:block; width:100%; text-align:center; background:#1A1A1A; color:#FAFAF7 !important; border-radius:12px; padding:0.85rem; font-weight:700; font-size:16px; text-decoration:none; box-sizing:border-box;">
+                {{ langService.t().sendMessage }}
+              </a>
+            </div>
+
+            <div class="barber-bio">
+              <h3>{{ langService.t().aboutBarber }}</h3>
+              <p>{{ barber()!.bio || '-' }}</p>
+            </div>
+
+            <div class="barber-location" *ngIf="barber()!.address">
+              <h3>{{ langService.t().address }}</h3>
+              <p>{{ barber()!.address }}</p>
+            </div>
+
+            <!-- ✅ MAP LEAFLET -->
+            <div class="barber-map" *ngIf="barber()!.latitude && barber()!.longitude">
+              <div id="view-map"
+                style="width:100%; height:250px; border:1px solid #e5e5e5; border-radius:12px; margin-top:8px; z-index:1;">
+              </div>
+              <a [href]="'https://www.google.com/maps?q=' + barber()!.latitude + ',' + barber()!.longitude"
+                target="_blank"
+                style="display:block; text-align:center; margin-top:8px; color:#1A1A1A; font-size:0.9rem;">
+                {{ langService.t().openGoogleMaps }}
+              </a>
+            </div>
+
+            <!-- PHOTOS -->
+            <div *ngIf="photos().length > 0"
+              style="margin-top:1.5rem; border-top:1px solid rgba(26,26,26,0.08); padding-top:1rem;">
+              <h3 style="color:#1A1A1A; font-size:1.1rem; margin-bottom:1rem;">{{ langService.t().photosLabel }}</h3>
+              <div class="photos-grid">
+                <div *ngFor="let photo of photos()" class="photo-thumb"
+                  (click)="openLightbox(photo.imageUrl)">
+                  <img [src]="photo.imageUrl" [alt]="photo.caption || 'Photo'" />
+                </div>
+              </div>
+            </div>
+
+            <!-- AVIS -->
+            <div style="margin-top:1.5rem; border-top:1px solid rgba(26,26,26,0.08); padding-top:1rem;">
+              <h3 style="color:#1A1A1A; font-size:1.1rem; margin-bottom:1rem;">
+                {{ langService.t().reviewsLabel }} ({{ reviews().length }})
+              </h3>
+              <div *ngIf="reviews().length === 0"
+                style="color:rgba(26,26,26,0.4); text-align:center; padding:1rem; font-family:'Courier New',monospace;">
+                {{ langService.t().noReviews }}
+              </div>
+              <div *ngFor="let review of reviews()"
+                style="background:rgba(26,26,26,0.04); border:1px solid rgba(26,26,26,0.06); border-radius:12px; padding:1rem; margin-bottom:0.75rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <strong style="color:#1A1A1A;">{{ review.client.name }}</strong>
+                  <span style="font-size:1.1rem;">{{ getStars(review.stars) }}</span>
+                </div>
+                <p *ngIf="review.comment" style="color:rgba(26,26,26,0.5); margin:0; font-size:0.95rem;">
+                  {{ review.comment }}
+                </p>
+                <small style="color:rgba(26,26,26,0.35); font-family:'Courier New',monospace;">{{ formatDate(review.createdAt) }}</small>
+              </div>
+            </div>
+          </div>
+        </p-card>
+      </div>
+
+      <div class="booking-column" id="booking-section">
+        <p-card>
+          <div class="booking-card">
+            <ng-container *ngIf="dayGroups().length; else noAvailability">
+
+              <!-- ✅ SERVICES -->
+              <div class="section-block" *ngIf="services().length > 0">
+                <h3>{{ langService.t().chooseServices }}</h3>
+                <div class="services-list">
+                  <div *ngFor="let service of services()"
+                    class="service-item"
+                    [class.selected]="isServiceSelected(service.id)"
+                    (click)="toggleService(service.id)">
+                    <div class="service-info">
+                      <span class="service-name">{{ service.name }}</span>
+                      <span *ngIf="service.description" class="service-desc">{{ service.description }}</span>
+                    </div>
+                    <div class="service-right">
+                      <span class="service-price">{{ service.price }} MAD</span>
+                      <span class="service-check">{{ isServiceSelected(service.id) ? '✅' : '⬜' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="total-bar" *ngIf="selectedServiceIds().length > 0">
+                  <ng-container *ngFor="let service of services()">
+                    <div class="total-line" *ngIf="isServiceSelected(service.id)">
+                      <span>{{ service.name }}</span>
+                      <span>{{ service.price }} MAD</span>
+                    </div>
+                  </ng-container>
+                  <div class="total-sum">
+                    <strong>{{ langService.t().totalLabel }}</strong>
+                    <strong style="color:#171717; font-size:1.1rem;">{{ totalPrice() }} MAD</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ✅ JOURS -->
+              <div class="section-block">
+                <h3>{{ langService.t().chooseDay }}</h3>
+                <div class="day-list">
+                  <button *ngFor="let day of dayGroups()" type="button"
+                    (click)="chooseDay(day.dateKey)"
+                    [style.background]="selectedDay() === day.dateKey ? '#1A1A1A' : '#ffffff'"
+                    [style.color]="selectedDay() === day.dateKey ? '#FAFAF7' : '#171717'"
+                    [style.border]="selectedDay() === day.dateKey ? '2px solid #1A1A1A' : '1.5px solid #a3a3a3'"
+                    [style.fontWeight]="selectedDay() === day.dateKey ? '800' : '600'"
+                    style="padding:0.7rem 0.9rem; border-radius:12px; cursor:pointer; font-size:16px; font-family:inherit; transition:all 0.2s; white-space:nowrap; touch-action:manipulation;">
+                    {{ day.label }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- ✅ SLOTS -->
+              <div class="section-block">
+                <h3>{{ langService.t().chooseSlot }}</h3>
+                <div class="slot-list" *ngIf="selectedDay(); else chooseDayFirst">
+                  <button
+                    *ngFor="let slot of availableSlots()"
+                    type="button"
+                    (click)="chooseSlot(slot)"
+                    [disabled]="slot.booked"
+                    [style.background]="slot.booked ? '#f5f5f5' : selectedSlot()?.id === slot.id ? '#1A1A1A' : '#ffffff'"
+                    [style.color]="slot.booked ? '#c0c0c0' : selectedSlot()?.id === slot.id ? '#FAFAF7' : '#171717'"
+                    [style.border]="slot.booked ? '1.5px solid #e5e5e5' : selectedSlot()?.id === slot.id ? '2px solid #1A1A1A' : '1.5px solid #a3a3a3'"
+                    [style.cursor]="slot.booked ? 'not-allowed' : 'pointer'"
+                    [style.opacity]="slot.booked ? '0.45' : '1'"
+                    [style.textDecoration]="slot.booked ? 'line-through' : 'none'"
+                    [style.fontWeight]="selectedSlot()?.id === slot.id ? '800' : '700'"
+                    style="padding:0.7rem 0.9rem; border-radius:12px; font-size:16px; font-family:inherit; transition:all 0.2s; min-width:90px; text-align:center; touch-action:manipulation;">
+                    {{ formatTime(slot.startTime) }}
+                    <span *ngIf="slot.booked" style="font-size:12px; display:block; color:#c0c0c0;">
+                      {{ langService.t().reservedSlot }}
+                    </span>
+                  </button>
+                </div>
+                <ng-template #chooseDayFirst>
+                  <p class="helper-text">{{ langService.t().selectDayFirst }}</p>
+                </ng-template>
+              </div>
+
+              <!-- ✅ RESUME -->
+              <div class="booking-summary">
+                <h3>{{ langService.t().bookingSummary }}</h3>
+                <div class="summary-row">
+                  <span>{{ langService.t().selectedDay }}</span>
+                  <strong>{{ selectedDay() || '-' }}</strong>
+                </div>
+                <div class="summary-row">
+                  <span>{{ langService.t().selectedSlot }}</span>
+                  <strong>{{ selectedSlot() ? formatTime(selectedSlot()!.startTime) : '-' }}</strong>
+                </div>
+                <div class="summary-row" *ngIf="selectedServiceIds().length > 0">
+                  <span>{{ langService.t().chooseServices }}</span>
+                  <strong>{{ selectedServiceIds().length }} {{ langService.t().servicesSelected }}</strong>
+                </div>
+                <div class="summary-row total-final">
+                  <span>{{ langService.t().totalLabel }}</span>
+                  <strong style="font-size:1.1rem; color:#171717;">{{ totalPrice() }} MAD</strong>
+                </div>
+              </div>
+
+              <button pButton type="button" class="confirm-btn"
+                [label]="isBooking() ? '...' : langService.t().confirmReservation"
+                [disabled]="!selectedDay() || !selectedSlot() || isBooking()"
+                (click)="confirmBooking()"></button>
+
+            </ng-container>
+
+            <ng-template #noAvailability>
+              <div class="no-availability-state">
+                <h3>{{ langService.t().noAvailabilityTitle }}</h3>
+                <p>{{ langService.t().noAvailabilityDesc }}</p>
+              </div>
+            </ng-template>
+          </div>
+        </p-card>
+      </div>
+    </div>
+  </div>
+</section>

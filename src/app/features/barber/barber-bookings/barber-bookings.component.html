@@ -1,0 +1,132 @@
+<section class="barber-bookings-page">
+  <div class="bookings-shell">
+    <div class="page-header">
+      <span class="page-kicker">{{ langService.t().allBookings }}</span>
+      <h1>{{ langService.t().barberBookingsTitle }}</h1>
+      <p>{{ langService.t().barberBookingsSubtitle }}</p>
+    </div>
+
+    <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
+    <app-loading-spinner *ngIf="isLoading()" message="Chargement des reservations..."></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+
+    <div class="summary-strip" *ngIf="!isLoading()">
+      <div class="summary-box">
+        <span>{{ langService.t().todayBookings }}</span>
+        <strong>{{ todayBookings().length }}</strong>
+      </div>
+      <div class="summary-box">
+        <span>{{ langService.t().allBookings }}</span>
+        <strong>{{ bookings().length }}</strong>
+      </div>
+      <div class="summary-box">
+        <span>{{ langService.t().upcomingClients }}</span>
+        <strong>{{ upcomingClientsCount() }}</strong>
+      </div>
+    </div>
+
+    <app-empty-state
+      *ngIf="!isLoading() && !bookings().length"
+      [title]="langService.t().noReservations"
+      message="Aucune reservation recue pour le moment.">
+    </app-empty-state>
+
+    <div class="bookings-list" *ngIf="!isLoading() && bookings().length">
+      <div class="booking-card"
+        *ngFor="let booking of sortedBookings()"
+        [class.status-pending]="booking.status === 'PENDING'"
+        [class.status-confirmed]="booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED'"
+        [class.status-rejected]="booking.status === 'REJECTED'"
+        [class.status-cancelled]="booking.status === 'CANCELLED' || booking.status === 'CANCELLED_BY_CLIENT'"
+        [class.status-completed]="booking.status === 'COMPLETED'">
+
+        <div class="booking-main">
+          <div class="booking-ident">
+            <ng-container *ngIf="booking.client?.name; else noClientAvatar">
+              <p-avatar [label]="getInitials(booking.client.name)" shape="circle" size="xlarge"></p-avatar>
+            </ng-container>
+            <ng-template #noClientAvatar>
+              <p-avatar label="C" shape="circle" size="xlarge"></p-avatar>
+            </ng-template>
+
+            <div>
+              <h3>{{ booking.client.name }}</h3>
+              <p>{{ langService.t().serviceLabel }} • {{ booking.servicePrice }} MAD</p>
+              <a *ngIf="booking.client.phone"
+                [href]="'tel:' + booking.client.phone"
+                style="color:#171717; font-size:0.85rem; font-weight:600; text-decoration:none;">
+                📞 {{ booking.client.phone }}
+              </a>
+            </div>
+          </div>
+
+          <div class="booking-meta">
+            <div class="meta-item">
+              <span>{{ langService.t().reservationDate }}</span>
+              <strong>{{ formatDate(booking.slot.startTime) }}</strong>
+            </div>
+            <div class="meta-item">
+              <span>{{ langService.t().reservationTime }}</span>
+              <strong>{{ formatTime(booking.slot.startTime) }}</strong>
+            </div>
+          </div>
+
+          <div class="booking-status">
+            <!-- ✅ Passer booking complet pour le label dynamique -->
+            <p-tag
+              [value]="getStatusLabel(booking)"
+              [severity]="getStatusSeverity(booking)">
+            </p-tag>
+          </div>
+        </div>
+
+        <div class="booking-actions"
+          *ngIf="booking.status === 'PENDING' || booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED'">
+
+          <!-- ✅ Accepter seulement si PENDING -->
+          <button
+            *ngIf="booking.status === 'PENDING'"
+            pButton type="button"
+            [label]="langService.t().accept"
+            (click)="acceptBooking(booking.id)">
+          </button>
+
+          <!-- ✅ Annuler avec timer -->
+          <ng-container *ngIf="canCancelBooking(booking)">
+            <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+              <button
+                pButton type="button"
+                severity="danger"
+                [outlined]="true"
+                [label]="langService.t().cancelReservation"
+                (click)="rejectBooking(booking.id, booking)">
+              </button>
+              <span
+                *ngIf="(booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED') && getRemainingTime(booking)"
+                style="font-size:0.72rem; color:#ef4444; font-family:'Courier New',monospace;">
+                ⏱ {{ getRemainingTime(booking) }}
+              </span>
+            </div>
+          </ng-container>
+
+          <!-- ✅ Terminer seulement si RDV passé -->
+          <button
+            *ngIf="(booking.status === 'ACCEPTED' || booking.status === 'CONFIRMED') && canCompleteBooking(booking)"
+            pButton type="button"
+            severity="success"
+            [label]="langService.t().completed"
+            (click)="completeBooking(booking.id)">
+          </button>
+
+          <!-- ✅ Message si RDV pas encore passé -->
+          <span
+            *ngIf="(booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED') && !canCompleteBooking(booking)"
+            style="font-size:0.82rem; color:#0369a1; font-weight:600; padding:4px 8px; background:#eff6ff; border-radius:8px;">
+            {{ langService.isArabic() ? 'في انتظار موعد الحجز' : 'En attente du RDV' }}
+          </span>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
