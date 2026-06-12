@@ -10,23 +10,19 @@
     <div class="auth-right">
       <p-card>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
-
           <!-- ✅ Bouton Retour -->
           <button type="button" class="back-btn" (click)="goBack()">
             ← {{ langService.lang() === 'ar' ? 'رجوع' : 'Retour' }}
           </button>
-
           <app-error-alert
             *ngIf="errorMessage()"
             title="Erreur"
             [message]="errorMessage()">
           </app-error-alert>
-
           <div class="form-header">
             <h2>{{ langService.t().loginTitle }}</h2>
             <p>{{ langService.t().loginSubtitle }}</p>
           </div>
-
           <div class="form-group">
             <label for="email">{{ langService.t().email }}</label>
             <input
@@ -43,7 +39,6 @@
               {{ langService.t().emailInvalid }}
             </small>
           </div>
-
           <div class="form-group">
             <label for="password">{{ langService.t().password }}</label>
             <p-password
@@ -58,8 +53,13 @@
             <small class="error-text" *ngIf="passwordControl?.touched && passwordControl?.hasError('required')">
               {{ langService.t().passwordRequired }}
             </small>
-          </div>
 
+            <!-- ✅ Lien Mot de passe oublié -->
+            <a routerLink="/forgot-password"
+              style="display:block; text-align:right; margin-top:6px; font-size:0.85rem; color:#171717; font-weight:600; text-decoration:underline; cursor:pointer;">
+              {{ langService.lang() === 'ar' ? 'نسيت كلمة المرور؟' : 'Mot de passe oublie ?' }}
+            </a>
+          </div>
           <button
             pButton
             type="submit"
@@ -67,7 +67,6 @@
             [label]="isLoading() ? '...' : langService.t().loginButton"
             [disabled]="isLoading()">
           </button>
-
           <div class="auth-footer">
             <span>{{ langService.t().noAccount }}</span>
             <a routerLink="/register">{{ langService.t().createAccount }}</a>
