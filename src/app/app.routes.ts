@@ -4,6 +4,7 @@ import { HomeComponent } from './features/home/home/home.component';
 import { NotFoundComponent } from './features/not-found/not-found/not-found.component';
 import { LoginComponent } from './features/auth/login/login.component';
 import { RegisterComponent } from './features/auth/register/register.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { BarberListComponent } from './features/barbers/barber-list/barber-list.component';
 import { BarberDetailsComponent } from './features/barbers/barber-details/barber-details.component';
 import { MyBookingsComponent } from './features/bookings/my-bookings/my-bookings.component';
@@ -37,10 +38,11 @@ export const routes: Routes = [
       { path: 'barber/availability', component: AvailabilityComponent, canActivate: [barberGuard] },
       { path: 'barber/bookings', component: BarberBookingsComponent, canActivate: [barberGuard] },
       { path: 'barber/messages', component: BarberMessagesComponent, canActivate: [barberGuard] },
-      // ✅ authGuard au lieu de clientGuard
       { path: 'chat/:id', component: ChatComponent, canActivate: [authGuard] },
       { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
       { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
+      // ✅ Mot de passe oublié
+      { path: 'forgot-password', component: ForgotPasswordComponent, canActivate: [guestGuard] },
       { path: 'admin/dashboard', component: AdminDashboardComponent, canActivate: [adminGuard] },
       { path: 'about', component: AboutComponent },
     ]
