@@ -2,8 +2,8 @@
   <div class="error-icon">!</div>
   <div class="error-content">
     <h3>{{ title }}</h3>
-    <p>{{ message || 'Veuillez rafraichir la page.' }}</p>
-    <button class="retry-btn" (click)="reload()">
+    <p>{{ message || 'Une erreur est survenue.' }}</p>
+    <button *ngIf="showReload" class="retry-btn" (click)="reload()">
       🔄 Rafraichir la page
     </button>
   </div>

@@ -12,6 +12,8 @@ export class ErrorAlertComponent implements OnInit {
   @Input() title = 'Une erreur est survenue';
   @Input() message = 'Une erreur est survenue.';
   @Input() technical = '';
+  // ✅ Permet de cacher le bouton "Rafraichir" quand on n'en a pas besoin
+  @Input() showReload = true;
 
   ngOnInit() {
     if (this.technical) {

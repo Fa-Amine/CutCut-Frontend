@@ -10,7 +10,7 @@
     </div>
 
     <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
-    <app-error-alert *ngIf="errorMessage()" [message]="errorMessage()"></app-error-alert>
+    <app-error-alert *ngIf="errorMessage()" title="Erreur" [message]="errorMessage()" [showReload]="false"></app-error-alert>
 
     <div class="schedule-card" *ngIf="!isLoading() && !isSaving()">
       <div class="schedule-header">

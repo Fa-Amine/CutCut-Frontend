@@ -42,10 +42,12 @@ export class AvailabilityComponent implements OnInit {
   errorMessage = signal('');
   successMessage = signal('');
 
-  // ✅ Liste des heures 00:00 -> 23:00 (format 24h)
-  hoursList: string[] = Array.from({ length: 24 }, (_, i) =>
-    `${i.toString().padStart(2, '0')}:00`
-  );
+  // ✅ Liste des heures 00:00 -> 23:30 par tranches de 30 min (format 24h)
+  hoursList: string[] = Array.from({ length: 48 }, (_, i) => {
+    const h = Math.floor(i / 2);
+    const m = i % 2 === 0 ? '00' : '30';
+    return `${h.toString().padStart(2, '0')}:${m}`;
+  });
 
   weeklySchedule = signal<DayConfig[]>([
     { id: 1, nameFr: 'Lundi',    nameAr: 'الإثنين',   active: true,  startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
@@ -72,6 +74,11 @@ export class AvailabilityComponent implements OnInit {
       const stored = localStorage.getItem(this.getStorageKey());
       return stored ? JSON.parse(stored) : null;
     } catch { return null; }
+  }
+
+  // ✅ Scroll en haut pour voir les messages
+  private scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   getDayName(day: DayConfig): string {
@@ -134,6 +141,16 @@ export class AvailabilityComponent implements OnInit {
         breakEnd: firstDay.breakEnd
       }))
     );
+
+    // ✅ Message de confirmation + scroll en haut
+    this.errorMessage.set('');
+    this.successMessage.set(
+      this.langService.isArabic()
+        ? '✅ تم تطبيق التوقيت على جميع الأيام'
+        : '✅ Horaire applique a tous les jours'
+    );
+    this.scrollToTop();
+    setTimeout(() => this.successMessage.set(''), 3000);
   }
 
   toggleDay(dayId: number) {
@@ -191,6 +208,7 @@ export class AvailabilityComponent implements OnInit {
     const barberId = this.sessionService.userId();
     if (!barberId) {
       this.errorMessage.set('Session expirée. Veuillez vous reconnecter.');
+      this.scrollToTop();
       return;
     }
 
@@ -198,8 +216,9 @@ export class AvailabilityComponent implements OnInit {
 
     const validationError = this.validateSchedule(currentSchedule);
     if (validationError) {
-      this.errorMessage.set(validationError);
       this.successMessage.set('');
+      this.errorMessage.set(validationError);
+      this.scrollToTop(); // ✅ Remonte voir l'erreur
       setTimeout(() => this.errorMessage.set(''), 5000);
       return;
     }
@@ -223,6 +242,7 @@ export class AvailabilityComponent implements OnInit {
       next: () => {
         this.isSaving.set(false);
         this.successMessage.set('✅ Disponibilité mise à jour avec succès !');
+        this.scrollToTop(); // ✅ Remonte voir le message de succès
         setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: () => {
@@ -232,6 +252,7 @@ export class AvailabilityComponent implements OnInit {
             ? 'تعذر حفظ التوفر. حاول مرة أخرى.'
             : 'Impossible de sauvegarder. Veuillez reessayer.'
         );
+        this.scrollToTop(); // ✅ Remonte voir l'erreur
         setTimeout(() => this.errorMessage.set(''), 4000);
       }
     });
