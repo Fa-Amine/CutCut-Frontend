@@ -150,7 +150,7 @@
                       inputmode="numeric"
                       [(ngModel)]="servicePrices[service.id]"
                       [ngModelOptions]="{standalone:true}"
-                      placeholder="Prix MAD"
+                      placeholder="Prix DH"
                       style="width:100px; padding:6px 10px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit; text-align:center;"
                     />
                   </div>
@@ -166,7 +166,7 @@
                   <span class="service-onboarding-name">{{ s.name }}</span>
                 </div>
                 <div style="display:flex; align-items:center; gap:0.5rem;">
-                  <span style="font-weight:700; color:#171717;">{{ s.price }} MAD</span>
+                  <span style="font-weight:700; color:#171717;">{{ s.price }} DH</span>
                   <button type="button" (click)="removeCustomService(i)"
                     style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:0.9rem; font-family:inherit;">
                     Supprimer
@@ -181,7 +181,7 @@
                     placeholder="Nom du service"
                     style="flex:1; min-width:140px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
                   <input type="number" inputmode="numeric" [(ngModel)]="newCustomServicePrice" [ngModelOptions]="{standalone:true}"
-                    placeholder="Prix MAD"
+                    placeholder="Prix DH"
                     style="width:100px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
                 </div>
                 <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">

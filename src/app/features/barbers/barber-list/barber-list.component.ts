@@ -322,7 +322,7 @@ export class BarberListComponent implements AfterViewChecked {
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:8px;background:#f9f9f9;border-radius:10px;">
-            <span style="font-weight:700;color:#171717;font-size:0.9rem;">${barber.price ?? 0} MAD</span>
+            <span style="font-weight:700;color:#171717;font-size:0.9rem;">${barber.price ?? 0} DH</span>
             ${barber.averageRating ? `<span style="color:#f59e0b;font-size:0.82rem;">⭐ ${barber.averageRating}</span>` : ''}
             ${dist ? `<span style="color:#16a34a;font-size:0.82rem;font-weight:600;">${dist} km</span>` : ''}
           </div>

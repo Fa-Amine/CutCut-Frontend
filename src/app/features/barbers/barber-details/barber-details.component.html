@@ -48,7 +48,7 @@
 
             <div class="barber-tags">
               <p-tag *ngIf="barber()!.price !== undefined && barber()!.price !== null"
-                [value]="barber()!.price + ' MAD'" severity="info"></p-tag>
+                [value]="barber()!.price + ' DH'" severity="info"></p-tag>
             </div>
 
             <div *ngIf="!sessionService.isGuest() && sessionService.isClient()"
@@ -133,7 +133,7 @@
                       <span *ngIf="service.description" class="service-desc">{{ service.description }}</span>
                     </div>
                     <div class="service-right">
-                      <span class="service-price">{{ service.price }} MAD</span>
+                      <span class="service-price">{{ service.price }} DH</span>
                       <span class="service-check">{{ isServiceSelected(service.id) ? '✅' : '⬜' }}</span>
                     </div>
                   </div>
@@ -143,12 +143,12 @@
                   <ng-container *ngFor="let service of services()">
                     <div class="total-line" *ngIf="isServiceSelected(service.id)">
                       <span>{{ service.name }}</span>
-                      <span>{{ service.price }} MAD</span>
+                      <span>{{ service.price }} DH</span>
                     </div>
                   </ng-container>
                   <div class="total-sum">
                     <strong>{{ langService.t().totalLabel }}</strong>
-                    <strong style="color:#171717; font-size:1.1rem;">{{ totalPrice() }} MAD</strong>
+                    <strong style="color:#171717; font-size:1.1rem;">{{ totalPrice() }} DH</strong>
                   </div>
                 </div>
               </div>
@@ -214,7 +214,7 @@
                 </div>
                 <div class="summary-row total-final">
                   <span>{{ langService.t().totalLabel }}</span>
-                  <strong style="font-size:1.1rem; color:#171717;">{{ totalPrice() }} MAD</strong>
+                  <strong style="font-size:1.1rem; color:#171717;">{{ totalPrice() }} DH</strong>
                 </div>
               </div>
 

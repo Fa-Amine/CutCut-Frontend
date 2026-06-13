@@ -39,7 +39,7 @@
             <p>{{ profile()!.shopName || 'CutCut' }}</p>
             <div class="profile-tags" style="margin-top:0.5rem;">
               <p-tag *ngIf="profile()!.price !== undefined && profile()!.price !== null"
-                [value]="profile()!.price + ' MAD'" severity="info"></p-tag>
+                [value]="profile()!.price + ' DH'" severity="info"></p-tag>
               <p-tag *ngIf="profile()!.averageRating !== undefined && profile()!.averageRating !== null"
                 [value]="'Note: ' + profile()!.averageRating" severity="success"></p-tag>
             </div>
@@ -74,13 +74,13 @@
           </div>
           <div class="info-box">
             <span>{{ langService.t().priceLabel }}</span>
-            <strong *ngIf="!isEditMode()">{{ profile()!.price ?? 0 }} MAD</strong>
+            <strong *ngIf="!isEditMode()">{{ profile()!.price ?? 0 }} DH</strong>
             <p-inputNumber *ngIf="isEditMode()" formControlName="price" mode="decimal"
               [useGrouping]="false" [placeholder]="langService.t().priceLabel"></p-inputNumber>
           </div>
           <div class="info-box">
             <span>{{ langService.t().walletLabel }}</span>
-            <strong style="color:#16a34a; font-size:1.1rem;">{{ profile()!.walletBalance ?? 0 }} MAD</strong>
+            <strong style="color:#16a34a; font-size:1.1rem;">{{ profile()!.walletBalance ?? 0 }} DH</strong>
           </div>
           <div class="info-box full-width">
             <span>{{ langService.t().bioLabel }}</span>
@@ -170,7 +170,7 @@
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
               <input type="number"
                 [(ngModel)]="predefinedServicePrice"
-                [placeholder]="langService.isArabic() ? 'السعر MAD' : 'Prix MAD'"
+                [placeholder]="langService.isArabic() ? 'السعر DH' : 'Prix DH'"
                 style="width:130px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
               <button pButton type="button"
                 [label]="langService.t().addBtn"
@@ -253,7 +253,7 @@
                 <span class="service-row-name">{{ service.name }}</span>
               </div>
               <div class="service-row-right">
-                <span class="service-row-price">{{ service.price }} MAD</span>
+                <span class="service-row-price">{{ service.price }} DH</span>
                 <button (click)="editService(service)"
                   style="background:none; border:none; cursor:pointer; font-size:0.85rem; padding:4px; color:#171717; font-family:inherit;">
                   {{ langService.t().editBtn }}

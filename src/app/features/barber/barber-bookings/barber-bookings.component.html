@@ -51,7 +51,7 @@
 
             <div>
               <h3>{{ booking.client.name }}</h3>
-              <p>{{ langService.t().serviceLabel }} • {{ booking.servicePrice }} MAD</p>
+              <p>{{ langService.t().serviceLabel }} • {{ booking.servicePrice }} DH</p>
               <a *ngIf="booking.client.phone"
                 [href]="'tel:' + booking.client.phone"
                 style="color:#171717; font-size:0.85rem; font-weight:600; text-decoration:none;">
