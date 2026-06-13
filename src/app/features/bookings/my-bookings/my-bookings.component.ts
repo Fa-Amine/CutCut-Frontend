@@ -14,7 +14,6 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert/erro
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { ReviewService } from '../../../core/services/review.service';
 
-// ✅ Statuts UI enrichis
 type UiBookingStatus = 'PENDING' | 'CONFIRMED' | 'AWAITING' | 'COMPLETED' | 'CANCELLED';
 type FilterType = 'ALL' | 'PENDING' | 'CONFIRMED' | 'AWAITING' | 'COMPLETED' | 'CANCELLED';
 
@@ -157,7 +156,6 @@ export class MyBookingsComponent {
     });
   }
 
-  // ✅ Labels traduits avec nouveaux statuts
   getStatusLabel(booking: BookingResponse): string {
     const mapped = this.mapStatus(booking);
     switch (mapped) {
@@ -189,7 +187,9 @@ export class MyBookingsComponent {
 
   formatTime(dateTime: string): string {
     const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
-    return new Date(dateTime).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+    return new Date(dateTime).toLocaleTimeString(locale, {
+      hour: '2-digit', minute: '2-digit', hour12: false
+    });
   }
 
   getInitials(name: string): string {
@@ -197,7 +197,6 @@ export class MyBookingsComponent {
       .map((part) => part[0]?.toUpperCase() ?? '').join('');
   }
 
-  // ✅ Logique statut enrichie
   mapStatus(booking: BookingResponse): UiBookingStatus {
     const status = booking.status;
     const slotTime = new Date(booking.slot.startTime).getTime();
@@ -207,9 +206,7 @@ export class MyBookingsComponent {
       case 'PENDING': return 'PENDING';
       case 'CONFIRMED':
       case 'ACCEPTED':
-        // ✅ Si confirmé mais RDV pas encore passé → En attente du RDV
         if (slotTime > now) return 'AWAITING';
-        // ✅ Si confirmé et RDV passé → Terminée
         return 'COMPLETED';
       case 'COMPLETED': return 'COMPLETED';
       case 'REJECTED':

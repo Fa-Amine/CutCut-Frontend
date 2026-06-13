@@ -19,21 +19,21 @@
 
       <!-- ✅ BOUTON APPLIQUER À TOUS -->
       <div class="apply-all-banner">
-  <div class="apply-all-info">
-    <span class="apply-all-icon">⚡</span>
-    <div>
-      <strong>
-        {{ langService.lang() === 'ar' ? 'تطبيق نفس التوقيت على جميع الأيام' : 'Appliquer le même horaire à tous les jours' }}
-      </strong>
-      <p>
-        {{ langService.lang() === 'ar' ? 'قم بإعداد اليوم الأول، ثم انقر لنسخ التوقيت على جميع الأيام الأخرى.' : 'Configurez le premier jour, puis cliquez pour copier l\'horaire à tous les autres jours.' }}
-      </p>
-    </div>
-  </div>
-  <button class="apply-all-btn" type="button" (click)="applyFirstDayToAll()">
-    {{ langService.lang() === 'ar' ? 'تطبيق على الكل ⚡' : '⚡ Appliquer à tous' }}
-  </button>
-</div>
+        <div class="apply-all-info">
+          <span class="apply-all-icon">⚡</span>
+          <div>
+            <strong>
+              {{ langService.lang() === 'ar' ? 'تطبيق نفس التوقيت على جميع الأيام' : 'Appliquer le même horaire à tous les jours' }}
+            </strong>
+            <p>
+              {{ langService.lang() === 'ar' ? 'قم بإعداد اليوم الأول، ثم انقر لنسخ التوقيت على جميع الأيام الأخرى.' : 'Configurez le premier jour, puis cliquez pour copier l\'horaire à tous les autres jours.' }}
+            </p>
+          </div>
+        </div>
+        <button class="apply-all-btn" type="button" (click)="applyFirstDayToAll()">
+          {{ langService.lang() === 'ar' ? 'تطبيق على الكل ⚡' : '⚡ Appliquer à tous' }}
+        </button>
+      </div>
 
       <!-- LISTE DES JOURS -->
       <div class="days-list">
@@ -45,9 +45,9 @@
           <div class="day-info-col">
             <p-inputSwitch [(ngModel)]="day.active"></p-inputSwitch>
             <span class="day-name">{{ getDayName(day) }}</span>
-           <span *ngIf="i === 0" class="first-day-badge">
-  {{ langService.lang() === 'ar' ? 'نموذج' : 'Modèle' }}
-</span>
+            <span *ngIf="i === 0" class="first-day-badge">
+              {{ langService.lang() === 'ar' ? 'نموذج' : 'Modèle' }}
+            </span>
           </div>
 
           <div class="schedule-inputs-col" *ngIf="day.active">
@@ -56,9 +56,9 @@
                 {{ langService.lang() === 'ar' ? 'العمل' : 'Travail' }}
               </span>
               <div class="controls-wrapper">
-                <input type="time" [(ngModel)]="day.startTime" class="modern-input">
+                <input type="time" lang="en-GB" step="3600" [(ngModel)]="day.startTime" class="modern-input">
                 <span class="arrow-sep">→</span>
-                <input type="time" [(ngModel)]="day.endTime" class="modern-input">
+                <input type="time" lang="en-GB" step="3600" [(ngModel)]="day.endTime" class="modern-input">
               </div>
             </div>
             <div class="input-row">
@@ -66,9 +66,9 @@
                 ☕ {{ langService.lang() === 'ar' ? 'استراحة' : 'Pause' }}
               </span>
               <div class="controls-wrapper">
-                <input type="time" [(ngModel)]="day.breakStart" class="modern-input pause-style">
+                <input type="time" lang="en-GB" step="3600" [(ngModel)]="day.breakStart" class="modern-input pause-style">
                 <span class="arrow-sep">→</span>
-                <input type="time" [(ngModel)]="day.breakEnd" class="modern-input pause-style">
+                <input type="time" lang="en-GB" step="3600" [(ngModel)]="day.breakEnd" class="modern-input pause-style">
               </div>
             </div>
           </div>
