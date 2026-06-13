@@ -51,6 +51,10 @@
         <div>
           <h3>{{ barber.name }}</h3>
           <p>{{ barber.shopName || 'CutCut' }}</p>
+          <div *ngIf="barber.averageRating" class="star-rating">
+            <span class="stars">{{ getStarDisplay(barber.averageRating) }}</span>
+            <span class="review-count">({{ barber.reviewCount || 0 }} avis)</span>
+          </div>
         </div>
       </div>
       <div class="barber-meta">
@@ -85,13 +89,14 @@
         <div>
           <h3>{{ barber.name }}</h3>
           <p>{{ barber.shopName || 'CutCut' }}</p>
+          <div *ngIf="barber.averageRating" class="star-rating">
+            <span class="stars">{{ getStarDisplay(barber.averageRating) }}</span>
+            <span class="review-count">({{ barber.reviewCount || 0 }} avis)</span>
+          </div>
         </div>
       </div>
       <div class="barber-meta">
         <p-tag [value]="(barber.price ?? 0) + ' DH'" severity="info"></p-tag>
-        <span *ngIf="barber.averageRating" style="font-size:0.9rem; color:#64748b; margin-left:0.5rem;">
-          ⭐ {{ barber.averageRating }}
-        </span>
       </div>
       <button pButton type="button" [label]="langService.t().bookThisBarber"
         icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
@@ -124,13 +129,11 @@
         <div>
           <h3>{{ barber.name }}</h3>
           <p>{{ barber.shopName || 'CutCut' }}</p>
+          <div *ngIf="barber.averageRating" class="star-rating">
+            <span class="stars">{{ getStarDisplay(barber.averageRating) }}</span>
+            <span class="review-count">({{ barber.reviewCount || 0 }} avis)</span>
+          </div>
         </div>
-      </div>
-      <div style="margin:0.5rem 0; font-size:1.1rem;">
-        {{ getStars(barber.averageRating ?? 0) }}
-        <span style="color:#64748b; font-size:0.9rem;">
-          {{ barber.averageRating }} / 5 ({{ barber.reviewCount }} avis)
-        </span>
       </div>
       <div class="barber-meta">
         <p-tag [value]="(barber.price ?? 0) + ' DH'" severity="info"></p-tag>
@@ -183,13 +186,14 @@
         <div>
           <h3>{{ barber.name }}</h3>
           <p>{{ barber.shopName || 'CutCut' }}</p>
+          <div *ngIf="barber.averageRating" class="star-rating">
+            <span class="stars">{{ getStarDisplay(barber.averageRating) }}</span>
+            <span class="review-count">({{ barber.reviewCount || 0 }} avis)</span>
+          </div>
         </div>
       </div>
       <div class="barber-meta">
         <p-tag [value]="barber.bio || ((barber.price ?? 0) + ' DH')" severity="contrast"></p-tag>
-        <span *ngIf="barber.averageRating" style="font-size:0.9rem; color:#64748b; margin-left:0.5rem;">
-          ⭐ {{ barber.averageRating }}
-        </span>
       </div>
       <button pButton type="button" [label]="langService.t().bookThisBarber"
         icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">

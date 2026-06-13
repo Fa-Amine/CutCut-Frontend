@@ -383,4 +383,9 @@ export class BarberListComponent implements AfterViewChecked {
     return name.split(' ').filter(Boolean).slice(0, 2)
       .map((part) => part[0]?.toUpperCase() ?? '').join('');
   }
+
+  getStarDisplay(rating: number): string {
+    const full = Math.max(0, Math.min(5, Math.round(rating)));
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
 }

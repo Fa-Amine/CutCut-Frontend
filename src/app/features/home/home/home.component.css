@@ -486,3 +486,20 @@ html[dir='rtl'] .section-kicker::before {
 
   .booking-preview-card { max-width: 100%; }
 }
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.star-rating .stars {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  letter-spacing: 1px;
+}
+
+.star-rating .review-count {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
