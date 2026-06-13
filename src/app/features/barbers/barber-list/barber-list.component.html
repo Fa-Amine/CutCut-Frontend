@@ -102,6 +102,10 @@
               <div>
                 <h3>{{ barber.name }}</h3>
                 <p>{{ barber.shopName || 'CutCut' }}</p>
+                <div *ngIf="barber.averageRating" class="star-rating">
+                  <span class="stars">{{ getStarDisplay(barber.averageRating) }}</span>
+                  <span class="review-count">({{ barber.reviewCount || 0 }} avis)</span>
+                </div>
                 <small *ngIf="barber.distance !== null" style="color:#16a34a; font-weight:600;">
                   📍 {{ barber.distance!.toFixed(1) }} km
                 </small>

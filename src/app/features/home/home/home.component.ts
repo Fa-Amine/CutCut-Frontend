@@ -89,6 +89,11 @@ export class HomeComponent {
     });
   }
 
+  getStarDisplay(rating: number): string {
+    const full = Math.max(0, Math.min(5, Math.round(rating)));
+    return '★'.repeat(full) + '☆'.repeat(5 - full);
+  }
+
   getStars(rating: number): string {
     return '⭐'.repeat(Math.floor(rating));
   }
