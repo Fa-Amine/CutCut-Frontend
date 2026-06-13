@@ -302,7 +302,7 @@ export class BarberDetailsComponent {
         this.messageService.add({
           severity: 'success',
           summary: 'Reservation confirmee !',
-          detail: `Votre rendez-vous a ete enregistre. Total : ${this.totalPrice()} MAD`,
+          detail: `Votre rendez-vous a ete enregistre. Total : ${this.totalPrice()} DH`,
           life: 4000
         });
         setTimeout(() => this.successMessage.set(false), 2500);

@@ -34,7 +34,7 @@
         <p-card>
           <div class="stat-card wallet-stat">
             <span>💰 Wallet</span>
-            <strong>{{ stats.currentBalance }} MAD</strong>
+            <strong>{{ stats.currentBalance }} DH</strong>
           </div>
         </p-card>
       </div>
@@ -84,14 +84,14 @@
 
             <div class="wallet-balance-box">
               <span>Solde actuel</span>
-              <strong class="wallet-amount">{{ stats.currentBalance }} MAD</strong>
+              <strong class="wallet-amount">{{ stats.currentBalance }} DH</strong>
               <p>+200 DH par réservation confirmée</p>
             </div>
 
             <div class="earnings-box">
               <div class="earnings-row">
                 <span>Total commissions</span>
-                <strong>{{ stats.totalCommission }} MAD</strong>
+                <strong>{{ stats.totalCommission }} DH</strong>
               </div>
               <div class="earnings-row">
                 <span>Reservations confirmées</span>
@@ -111,7 +111,7 @@
                   </div>
                   <div class="tx-amount"
                     [style.color]="tx.type === 'REFUND' ? '#dc2626' : '#16a34a'">
-                    {{ tx.type === 'REFUND' ? '-' : '+' }}{{ tx.amount }} MAD
+                    {{ tx.type === 'REFUND' ? '-' : '+' }}{{ tx.amount }} DH
                   </div>
                 </div>
               </div>

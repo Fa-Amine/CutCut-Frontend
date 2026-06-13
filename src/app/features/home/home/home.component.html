@@ -54,7 +54,7 @@
         </div>
       </div>
       <div class="barber-meta">
-        <p-tag [value]="(barber.price ?? 0) + ' MAD'" severity="info"></p-tag>
+        <p-tag [value]="(barber.price ?? 0) + ' DH'" severity="info"></p-tag>
       </div>
       <button pButton type="button" [label]="langService.t().bookThisBarber"
         icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
@@ -88,7 +88,7 @@
         </div>
       </div>
       <div class="barber-meta">
-        <p-tag [value]="(barber.price ?? 0) + ' MAD'" severity="info"></p-tag>
+        <p-tag [value]="(barber.price ?? 0) + ' DH'" severity="info"></p-tag>
         <span *ngIf="barber.averageRating" style="font-size:0.9rem; color:#64748b; margin-left:0.5rem;">
           ⭐ {{ barber.averageRating }}
         </span>
@@ -133,7 +133,7 @@
         </span>
       </div>
       <div class="barber-meta">
-        <p-tag [value]="(barber.price ?? 0) + ' MAD'" severity="info"></p-tag>
+        <p-tag [value]="(barber.price ?? 0) + ' DH'" severity="info"></p-tag>
       </div>
       <button pButton type="button" [label]="langService.t().bookThisBarber"
         icon="pi pi-arrow-right" class="navy-btn" [routerLink]="['/barbers', barber.id]">
@@ -186,7 +186,7 @@
         </div>
       </div>
       <div class="barber-meta">
-        <p-tag [value]="barber.bio || ((barber.price ?? 0) + ' MAD')" severity="contrast"></p-tag>
+        <p-tag [value]="barber.bio || ((barber.price ?? 0) + ' DH')" severity="contrast"></p-tag>
         <span *ngIf="barber.averageRating" style="font-size:0.9rem; color:#64748b; margin-left:0.5rem;">
           ⭐ {{ barber.averageRating }}
         </span>

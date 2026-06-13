@@ -42,7 +42,7 @@ export class DashboardComponent {
       { label: this.langService.t().totalBookingsLabel, value: data.totalBookings },
       { label: this.langService.t().confirmedBookingsLabel, value: data.confirmedBookings },
       { label: this.langService.t().rejectedBookingsLabel, value: data.rejectedBookings },
-      { label: this.langService.t().totalRevenueLabel, value: `${data.totalRevenue} MAD` }
+      { label: this.langService.t().totalRevenueLabel, value: `${data.totalRevenue} DH` }
     ];
   });
 
