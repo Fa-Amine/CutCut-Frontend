@@ -55,7 +55,7 @@
 }
 
 /* ===========================
-   ✅ APPLY ALL BANNER
+   APPLY ALL BANNER
 =========================== */
 .apply-all-banner {
   display: flex;
@@ -145,7 +145,6 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* ✅ Premier jour mis en évidence */
 .day-item.first-day {
   background: white;
   border: 2px solid #1A1A1A;
@@ -166,7 +165,6 @@
   font-family: Georgia, serif;
 }
 
-/* ✅ Badge "Modèle" */
 .first-day-badge {
   background: #1A1A1A;
   color: #FAFAF7;
@@ -214,27 +212,36 @@
   background: #FAFAF7;
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
-  font-size: 0.95rem;
+  font-size: 16px;
   font-weight: 600;
   color: #1A1A1A !important;
   outline: none;
   transition: border-color 0.2s;
   width: 110px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1rem;
+  padding-right: 2rem;
 }
 
 .modern-input:focus {
   border-color: #1A1A1A;
-  background: white;
+  background-color: white;
 }
 
 .pause-style {
-  background: rgba(26,26,26,0.04);
+  background-color: rgba(26,26,26,0.04);
 }
 
 .arrow-sep {
   color: rgba(26,26,26,0.25);
   font-weight: bold;
   font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .off-label {
@@ -276,15 +283,61 @@
 }
 
 /* ===========================
-   RESPONSIVE
+   RESPONSIVE MOBILE
 =========================== */
 @media (max-width: 768px) {
   .availability-page { padding: 1.5rem 1rem 3rem; }
-  .schedule-card { padding: 1.5rem; }
-  .apply-all-banner { flex-direction: column; align-items: flex-start; }
+  .schedule-card { padding: 1.25rem; }
+
+  .apply-all-banner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
   .apply-all-btn { width: 100%; text-align: center; }
-  .day-item { flex-direction: column; align-items: flex-start; gap: 0.75rem; padding: 1rem; }
-  .input-row { justify-content: flex-start; }
-  .row-label { text-align: left; }
-  .modern-input { width: 95px; }
+
+  /* ✅ Jour en pleine largeur, empilé */
+  .day-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .day-info-col {
+    min-width: auto;
+    width: 100%;
+  }
+
+  /* ✅ Colonne des horaires en pleine largeur */
+  .schedule-inputs-col {
+    width: 100%;
+  }
+
+  /* ✅ Chaque ligne (Travail / Pause) empilée proprement */
+  .input-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    justify-content: flex-start;
+  }
+
+  .row-label {
+    text-align: left;
+    min-width: auto;
+  }
+
+  /* ✅ Les 2 selects + flèche prennent toute la largeur */
+  .controls-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  /* ✅ Chaque select prend la moitié de la largeur dispo */
+  .controls-wrapper .modern-input {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
 }
