@@ -56,9 +56,13 @@
                 {{ langService.lang() === 'ar' ? 'العمل' : 'Travail' }}
               </span>
               <div class="controls-wrapper">
-                <input type="time" lang="en-GB" step="3600" [(ngModel)]="day.startTime" class="modern-input">
+                <select [(ngModel)]="day.startTime" class="modern-input">
+                  <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
+                </select>
                 <span class="arrow-sep">→</span>
-                <input type="time" lang="en-GB" step="3600" [(ngModel)]="day.endTime" class="modern-input">
+                <select [(ngModel)]="day.endTime" class="modern-input">
+                  <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
+                </select>
               </div>
             </div>
             <div class="input-row">
@@ -66,9 +70,13 @@
                 ☕ {{ langService.lang() === 'ar' ? 'استراحة' : 'Pause' }}
               </span>
               <div class="controls-wrapper">
-                <input type="time" lang="en-GB" step="3600" [(ngModel)]="day.breakStart" class="modern-input pause-style">
+                <select [(ngModel)]="day.breakStart" class="modern-input pause-style">
+                  <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
+                </select>
                 <span class="arrow-sep">→</span>
-                <input type="time" lang="en-GB" step="3600" [(ngModel)]="day.breakEnd" class="modern-input pause-style">
+                <select [(ngModel)]="day.breakEnd" class="modern-input pause-style">
+                  <option *ngFor="let h of hoursList" [value]="h">{{ h }}</option>
+                </select>
               </div>
             </div>
           </div>
