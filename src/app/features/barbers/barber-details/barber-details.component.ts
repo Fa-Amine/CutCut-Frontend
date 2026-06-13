@@ -221,7 +221,6 @@ export class BarberDetailsComponent {
 
   getStars(count: number): string { return '⭐'.repeat(count); }
 
-  // ✅ Étoiles pleines + vides selon la note (ex: 4/5 → ★★★★☆)
   getStarDisplay(rating: number): string {
     const rounded = Math.round(rating);
     const full = Math.max(0, Math.min(5, rounded));
@@ -327,7 +326,7 @@ export class BarberDetailsComponent {
   formatTime(dateTime: string): string {
     const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
     return new Date(dateTime).toLocaleTimeString(locale, {
-      hour: '2-digit', minute: '2-digit', hour12: true
+      hour: '2-digit', minute: '2-digit', hour12: false
     });
   }
 

@@ -35,7 +35,6 @@ export class BarberBookingsComponent implements OnDestroy {
 
   private timer: any;
 
-  // ✅ Tri : nouvelles en premier, puis par statut
   sortedBookings = computed(() => {
     const order: Record<string, number> = {
       'PENDING': 0,
@@ -49,7 +48,6 @@ export class BarberBookingsComponent implements OnDestroy {
     return [...this.bookings()].sort((a, b) => {
       const statusDiff = (order[a.status] ?? 9) - (order[b.status] ?? 9);
       if (statusDiff !== 0) return statusDiff;
-      // ✅ A même statut, les plus récentes en premier
       return new Date(b.slot.startTime).getTime() - new Date(a.slot.startTime).getTime();
     });
   });
@@ -88,7 +86,6 @@ export class BarberBookingsComponent implements OnDestroy {
     return (this.now() - confirmedAt) < tenMinutes;
   }
 
-  // ✅ Bouton "Terminer" seulement si RDV passé
   canCompleteBooking(booking: BookingResponse): boolean {
     if (booking.status !== 'CONFIRMED' && booking.status !== 'ACCEPTED') return false;
     const slotTime = new Date(booking.slot.startTime).getTime();
@@ -244,7 +241,7 @@ export class BarberBookingsComponent implements OnDestroy {
   formatTime(dateTime: string): string {
     const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
     return new Date(dateTime).toLocaleTimeString(locale, {
-      hour: '2-digit', minute: '2-digit'
+      hour: '2-digit', minute: '2-digit', hour12: false
     });
   }
 
