@@ -153,8 +153,10 @@ export class BarberDetailsComponent {
       scrollWheelZoom: false
     }).setView([barber.latitude, barber.longitude], 15);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap contributors © CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19
     }).addTo(this.viewMap);
 
     L.marker([barber.latitude, barber.longitude]).addTo(this.viewMap);
