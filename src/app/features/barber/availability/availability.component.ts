@@ -81,10 +81,8 @@ export class AvailabilityComponent implements OnInit {
     const barberId = this.sessionService.userId();
     if (!barberId) { this.isLoading.set(false); return; }
 
-    // ✅ Charger localStorage immédiatement
     const stored = this.loadFromStorage();
     if (stored) {
-      // Merge avec les noms FR/AR car localStorage ne les a pas forcément
       const merged = this.weeklySchedule().map(day => {
         const saved = stored.find((s: any) => s.id === day.id);
         return saved ? { ...day, ...saved, nameFr: day.nameFr, nameAr: day.nameAr } : day;
@@ -92,7 +90,6 @@ export class AvailabilityComponent implements OnInit {
       this.weeklySchedule.set(merged);
     }
 
-    // ✅ Sync avec backend
     this.availabilityService.getSchedule(barberId).subscribe({
       next: (savedSchedule) => {
         if (savedSchedule && savedSchedule.length > 0) {
@@ -119,7 +116,6 @@ export class AvailabilityComponent implements OnInit {
     });
   }
 
-  // ✅ Copier l'horaire du 1er jour actif vers tous les autres
   applyFirstDayToAll() {
     const schedule = this.weeklySchedule();
     const firstDay = schedule.find(d => d.active) || schedule[0];
@@ -141,6 +137,57 @@ export class AvailabilityComponent implements OnInit {
     );
   }
 
+  // ✅ Convertit "HH:mm" en minutes pour comparer
+  private toMinutes(time: string): number {
+    const [h, m] = time.split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  // ✅ Valide les horaires de chaque jour actif
+  private validateSchedule(schedule: DayConfig[]): string | null {
+    for (const day of schedule) {
+      if (!day.active) continue;
+
+      const dayName = this.getDayName(day);
+      const start = this.toMinutes(day.startTime);
+      const end = this.toMinutes(day.endTime);
+
+      // Heure de fin doit être après l'heure de début
+      if (end <= start) {
+        return this.langService.isArabic()
+          ? `${dayName}: وقت النهاية يجب أن يكون بعد وقت البداية.`
+          : `${dayName} : l'heure de fin doit être après l'heure de début.`;
+      }
+
+      // Durée minimale d'1h pour générer au moins un créneau
+      if (end - start < 60) {
+        return this.langService.isArabic()
+          ? `${dayName}: يجب أن تكون مدة العمل ساعة واحدة على الأقل.`
+          : `${dayName} : la durée de travail doit être d'au moins 1 heure.`;
+      }
+
+      // Validation de la pause (si renseignée)
+      if (day.breakStart && day.breakEnd) {
+        const bStart = this.toMinutes(day.breakStart);
+        const bEnd = this.toMinutes(day.breakEnd);
+
+        if (bEnd <= bStart) {
+          return this.langService.isArabic()
+            ? `${dayName}: نهاية الاستراحة يجب أن تكون بعد بدايتها.`
+            : `${dayName} : la fin de la pause doit être après son début.`;
+        }
+
+        // La pause doit être dans les heures de travail
+        if (bStart < start || bEnd > end) {
+          return this.langService.isArabic()
+            ? `${dayName}: يجب أن تكون الاستراحة ضمن ساعات العمل.`
+            : `${dayName} : la pause doit être comprise dans les heures de travail.`;
+        }
+      }
+    }
+    return null; // Tout est valide
+  }
+
   saveFullSchedule() {
     const barberId = this.sessionService.userId();
     if (!barberId) {
@@ -148,8 +195,17 @@ export class AvailabilityComponent implements OnInit {
       return;
     }
 
-    // ✅ Force signal update
     const currentSchedule = this.weeklySchedule().map(day => ({ ...day }));
+
+    // ✅ VALIDATION avant sauvegarde
+    const validationError = this.validateSchedule(currentSchedule);
+    if (validationError) {
+      this.errorMessage.set(validationError);
+      this.successMessage.set('');
+      setTimeout(() => this.errorMessage.set(''), 5000);
+      return; // ⛔ On bloque la sauvegarde
+    }
+
     this.weeklySchedule.set(currentSchedule);
     this.saveToStorage(currentSchedule);
 
@@ -172,9 +228,14 @@ export class AvailabilityComponent implements OnInit {
         setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: () => {
+        // ✅ Ne plus afficher "Sauvegardé" en cas d'erreur réelle
         this.isSaving.set(false);
-        this.successMessage.set('✅ Sauvegardé localement !');
-        setTimeout(() => this.successMessage.set(''), 3000);
+        this.errorMessage.set(
+          this.langService.isArabic()
+            ? 'تعذر حفظ التوفر. حاول مرة أخرى.'
+            : 'Impossible de sauvegarder. Veuillez reessayer.'
+        );
+        setTimeout(() => this.errorMessage.set(''), 4000);
       }
     });
   }
