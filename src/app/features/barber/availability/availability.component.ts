@@ -42,6 +42,11 @@ export class AvailabilityComponent implements OnInit {
   errorMessage = signal('');
   successMessage = signal('');
 
+  // ✅ Liste des heures 00:00 -> 23:00 (format 24h)
+  hoursList: string[] = Array.from({ length: 24 }, (_, i) =>
+    `${i.toString().padStart(2, '0')}:00`
+  );
+
   weeklySchedule = signal<DayConfig[]>([
     { id: 1, nameFr: 'Lundi',    nameAr: 'الإثنين',   active: true,  startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
     { id: 2, nameFr: 'Mardi',    nameAr: 'الثلاثاء',  active: true,  startTime: '08:00', endTime: '20:00', breakStart: '12:00', breakEnd: '13:00' },
@@ -137,13 +142,11 @@ export class AvailabilityComponent implements OnInit {
     );
   }
 
-  // ✅ Convertit "HH:mm" en minutes pour comparer
   private toMinutes(time: string): number {
     const [h, m] = time.split(':').map(Number);
     return h * 60 + m;
   }
 
-  // ✅ Valide les horaires de chaque jour actif
   private validateSchedule(schedule: DayConfig[]): string | null {
     for (const day of schedule) {
       if (!day.active) continue;
@@ -152,21 +155,18 @@ export class AvailabilityComponent implements OnInit {
       const start = this.toMinutes(day.startTime);
       const end = this.toMinutes(day.endTime);
 
-      // Heure de fin doit être après l'heure de début
       if (end <= start) {
         return this.langService.isArabic()
           ? `${dayName}: وقت النهاية يجب أن يكون بعد وقت البداية.`
           : `${dayName} : l'heure de fin doit être après l'heure de début.`;
       }
 
-      // Durée minimale d'1h pour générer au moins un créneau
       if (end - start < 60) {
         return this.langService.isArabic()
           ? `${dayName}: يجب أن تكون مدة العمل ساعة واحدة على الأقل.`
           : `${dayName} : la durée de travail doit être d'au moins 1 heure.`;
       }
 
-      // Validation de la pause (si renseignée)
       if (day.breakStart && day.breakEnd) {
         const bStart = this.toMinutes(day.breakStart);
         const bEnd = this.toMinutes(day.breakEnd);
@@ -177,7 +177,6 @@ export class AvailabilityComponent implements OnInit {
             : `${dayName} : la fin de la pause doit être après son début.`;
         }
 
-        // La pause doit être dans les heures de travail
         if (bStart < start || bEnd > end) {
           return this.langService.isArabic()
             ? `${dayName}: يجب أن تكون الاستراحة ضمن ساعات العمل.`
@@ -185,7 +184,7 @@ export class AvailabilityComponent implements OnInit {
         }
       }
     }
-    return null; // Tout est valide
+    return null;
   }
 
   saveFullSchedule() {
@@ -197,13 +196,12 @@ export class AvailabilityComponent implements OnInit {
 
     const currentSchedule = this.weeklySchedule().map(day => ({ ...day }));
 
-    // ✅ VALIDATION avant sauvegarde
     const validationError = this.validateSchedule(currentSchedule);
     if (validationError) {
       this.errorMessage.set(validationError);
       this.successMessage.set('');
       setTimeout(() => this.errorMessage.set(''), 5000);
-      return; // ⛔ On bloque la sauvegarde
+      return;
     }
 
     this.weeklySchedule.set(currentSchedule);
@@ -228,7 +226,6 @@ export class AvailabilityComponent implements OnInit {
         setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: () => {
-        // ✅ Ne plus afficher "Sauvegardé" en cas d'erreur réelle
         this.isSaving.set(false);
         this.errorMessage.set(
           this.langService.isArabic()
