@@ -83,14 +83,6 @@
             {{ barber.category === 'FEMME' ? '💇‍♀️' : '🧔' }}
           </div>
 
-          <button
-            *ngIf="sessionService.isClient()"
-            class="fav-btn"
-            (click)="favoriteService.toggleFavorite(barber.id)"
-            [title]="isFavorite()(barber.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
-            {{ isFavorite()(barber.id) ? '❤️' : '🤍' }}
-          </button>
-
           <div class="barber-card-top">
             <div class="barber-ident">
               <ng-container *ngIf="barber.photoUrl; else initialsAvatar">
@@ -111,8 +103,17 @@
                 </small>
               </div>
             </div>
-            <p-tag *ngIf="barber.price !== undefined && barber.price !== null"
-              [value]="barber.price + ' DH'" severity="info"></p-tag>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+              <p-tag *ngIf="barber.price !== undefined && barber.price !== null"
+                [value]="barber.price + ' DH'" severity="info"></p-tag>
+              <button
+                *ngIf="sessionService.isClient()"
+                class="fav-btn-inline"
+                (click)="favoriteService.toggleFavorite(barber.id); $event.stopPropagation()"
+                [title]="isFavorite()(barber.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+                {{ isFavorite()(barber.id) ? '❤️' : '🤍' }}
+              </button>
+            </div>
           </div>
 
           <div class="barber-meta" *ngIf="barber.bio">

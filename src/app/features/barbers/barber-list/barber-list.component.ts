@@ -272,9 +272,8 @@ export class BarberListComponent implements AfterViewChecked {
       maxZoom: 19
     }).setView([31.7917, -7.0926], 6);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/">CARTO</a>',
-      subdomains: 'abcd',
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '© Esri',
       maxZoom: 19
     }).addTo(this.map);
 

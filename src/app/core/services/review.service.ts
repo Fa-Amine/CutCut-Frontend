@@ -15,8 +15,8 @@ export class ReviewService {
   private http = inject(HttpClient);
   private base = environment.apiBaseUrl;
 
-  addReview(bookingId: number, clientId: number, stars: number, comment: string) {
-    return this.http.post<Review>(`${this.base}/reviews`, { bookingId, clientId, stars, comment });
+  addReview(barberId: number, clientId: number, stars: number, comment: string, bookingId?: number) {
+    return this.http.post<Review>(`${this.base}/reviews`, { barberId, clientId, stars, comment, bookingId });
   }
 
   getBarberReviews(barberId: number) {

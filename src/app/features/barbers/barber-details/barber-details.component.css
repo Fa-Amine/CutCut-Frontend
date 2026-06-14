@@ -377,3 +377,16 @@
   .photos-grid { grid-template-columns: repeat(2, 1fr); }
   .day-list { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.75rem; }
 }
+.summary-divider {
+  border-top: 1px solid #e5e5e5;
+  margin: 0.5rem 0;
+}
+
+.summary-service-row span {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.summary-service-row strong {
+  color: #171717;
+}

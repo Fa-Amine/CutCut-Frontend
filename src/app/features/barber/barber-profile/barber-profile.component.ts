@@ -447,32 +447,46 @@ export class BarberProfileComponent implements AfterViewChecked {
   onGalleryPhotoSelected(event: Event, category: string) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
+    const files = Array.from(input.files);
+    const barberId = this.sessionService.userId();
+    if (!barberId) return;
+
     this.isUploadingGallery.set(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
-    this.http.post<any>(
-      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
-      formData
-    ).subscribe({
-      next: (response) => {
-        const barberId = this.sessionService.userId();
-        if (!barberId) return;
-        this.barberPhotoService.addBarberPhoto(
-          barberId, response.secure_url, this.newCaption(), category
-        ).subscribe({
-          next: (photo) => {
-            this.photos.update(photos => [photo, ...photos]);
-            this.newCaption.set('');
-            this.isUploadingGallery.set(false);
-            this.successMessage.set('Photo ajoutee !');
-            setTimeout(() => this.successMessage.set(''), 3000);
-          },
-          error: () => { this.isUploadingGallery.set(false); }
-        });
-      },
-      error: () => { this.isUploadingGallery.set(false); }
+    let completed = 0;
+
+    files.forEach(file => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
+      this.http.post<any>(
+        `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
+        formData
+      ).subscribe({
+        next: (response) => {
+          this.barberPhotoService.addBarberPhoto(
+            barberId, response.secure_url, this.newCaption(), category
+          ).subscribe({
+            next: (photo) => {
+              this.photos.update(photos => [photo, ...photos]);
+              completed++;
+              if (completed === files.length) {
+                this.newCaption.set('');
+                this.isUploadingGallery.set(false);
+                this.successMessage.set(`${files.length} photo(s) ajoutée(s) !`);
+                setTimeout(() => this.successMessage.set(''), 3000);
+              }
+            },
+            error: () => {
+              completed++;
+              if (completed === files.length) this.isUploadingGallery.set(false);
+            }
+          });
+        },
+        error: () => {
+          completed++;
+          if (completed === files.length) this.isUploadingGallery.set(false);
+        }
+      });
     });
   }
 

@@ -214,13 +214,23 @@
                   <span>{{ langService.t().selectedSlot }}</span>
                   <strong>{{ selectedSlot() ? formatTime(selectedSlot()!.startTime) : '-' }}</strong>
                 </div>
-                <div class="summary-row" *ngIf="selectedServiceIds().length > 0">
-                  <span>{{ langService.t().chooseServices }}</span>
-                  <strong>{{ selectedServiceIds().length }} {{ langService.t().servicesSelected }}</strong>
-                </div>
+
+                <!-- Services sélectionnés avec prix -->
+                <ng-container *ngIf="selectedServiceIds().length > 0">
+                  <div class="summary-divider"></div>
+                  <ng-container *ngFor="let service of services()">
+                    <div class="summary-row summary-service-row" *ngIf="isServiceSelected(service.id)">
+                      <span>✓ {{ service.name }}</span>
+                      <strong>{{ service.price }} DH</strong>
+                    </div>
+                  </ng-container>
+                </ng-container>
+
                 <div class="summary-row total-final">
                   <span>{{ langService.t().totalLabel }}</span>
-                  <strong style="font-size:1.1rem; color:#171717;">{{ totalPrice() }} DH</strong>
+                  <strong style="font-size:1.15rem; color:#171717;">
+                    {{ totalPrice() > 0 ? totalPrice() : (barber()?.price ?? 0) }} DH
+                  </strong>
                 </div>
               </div>
 
