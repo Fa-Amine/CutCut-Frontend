@@ -185,7 +185,9 @@ export class MyBookingsComponent {
 
   formatDate(dateTime: string): string {
     const locale = this.langService.isArabic() ? 'ar-MA' : 'fr-FR';
-    return new Date(dateTime).toLocaleDateString(locale);
+    return new Date(dateTime).toLocaleDateString(locale, {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
   }
 
   formatTime(dateTime: string): string {

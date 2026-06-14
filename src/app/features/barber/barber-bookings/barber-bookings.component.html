@@ -51,10 +51,23 @@
 
             <div>
               <h3>{{ booking.client.name }}</h3>
-              <p>{{ langService.t().serviceLabel }} • {{ booking.servicePrice }} DH</p>
+              <!-- Services sélectionnés -->
+              <div *ngIf="booking.services && booking.services.length > 0"
+                style="display:flex; flex-direction:column; gap:2px; margin:4px 0;">
+                <span *ngFor="let s of booking.services"
+                  style="font-size:0.82rem; color:#171717; font-weight:600;">
+                  ✂️ {{ s.name }} — {{ s.price }} DH
+                </span>
+              </div>
+              <p *ngIf="!booking.services || booking.services.length === 0">
+                {{ langService.t().serviceLabel }} • {{ booking.servicePrice }} DH
+              </p>
+              <strong style="font-size:0.85rem; color:#16a34a;">
+                Total : {{ booking.servicePrice }} DH
+              </strong>
               <a *ngIf="booking.client.phone"
                 [href]="'tel:' + booking.client.phone"
-                style="color:#171717; font-size:0.85rem; font-weight:600; text-decoration:none;">
+                style="display:block; color:#171717; font-size:0.85rem; font-weight:600; text-decoration:none; margin-top:4px;">
                 📞 {{ booking.client.phone }}
               </a>
             </div>
