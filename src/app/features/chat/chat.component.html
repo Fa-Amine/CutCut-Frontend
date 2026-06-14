@@ -2,7 +2,7 @@
 
   <!-- HEADER -->
   <div class="chat-header">
-    <a routerLink="/barbers" class="back-btn">←</a>
+    <a [routerLink]="['/barbers', partnerId()]" class="back-btn">←</a>
     <div class="chat-partner-info">
       <div class="partner-avatar">{{ partnerName().charAt(0).toUpperCase() }}</div>
       <div>

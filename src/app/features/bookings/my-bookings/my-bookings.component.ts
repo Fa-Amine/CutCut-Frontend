@@ -141,8 +141,11 @@ export class MyBookingsComponent {
   submitReview(bookingId: number) {
     const clientId = this.sessionService.userId();
     if (!clientId) return;
+    const booking = this.bookings().find(b => b.id === bookingId);
+    const barberId = booking?.barber?.id;
+    if (!barberId) return;
     this.reviewService.addReview(
-      bookingId, clientId, this.reviewStars(), this.reviewComment()
+      barberId, clientId, this.reviewStars(), this.reviewComment(), bookingId
     ).subscribe({
       next: () => {
         this.reviewedBookings.update(s => new Set([...s, bookingId]));
