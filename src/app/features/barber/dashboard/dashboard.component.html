@@ -1,71 +1,93 @@
 <section class="dashboard-page">
   <div class="dashboard-shell">
-    <div class="page-header">
-      <span class="page-kicker">{{ langService.t().dashboard }}</span>
-      <h1>{{ langService.t().barberDashboardTitle }}</h1>
-      <p>{{ langService.t().barberDashboardSubtitle }}</p>
-    </div>
 
     <app-loading-spinner *ngIf="isLoading()" message="Chargement du tableau de bord..."></app-loading-spinner>
     <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
 
     <ng-container *ngIf="!isLoading() && !errorMessage() && dashboard() as stats">
 
+      <!-- HEADER -->
+      <div class="dash-header">
+        <div>
+          <span class="dash-kicker">{{ langService.t().dashboard }}</span>
+          <h1>{{ langService.t().barberDashboardTitle }}</h1>
+        </div>
+        <div class="dash-header-actions">
+          <button pButton type="button" icon="pi pi-calendar-plus"
+            [label]="langService.t().manageAvailability"
+            class="p-button-outlined p-button-sm"
+            routerLink="/barber/availability">
+          </button>
+          <button pButton type="button" icon="pi pi-list"
+            [label]="langService.t().allBookings"
+            class="p-button-sm"
+            routerLink="/barber/bookings">
+          </button>
+        </div>
+      </div>
+
       <!-- STATS GRID -->
       <div class="stats-grid">
-        <p-card>
-          <div class="stat-card">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#eff6ff;">📅</div>
+          <div class="stat-body">
             <span>Total réservations</span>
             <strong>{{ stats.totalBookings }}</strong>
           </div>
-        </p-card>
-        <p-card>
-          <div class="stat-card">
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#f0fdf4;">✅</div>
+          <div class="stat-body">
             <span>Terminées</span>
             <strong>{{ stats.completedBookings }}</strong>
           </div>
-        </p-card>
-        <p-card>
-          <div class="stat-card">
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fffbeb;">⏳</div>
+          <div class="stat-body">
             <span>En attente</span>
-            <strong>{{ pendingBookings() }}</strong>
+            <strong class="warn">{{ pendingBookings() }}</strong>
           </div>
-        </p-card>
-        <p-card>
-          <div class="stat-card wallet-stat">
-            <span>💰 Wallet</span>
-            <strong>{{ stats.currentBalance }} DH</strong>
+        </div>
+        <div class="stat-card wallet-card">
+          <div class="stat-icon" style="background:#f0fdf4;">💰</div>
+          <div class="stat-body">
+            <span>Solde wallet</span>
+            <strong class="green">{{ stats.currentBalance }} DH</strong>
           </div>
-        </p-card>
+        </div>
       </div>
 
-      <!-- DASHBOARD CONTENT -->
-      <div class="dashboard-content">
+      <!-- MAIN CONTENT -->
+      <div class="dash-content">
 
-        <!-- RESERVATIONS A VENIR -->
-        <p-card>
-          <div class="panel-card">
-            <div class="panel-head">
+        <!-- COLONNE GAUCHE -->
+        <div class="dash-left">
+
+          <!-- RESERVATIONS À VENIR -->
+          <div class="dash-card">
+            <div class="card-head">
               <div>
-                <span class="panel-kicker">PLANNING</span>
+                <span class="card-kicker">PLANNING</span>
                 <h2>Prochains rendez-vous</h2>
               </div>
-              <button pButton type="button" label="Voir tout"
-                class="p-button-text" routerLink="/barber/bookings">
-              </button>
+              <a routerLink="/barber/bookings" class="see-all-link">Voir tout →</a>
             </div>
 
             <app-empty-state
               *ngIf="!upcomingBookings().length"
               [title]="langService.t().noReservations"
-              message="Aucun rendez-vous a venir.">
+              message="Aucun rendez-vous à venir.">
             </app-empty-state>
 
-            <div class="booking-preview-list" *ngIf="upcomingBookings().length">
-              <div class="booking-preview-item" *ngFor="let booking of upcomingBookings()">
-                <div>
-                  <h3>{{ booking.client.name }}</h3>
-                  <p>{{ formatDate(booking.slot.startTime) }} • {{ formatTime(booking.slot.startTime) }}</p>
+            <div class="booking-list" *ngIf="upcomingBookings().length">
+              <div class="booking-item" *ngFor="let booking of upcomingBookings()">
+                <div class="booking-avatar">
+                  {{ booking.client.name[0].toUpperCase() }}
+                </div>
+                <div class="booking-info">
+                  <strong>{{ booking.client.name }}</strong>
+                  <span>{{ formatDate(booking.slot.startTime) }} · {{ formatTime(booking.slot.startTime) }}</span>
                 </div>
                 <p-tag
                   [value]="getStatusLabel(booking.status)"
@@ -74,64 +96,87 @@
               </div>
             </div>
           </div>
-        </p-card>
 
-        <!-- WALLET -->
-        <p-card>
-          <div class="panel-card">
-            <span class="panel-kicker">WALLET</span>
+          <!-- RESERVATIONS EN ATTENTE -->
+          <div class="dash-card pending-alert" *ngIf="pendingBookings() > 0">
+            <div class="pending-icon">⚡</div>
+            <div>
+              <strong>{{ pendingBookings() }} réservation(s) en attente</strong>
+              <p>Des clients attendent votre confirmation.</p>
+            </div>
+            <button pButton type="button" label="Gérer" severity="warn"
+              routerLink="/barber/bookings">
+            </button>
+          </div>
+
+        </div>
+
+        <!-- COLONNE DROITE -->
+        <div class="dash-right">
+
+          <!-- WALLET -->
+          <div class="dash-card">
+            <span class="card-kicker">WALLET</span>
             <h2>Mon portefeuille</h2>
 
-            <div class="wallet-balance-box">
-              <span>Solde actuel</span>
+            <div class="wallet-box">
+              <span>Solde disponible</span>
               <strong class="wallet-amount">{{ stats.currentBalance }} DH</strong>
               <p>-5% du prix du service par réservation acceptée</p>
             </div>
 
-            <div class="earnings-box">
-              <div class="earnings-row">
-                <span>Total commissions</span>
+            <div class="wallet-stats">
+              <div class="wallet-stat-row">
+                <span>Total commissions payées</span>
                 <strong>{{ stats.totalCommission }} DH</strong>
               </div>
-              <div class="earnings-row">
-                <span>Reservations confirmées</span>
+              <div class="wallet-stat-row">
+                <span>Réservations confirmées</span>
                 <strong>{{ confirmedBookings() }}</strong>
               </div>
             </div>
 
-            <!-- HISTORIQUE TRANSACTIONS -->
-            <div class="transactions-section" *ngIf="walletTransactions().length > 0">
-              <span class="panel-kicker">HISTORIQUE</span>
-              <div class="transaction-list">
-                <div class="transaction-item" *ngFor="let tx of walletTransactions().slice(0, 5)">
-                  <div class="tx-icon">{{ getTransactionIcon(tx.type) }}</div>
+            <!-- TRANSACTIONS -->
+            <div *ngIf="walletTransactions().length > 0" class="transactions">
+              <span class="card-kicker">HISTORIQUE</span>
+              <div class="tx-list">
+                <div class="tx-item" *ngFor="let tx of walletTransactions().slice(0, 5)">
+                  <span class="tx-icon">{{ getTransactionIcon(tx.type) }}</span>
                   <div class="tx-info">
                     <span>{{ getTransactionLabel(tx.type) }}</span>
                     <small>{{ formatDate(tx.createdAt) }}</small>
                   </div>
-                  <div class="tx-amount"
-                    [style.color]="tx.type === 'REFUND' ? '#dc2626' : '#16a34a'">
-                    {{ tx.type === 'REFUND' ? '-' : '+' }}{{ tx.amount }} DH
-                  </div>
+                  <span class="tx-amount"
+                    [style.color]="tx.type === 'REFUND' ? '#16a34a' : '#dc2626'">
+                    {{ tx.type === 'REFUND' ? '+' : '-' }}{{ tx.amount | number:'1.2-2' }} DH
+                  </span>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div class="dashboard-actions">
-              <button pButton type="button"
-                [label]="langService.t().manageAvailability"
-                routerLink="/barber/availability">
+          <!-- ACTIONS RAPIDES -->
+          <div class="dash-card quick-actions">
+            <span class="card-kicker">ACTIONS RAPIDES</span>
+            <h2>Gérer mon activité</h2>
+            <div class="actions-grid">
+              <button pButton type="button" icon="pi pi-calendar"
+                label="Disponibilités" routerLink="/barber/availability">
               </button>
-              <button pButton type="button"
-                [label]="langService.t().businessProfile"
-                severity="secondary" [outlined]="true"
+              <button pButton type="button" icon="pi pi-list"
+                label="Réservations" severity="secondary" [outlined]="true"
+                routerLink="/barber/bookings">
+              </button>
+              <button pButton type="button" icon="pi pi-user"
+                label="Mon profil" severity="secondary" [outlined]="true"
                 routerLink="/barber/profile">
               </button>
             </div>
           </div>
-        </p-card>
 
+        </div>
       </div>
+
     </ng-container>
   </div>
 </section>
