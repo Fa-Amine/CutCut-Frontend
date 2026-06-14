@@ -5,7 +5,7 @@
       <h1>{{ langService.t().heroTitle }}</h1>
       <p>{{ langService.t().heroSubtitle }}</p>
       <div class="hero-actions">
-        <button pButton type="button" [label]="langService.t().bookNow"
+        <button *ngIf="!sessionService.isBarber()" pButton type="button" [label]="langService.t().bookNow"
           icon="pi pi-calendar-plus" class="hero-primary-btn" routerLink="/barbers">
         </button>
         <button *ngIf="sessionService.isGuest()" pButton type="button"
