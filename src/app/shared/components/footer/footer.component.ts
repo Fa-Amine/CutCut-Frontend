@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { LanguageService } from '../../../core/services/language.service';
 
 @Component({
   selector: 'app-footer',
@@ -11,4 +12,5 @@ import { RouterLink } from '@angular/router';
 })
 export class FooterComponent {
   currentYear = new Date().getFullYear();
+  langService = inject(LanguageService);
 }

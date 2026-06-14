@@ -35,7 +35,7 @@
           <h4>Navigation</h4>
           <a routerLink="/">Accueil</a>
           <a routerLink="/barbers">Barbiers</a>
-          <a routerLink="/about">A propos</a>
+          <a routerLink="/about">{{ langService.t().aboutNav }}</a>
           <a routerLink="/register" [queryParams]="{role: 'barber'}">Devenir barbier</a>
         </div>
         <div class="footer-col">
@@ -50,7 +50,7 @@
           <a href="mailto:contact&#64;cutcut.online">contact&#64;cutcut.online</a>
           <a href="https://www.instagram.com/cutcut.app/?utm_source=ig_web_button_share_sheet" target="_blank">Instagram</a>
           <a href="https://www.facebook.com/share/198JTW6wfg/?mibextid=wwXIfr" target="_blank">Facebook</a>
-          <a routerLink="/about">Nous contacter</a>
+          <a routerLink="/about">{{ langService.t().contactNav }}</a>
         </div>
       </div>
     </div>

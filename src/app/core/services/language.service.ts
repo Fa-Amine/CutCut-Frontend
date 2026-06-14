@@ -390,6 +390,8 @@ export class LanguageService {
       ctaTitle: 'Prêt à réserver votre barbier ?',
       ctaSubtitle: 'Rejoignez des milliers de clients satisfaits',
       findBarber: 'Trouver un barbier',
+      aboutNav: 'À propos',
+      contactNav: 'Nous contacter',
     },
     ar: {
       appName: 'CutCut',
@@ -769,6 +771,8 @@ export class LanguageService {
       ctaTitle: 'مستعد لحجز حلاقك؟',
       ctaSubtitle: 'انضم إلى آلاف العملاء الراضين',
       findBarber: 'ابحث عن حلاق',
+      aboutNav: 'من نحن',
+      contactNav: 'تواصل معنا',
     }
   } as const;
 
