@@ -79,15 +79,15 @@
                 loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade">
               </iframe>
-              <a [href]="'https://www.google.com/maps/dir/?api=1&destination=' + barber()!.latitude + ',' + barber()!.longitude"
+              <a [href]="'https://www.google.com/maps/dir/?api=1&destination=' + barber()!.latitude + ',' + barber()!.longitude + '&travelmode=driving'"
                 target="_blank"
                 style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:10px; background:#1A1A1A; color:#FAFAF7; border-radius:12px; padding:0.75rem 1rem; font-weight:700; font-size:0.95rem; text-decoration:none;">
-                🗺️ Google Maps
+                🗺️ {{ langService.isArabic() ? 'الاتجاهات عبر Google Maps' : 'Itinéraire Google Maps' }}
               </a>
-              <a [href]="'https://maps.apple.com/?daddr=' + barber()!.latitude + ',' + barber()!.longitude"
+              <a [href]="'https://maps.apple.com/?daddr=' + barber()!.latitude + ',' + barber()!.longitude + '&dirflg=d'"
                 target="_blank"
                 style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px; background:#f5f5f5; color:#1A1A1A; border-radius:12px; padding:0.75rem 1rem; font-weight:700; font-size:0.95rem; text-decoration:none; border:1px solid #e5e5e5;">
-                🍎 Apple Maps
+                🍎 {{ langService.isArabic() ? 'الاتجاهات عبر Apple Maps' : 'Itinéraire Apple Maps' }}
               </a>
             </div>
 
