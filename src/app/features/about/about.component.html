@@ -3,9 +3,9 @@
 
     <!-- HERO -->
     <div class="about-hero">
-      <span class="page-kicker">A PROPOS</span>
-      <h1>CutCut — La reservation<br>de barbier simplifiee</h1>
-      <p>Nous connectons les clients avec les meilleurs barbiers de leur ville en quelques clics.</p>
+      <span class="page-kicker">{{ langService.t().aboutKicker }}</span>
+      <h1>{{ langService.t().aboutTitle }}</h1>
+      <p>{{ langService.t().aboutSubtitle }}</p>
     </div>
 
     <!-- MISSION -->
@@ -13,27 +13,27 @@
       <div class="about-grid">
         <div class="about-card">
           <div class="about-icon">✂️</div>
-          <h3>Notre mission</h3>
-          <p>Rendre la reservation chez le barbier aussi simple que possible — sans telephone, sans attente, sans confusion.</p>
+          <h3>{{ langService.t().missionTitle }}</h3>
+          <p>{{ langService.t().missionDesc }}</p>
         </div>
         <div class="about-card">
           <div class="about-icon">📍</div>
-          <h3>Notre vision</h3>
-          <p>Devenir la plateforme de reference pour les barbiers et leurs clients au Maroc et dans tout le monde arabe.</p>
+          <h3>{{ langService.t().visionTitle }}</h3>
+          <p>{{ langService.t().visionDesc }}</p>
         </div>
         <div class="about-card">
           <div class="about-icon">⭐</div>
-          <h3>Nos valeurs</h3>
-          <p>Simplicite, confiance et qualite. Nous selectionnons les meilleurs professionnels pour vous offrir la meilleure experience.</p>
+          <h3>{{ langService.t().valuesTitle }}</h3>
+          <p>{{ langService.t().valuesDesc }}</p>
         </div>
       </div>
     </div>
 
     <!-- CONTACT -->
     <div class="contact-section">
-      <span class="page-kicker">CONTACT</span>
-      <h2>Contactez-nous</h2>
-      <p>Une question ? Une suggestion ? Nous sommes la pour vous aider.</p>
+      <span class="page-kicker">{{ langService.t().contactKicker }}</span>
+      <h2>{{ langService.t().contactTitle }}</h2>
+      <p>{{ langService.t().contactSubtitle }}</p>
       <div class="contact-grid">
         <div class="contact-card">
           <div class="contact-icon">✉️</div>
@@ -47,7 +47,7 @@
         </div>
         <div class="contact-card">
           <div class="contact-icon">📍</div>
-          <h4>Localisation</h4>
+          <h4>{{ langService.t().locationLabel }}</h4>
           <a href="https://maps.app.goo.gl/bqJaiSq3BR45SRyf9?g_st=iw" target="_blank">
             Centre Innovation UPF University
           </a>
@@ -57,16 +57,16 @@
 
     <!-- CTA -->
     <div class="about-cta">
-      <h2>Pret a reserver votre barbier ?</h2>
-      <p>Rejoignez des milliers de clients satisfaits</p>
+      <h2>{{ langService.t().ctaTitle }}</h2>
+      <p>{{ langService.t().ctaSubtitle }}</p>
       <div class="cta-buttons">
         <a routerLink="/barbers"
           style="display:inline-block; background:#1A1A1A; color:#FAFAF7; padding:1rem 2rem; border-radius:999px; font-weight:700; text-decoration:none; font-size:0.95rem;">
-          Trouver un barbier
+          {{ langService.t().findBarber }}
         </a>
         <a routerLink="/register" [queryParams]="{role: 'barber'}"
           style="display:inline-block; background:transparent; color:#1A1A1A; padding:1rem 2rem; border-radius:999px; font-weight:700; text-decoration:none; font-size:0.95rem; border:2px solid #1A1A1A;">
-          Devenir barbier
+          {{ langService.t().becomeBarber }}
         </a>
       </div>
     </div>
