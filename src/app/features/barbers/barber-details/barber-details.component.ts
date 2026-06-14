@@ -23,8 +23,6 @@ import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-p
 import { ReviewService, Review } from '../../../core/services/review.service';
 import { BarberServiceItem } from '../../../core/models/booking.models';
 
-declare const L: any;
-
 interface DayGroup {
   dateKey: string;
   label: string;
@@ -75,9 +73,6 @@ export class BarberDetailsComponent {
   lightboxPhoto = signal<string | null>(null);
   selectedDay = signal<string | null>(null);
   selectedSlot = signal<AvailabilitySlot | null>(null);
-
-  private viewMap: any = null;
-  private mapInitialized = false;
 
   totalPrice = computed(() => {
     const selected = this.services().filter(s =>
@@ -136,30 +131,8 @@ export class BarberDetailsComponent {
     }, 100);
   }
 
-  tryInitMap() {
-    const barber = this.barber();
-    if (!barber?.latitude || !barber?.longitude) return;
-    if (this.mapInitialized) return;
-
-    const mapEl = document.getElementById('view-map');
-    if (!mapEl) {
-      setTimeout(() => this.tryInitMap(), 200);
-      return;
-    }
-
-    this.mapInitialized = true;
-    this.viewMap = L.map('view-map', {
-      zoomControl: true,
-      scrollWheelZoom: false
-    }).setView([barber.latitude, barber.longitude], 15);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap contributors © CARTO',
-      subdomains: 'abcd',
-      maxZoom: 19
-    }).addTo(this.viewMap);
-
-    L.marker([barber.latitude, barber.longitude]).addTo(this.viewMap);
+  getGoogleMapsUrl(lat: number, lng: number): string {
+    return `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
   }
 
   loadPageData(barberId: number) {
@@ -170,7 +143,6 @@ export class BarberDetailsComponent {
         this.barber.set(barberResponse);
         this.reloadSlots(barberId, () => {
           this.isLoading.set(false);
-          setTimeout(() => this.tryInitMap(), 300);
         });
         this.loadPhotos(barberId);
         this.loadReviews(barberId);
@@ -348,7 +320,4 @@ export class BarberDetailsComponent {
       .map((part) => part[0]?.toUpperCase() ?? '').join('');
   }
 
-  getMapUrl(lat: number, lng: number): string {
-    return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lng}`;
-  }
 }
