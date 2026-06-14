@@ -12,11 +12,11 @@
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
 
           <div class="form-header">
-            <h2>{{ selectedRole() === 'CLIENT' ? 'Inscription Client' : 'Inscription Barbier' }}</h2>
+            <h2>{{ selectedRole() === 'CLIENT' ? langService.t().clientRegistration : langService.t().barberRegistration }}</h2>
             <p>{{ currentSubtitle }}</p>
           </div>
 
-          <app-error-alert *ngIf="errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+          <app-error-alert *ngIf="errorMessage()" [title]="langService.t().error" [message]="errorMessage()"></app-error-alert>
 
           <!-- TOGGLE ROLE -->
           <div class="role-toggle" *ngIf="!fromBarberButton()">
@@ -26,7 +26,7 @@
               [style.border]="selectedRole() === 'CLIENT' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
               style="padding:0.75rem 2rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
               (click)="setRole('CLIENT')">
-              Client
+              {{ langService.t().client }}
             </button>
             <button type="button"
               [style.background]="selectedRole() === 'BARBER' ? '#1A1A1A' : 'transparent'"
@@ -34,7 +34,7 @@
               [style.border]="selectedRole() === 'BARBER' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
               style="padding:0.75rem 2rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.95rem; font-family:inherit; transition:all 0.2s;"
               (click)="setRole('BARBER')">
-              Barbier
+              {{ langService.t().barber }}
             </button>
           </div>
 
@@ -71,7 +71,7 @@
 
             <!-- ✅ CATEGORIE avec 3 options : Homme / Femme / Les deux -->
             <div class="form-group">
-              <label>Je suis :</label>
+              <label>{{ langService.t().iAm }}</label>
               <div class="category-toggle" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                 <button type="button"
                   [style.background]="selectedCategory() === 'HOMME' ? '#1A1A1A' : 'transparent'"
@@ -79,7 +79,7 @@
                   [style.border]="selectedCategory() === 'HOMME' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
                   style="padding:0.75rem 1.25rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.9rem; font-family:inherit; transition:all 0.2s;"
                   (click)="setCategory('HOMME')">
-                  👨 Barbier Homme
+                  {{ langService.t().maleBarberCategory }}
                 </button>
                 <button type="button"
                   [style.background]="selectedCategory() === 'FEMME' ? '#1A1A1A' : 'transparent'"
@@ -87,7 +87,7 @@
                   [style.border]="selectedCategory() === 'FEMME' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
                   style="padding:0.75rem 1.25rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.9rem; font-family:inherit; transition:all 0.2s;"
                   (click)="setCategory('FEMME')">
-                  👩 Coiffeuse Femme
+                  {{ langService.t().femaleBarberCategory }}
                 </button>
                 <button type="button"
                   [style.background]="selectedCategory() === 'BOTH' ? '#1A1A1A' : 'transparent'"
@@ -95,7 +95,7 @@
                   [style.border]="selectedCategory() === 'BOTH' ? '2px solid #1A1A1A' : '2px solid rgba(26,26,26,0.2)'"
                   style="padding:0.75rem 1.25rem; border-radius:999px; cursor:pointer; font-weight:700; font-size:0.9rem; font-family:inherit; transition:all 0.2s;"
                   (click)="setCategory('BOTH')">
-                  👨‍👩 Salon Mixte (Les deux)
+                  {{ langService.t().mixedSalon }}
                 </button>
               </div>
             </div>
@@ -119,10 +119,10 @@
             <!-- SERVICES PREDÉFINIS -->
             <div class="form-group">
               <label style="font-weight:700; color:#171717; font-size:0.95rem;">
-                Vos services et tarifs
+                {{ langService.t().servicesAndPrices }}
               </label>
               <p style="color:#737373; font-size:0.82rem; margin-bottom:1rem;">
-                Cochez les services que vous proposez et indiquez votre prix
+                {{ langService.t().servicesDesc }}
               </p>
 
               <div class="services-onboarding-list">
@@ -150,7 +150,7 @@
                       inputmode="numeric"
                       [(ngModel)]="servicePrices[service.id]"
                       [ngModelOptions]="{standalone:true}"
-                      placeholder="Prix DH"
+                      [placeholder]="langService.t().priceDH"
                       style="width:100px; padding:6px 10px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit; text-align:center;"
                     />
                   </div>
@@ -169,7 +169,7 @@
                   <span style="font-weight:700; color:#171717;">{{ s.price }} DH</span>
                   <button type="button" (click)="removeCustomService(i)"
                     style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:0.9rem; font-family:inherit;">
-                    Supprimer
+                    {{ langService.t().deleteBtn }}
                   </button>
                 </div>
               </div>
@@ -178,21 +178,21 @@
                 style="margin-top:1rem; background:#f5f5f5; border-radius:12px; padding:1rem;">
                 <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
                   <input type="text" [(ngModel)]="newCustomServiceName" [ngModelOptions]="{standalone:true}"
-                    placeholder="Nom du service"
+                    [placeholder]="langService.t().serviceNamePlaceholder2"
                     style="flex:1; min-width:140px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
                   <input type="number" inputmode="numeric" [(ngModel)]="newCustomServicePrice" [ngModelOptions]="{standalone:true}"
-                    placeholder="Prix DH"
+                    [placeholder]="langService.t().priceDH"
                     style="width:100px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
                 </div>
                 <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
                   <button type="button" (click)="addCustomService()"
                     [disabled]="!newCustomServiceName"
                     style="background:#171717; color:white; border:none; padding:8px 20px; border-radius:999px; cursor:pointer; font-weight:700; font-family:inherit; font-size:0.9rem;">
-                    Ajouter
+                    {{ langService.t().addBtn }}
                   </button>
                   <button type="button" (click)="showAddCustomService.set(false)"
                     style="background:transparent; color:#737373; border:1.5px solid #d4d4d4; padding:8px 20px; border-radius:999px; cursor:pointer; font-family:inherit; font-size:0.9rem;">
-                    Annuler
+                    {{ langService.t().cancelBtn }}
                   </button>
                 </div>
               </div>
@@ -201,7 +201,7 @@
                 style="margin-top:1rem; width:100%; background:transparent; border:2px dashed #d4d4d4; padding:0.85rem; border-radius:12px; cursor:pointer; font-weight:700; font-size:0.9rem; font-family:inherit; color:#737373; transition:all 0.2s;"
                 onmouseover="this.style.borderColor='#171717'; this.style.color='#171717';"
                 onmouseout="this.style.borderColor='#d4d4d4'; this.style.color='#737373';">
-                + Ajouter un service personnalise
+                {{ langService.t().addCustomService }}
               </button>
             </div>
 
@@ -236,7 +236,7 @@
           </div>
 
           <button pButton type="submit" class="submit-btn"
-            [label]="isLoading() ? '...' : selectedRole() === 'CLIENT' ? 'Creer un compte client' : 'Creer un compte barbier'"
+            [label]="isLoading() ? '...' : selectedRole() === 'CLIENT' ? langService.t().createClientAccount : langService.t().createBarberAccount"
             [disabled]="isLoading()">
           </button>
 

@@ -7,8 +7,8 @@
     </div>
 
     <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
-    <app-loading-spinner *ngIf="isLoading()" message="Chargement du profil barbier..."></app-loading-spinner>
-    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+    <app-loading-spinner *ngIf="isLoading()" [message]="langService.t().loadingBarberProfile"></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" [title]="langService.t().error" [message]="errorMessage()"></app-error-alert>
 
     <p-card *ngIf="!isLoading() && !errorMessage() && profile()">
       <div class="profile-card">
@@ -41,7 +41,7 @@
               <p-tag *ngIf="profile()!.price !== undefined && profile()!.price !== null"
                 [value]="profile()!.price + ' DH'" severity="info"></p-tag>
               <p-tag *ngIf="profile()!.averageRating !== undefined && profile()!.averageRating !== null"
-                [value]="'Note: ' + profile()!.averageRating" severity="success"></p-tag>
+                [value]="langService.t().ratingLabel + ': ' + profile()!.averageRating" severity="success"></p-tag>
             </div>
           </div>
         </div>
@@ -142,7 +142,7 @@
 
           <div style="margin-bottom:1.5rem;">
             <p style="color:#737373; font-size:0.85rem; margin-bottom:0.75rem; font-weight:600;">
-              {{ langService.isArabic() ? 'إضافة سريعة :' : 'Ajout rapide :' }}
+              {{ langService.t().quickAdd }}
             </p>
             <div class="predefined-services-grid">
               <div *ngFor="let ps of predefinedServicesList"
@@ -165,12 +165,12 @@
             style="background:#f0f9ff; border:1.5px solid #bae6fd; border-radius:12px; padding:1rem; margin-bottom:1rem;">
             <p style="font-weight:700; color:#0369a1; margin:0 0 0.75rem; font-size:0.9rem;">
               {{ langService.isArabic() ? selectedPredefinedService()?.nameAr : selectedPredefinedService()?.name }}
-              — {{ langService.isArabic() ? 'أدخل سعرك :' : 'Entrez votre prix :' }}
+              — {{ langService.t().enterYourPrice }}
             </p>
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
               <input type="number"
                 [(ngModel)]="predefinedServicePrice"
-                [placeholder]="langService.isArabic() ? 'السعر DH' : 'Prix DH'"
+                [placeholder]="langService.t().priceDH"
                 style="width:130px; padding:8px 12px; border:1.5px solid #d4d4d4; border-radius:8px; font-size:16px; font-family:inherit;" />
               <button pButton type="button"
                 [label]="langService.t().addBtn"
@@ -208,7 +208,7 @@
 
             <div class="full-width" style="margin-top:1rem;">
               <label style="display:block; font-size:0.82rem; font-weight:600; color:#171717; margin-bottom:8px;">
-                {{ langService.isArabic() ? 'صورة الخدمة (اختياري)' : 'Image du service (optionnel)' }}
+                {{ langService.t().serviceImageLabel }}
               </label>
               <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
                 <div *ngIf="newServiceImageUrl()"
@@ -222,7 +222,7 @@
                 </div>
                 <label for="serviceImageInput"
                   style="cursor:pointer; background:#171717; color:#FAFAF7; padding:8px 16px; border-radius:999px; font-size:0.85rem; font-weight:600;">
-                  {{ isUploadingServiceImage() ? 'Upload...' : (newServiceImageUrl() ? 'Changer' : 'Ajouter image') }}
+                  {{ isUploadingServiceImage() ? langService.t().uploadingImage : (newServiceImageUrl() ? langService.t().changeImage : langService.t().addImage) }}
                 </label>
                 <input id="serviceImageInput" type="file" accept="image/*" style="display:none"
                   (change)="onServiceImageSelected($event)" />

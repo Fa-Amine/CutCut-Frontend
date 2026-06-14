@@ -1,7 +1,7 @@
 <section class="availability-page" [dir]="langService.lang() === 'ar' ? 'rtl' : 'ltr'">
   <div class="availability-shell">
 
-    <app-loading-spinner *ngIf="isSaving()" message="Enregistrement..."></app-loading-spinner>
+    <app-loading-spinner *ngIf="isSaving()" [message]="langService.t().saving"></app-loading-spinner>
 
     <div class="page-header">
       <span class="page-kicker">{{ langService.t().manageAvailability }}</span>
@@ -10,7 +10,7 @@
     </div>
 
     <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
-    <app-error-alert *ngIf="errorMessage()" title="Erreur" [message]="errorMessage()" [showReload]="false"></app-error-alert>
+    <app-error-alert *ngIf="errorMessage()" [title]="langService.t().error" [message]="errorMessage()" [showReload]="false"></app-error-alert>
 
     <div class="schedule-card" *ngIf="!isLoading() && !isSaving()">
       <div class="schedule-header">
@@ -22,16 +22,12 @@
         <div class="apply-all-info">
           <span class="apply-all-icon">⚡</span>
           <div>
-            <strong>
-              {{ langService.lang() === 'ar' ? 'تطبيق نفس التوقيت على جميع الأيام' : 'Appliquer le même horaire à tous les jours' }}
-            </strong>
-            <p>
-              {{ langService.lang() === 'ar' ? 'قم بإعداد اليوم الأول، ثم انقر لنسخ التوقيت على جميع الأيام الأخرى.' : 'Configurez le premier jour, puis cliquez pour copier l\'horaire à tous les autres jours.' }}
-            </p>
+            <strong>{{ langService.t().applyAllTitle }}</strong>
+            <p>{{ langService.t().applyAllDesc }}</p>
           </div>
         </div>
         <button class="apply-all-btn" type="button" (click)="applyFirstDayToAll()">
-          {{ langService.lang() === 'ar' ? 'تطبيق على الكل ⚡' : '⚡ Appliquer à tous' }}
+          {{ langService.t().applyAll }}
         </button>
       </div>
 
@@ -46,14 +42,14 @@
             <p-inputSwitch [(ngModel)]="day.active"></p-inputSwitch>
             <span class="day-name">{{ getDayName(day) }}</span>
             <span *ngIf="i === 0" class="first-day-badge">
-              {{ langService.lang() === 'ar' ? 'نموذج' : 'Modèle' }}
+              {{ langService.t().template }}
             </span>
           </div>
 
           <div class="schedule-inputs-col" *ngIf="day.active">
             <div class="input-row">
               <span class="row-label">
-                {{ langService.lang() === 'ar' ? 'العمل' : 'Travail' }}
+                {{ langService.t().work }}
               </span>
               <div class="controls-wrapper">
                 <select [(ngModel)]="day.startTime" class="modern-input">
@@ -67,7 +63,7 @@
             </div>
             <div class="input-row">
               <span class="row-label">
-                ☕ {{ langService.lang() === 'ar' ? 'استراحة' : 'Pause' }}
+                ☕ {{ langService.t().breakLabel }}
               </span>
               <div class="controls-wrapper">
                 <select [(ngModel)]="day.breakStart" class="modern-input pause-style">
@@ -82,7 +78,7 @@
           </div>
 
           <div class="off-label" *ngIf="!day.active">
-            {{ langService.lang() === 'ar' ? 'عطلة' : 'Repos' }}
+            {{ langService.t().restLabel }}
           </div>
         </div>
       </div>
