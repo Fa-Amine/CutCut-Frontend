@@ -7,8 +7,8 @@
     </div>
 
     <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
-    <app-loading-spinner *ngIf="isLoading()" message="Chargement des reservations..."></app-loading-spinner>
-    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+    <app-loading-spinner *ngIf="isLoading()" [message]="langService.t().loadingBookings"></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" [title]="langService.t().error" [message]="errorMessage()"></app-error-alert>
 
     <div class="summary-strip" *ngIf="!isLoading()">
       <div class="summary-box">
@@ -28,7 +28,7 @@
     <app-empty-state
       *ngIf="!isLoading() && !bookings().length"
       [title]="langService.t().noReservations"
-      message="Aucune reservation recue pour le moment.">
+      [message]="langService.t().noBookingsReceived">
     </app-empty-state>
 
     <div class="bookings-list" *ngIf="!isLoading() && bookings().length">
@@ -122,7 +122,7 @@
           <span
             *ngIf="(booking.status === 'CONFIRMED' || booking.status === 'ACCEPTED') && !canCompleteBooking(booking)"
             style="font-size:0.82rem; color:#0369a1; font-weight:600; padding:4px 8px; background:#eff6ff; border-radius:8px;">
-            {{ langService.isArabic() ? 'في انتظار موعد الحجز' : 'En attente du RDV' }}
+            {{ langService.t().awaitingRdv }}
           </span>
 
         </div>

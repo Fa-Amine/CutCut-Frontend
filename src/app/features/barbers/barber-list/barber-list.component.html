@@ -10,29 +10,29 @@
 
     <div class="view-toggle">
       <button [class.active]="viewMode() === 'list'" (click)="setViewMode('list')">
-        📋 Liste
+        📋 {{ langService.t().listView }}
       </button>
       <button [class.active]="viewMode() === 'map'" (click)="setViewMode('map')">
-        🗺️ Carte
+        🗺️ {{ langService.t().mapView }}
       </button>
     </div>
 
-    <!-- ✅ FILTRE CATÉGORIE -->
+    <!-- FILTRE CATÉGORIE -->
     <div class="category-filter">
       <button
         [class.active]="selectedCategory() === 'ALL'"
         (click)="setCategory('ALL')">
-        👥 Tous
+        👥 {{ langService.t().allBarbersFilter }}
       </button>
       <button
         [class.active]="selectedCategory() === 'HOMME'"
         (click)="setCategory('HOMME')">
-        🧔 Barbiers Hommes
+        🧔 {{ langService.t().maleBarbers }}
       </button>
       <button
         [class.active]="selectedCategory() === 'FEMME'"
         (click)="setCategory('FEMME')">
-        💇‍♀️ Coiffeuses Femmes
+        💇‍♀️ {{ langService.t().femaleBarbers }}
       </button>
     </div>
 
@@ -47,7 +47,7 @@
         </div>
         <div class="filter-group" style="justify-content:flex-end;">
           <button pButton type="button"
-            [label]="isLocating() ? 'Localisation...' : sortByDistance() ? '📍 Trié par distance' : '📍 Près de moi'"
+            [label]="isLocating() ? langService.t().locating : sortByDistance() ? ('📍 ' + langService.t().sortedByDistance) : ('📍 ' + langService.t().nearMe)"
             [disabled]="isLocating()"
             [severity]="sortByDistance() ? 'success' : 'secondary'"
             (click)="locateMe()">
@@ -56,14 +56,14 @@
       </div>
     </div>
 
-    <app-loading-spinner *ngIf="isLoading()" message="Chargement des barbiers..."></app-loading-spinner>
-    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+    <app-loading-spinner *ngIf="isLoading()" [message]="langService.t().loadingBarbers"></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" [title]="langService.t().error" [message]="errorMessage()"></app-error-alert>
 
     <!-- VUE CARTE -->
     <div *ngIf="!isLoading() && !errorMessage() && viewMode() === 'map'" class="map-wrapper">
       <div id="barbers-map"></div>
       <div class="map-hint">
-        ✂️ Cliquez sur un barbier pour voir son profil
+        ✂️ {{ langService.t().mapHint }}
       </div>
     </div>
 
@@ -72,7 +72,7 @@
       <app-empty-state
         *ngIf="!isLoading() && !errorMessage() && !filteredBarbers().length"
         [title]="langService.t().noBarbersFound"
-        message="Aucun barbier disponible pour le moment.">
+        [message]="langService.t().noBarbersAvailable">
       </app-empty-state>
 
       <div class="barbers-grid" *ngIf="!isLoading() && !errorMessage() && barbersWithDistance().length">
@@ -96,7 +96,7 @@
                 <p>{{ barber.shopName || 'CutCut' }}</p>
                 <div *ngIf="barber.averageRating" class="star-rating">
                   <span class="stars">{{ getStarDisplay(barber.averageRating) }}</span>
-                  <span class="review-count">({{ barber.reviewCount || 0 }} avis)</span>
+                  <span class="review-count">({{ barber.reviewCount || 0 }} {{ langService.t().reviews }})</span>
                 </div>
                 <small *ngIf="barber.distance !== null" style="color:#16a34a; font-weight:600;">
                   📍 {{ barber.distance!.toFixed(1) }} km
@@ -110,7 +110,7 @@
                 *ngIf="sessionService.isClient()"
                 class="fav-btn-inline"
                 (click)="favoriteService.toggleFavorite(barber.id); $event.stopPropagation()"
-                [title]="isFavorite()(barber.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+                [title]="isFavorite()(barber.id) ? langService.t().removeFromFavorites : langService.t().addToFavorites">
                 {{ isFavorite()(barber.id) ? '❤️' : '🤍' }}
               </button>
             </div>

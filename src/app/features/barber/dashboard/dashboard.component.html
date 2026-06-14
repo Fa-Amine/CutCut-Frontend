@@ -1,8 +1,8 @@
 <section class="dashboard-page">
   <div class="dashboard-shell">
 
-    <app-loading-spinner *ngIf="isLoading()" message="Chargement du tableau de bord..."></app-loading-spinner>
-    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+    <app-loading-spinner *ngIf="isLoading()" [message]="langService.t().loadingDashboard"></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" [title]="langService.t().error" [message]="errorMessage()"></app-error-alert>
 
     <ng-container *ngIf="!isLoading() && !errorMessage() && dashboard() as stats">
 
@@ -31,28 +31,28 @@
         <div class="stat-card">
           <div class="stat-icon" style="background:#eff6ff;">📅</div>
           <div class="stat-body">
-            <span>Total réservations</span>
+            <span>{{ langService.t().totalReservationsLabel }}</span>
             <strong>{{ stats.totalBookings }}</strong>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon" style="background:#f0fdf4;">✅</div>
           <div class="stat-body">
-            <span>Terminées</span>
+            <span>{{ langService.t().completedLabel }}</span>
             <strong>{{ stats.completedBookings }}</strong>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-icon" style="background:#fffbeb;">⏳</div>
           <div class="stat-body">
-            <span>En attente</span>
+            <span>{{ langService.t().pendingLabel }}</span>
             <strong class="warn">{{ pendingBookings() }}</strong>
           </div>
         </div>
         <div class="stat-card wallet-card">
           <div class="stat-icon" style="background:#f0fdf4;">💰</div>
           <div class="stat-body">
-            <span>Solde wallet</span>
+            <span>{{ langService.t().walletBalance }}</span>
             <strong class="green">{{ stats.currentBalance }} DH</strong>
           </div>
         </div>
@@ -68,16 +68,16 @@
           <div class="dash-card">
             <div class="card-head">
               <div>
-                <span class="card-kicker">PLANNING</span>
-                <h2>Prochains rendez-vous</h2>
+                <span class="card-kicker">{{ langService.t().planningLabel }}</span>
+                <h2>{{ langService.t().nextAppointments }}</h2>
               </div>
-              <a routerLink="/barber/bookings" class="see-all-link">Voir tout →</a>
+              <a routerLink="/barber/bookings" class="see-all-link">{{ langService.t().seeAll }}</a>
             </div>
 
             <app-empty-state
               *ngIf="!upcomingBookings().length"
               [title]="langService.t().noReservations"
-              message="Aucun rendez-vous à venir.">
+              [message]="langService.t().noUpcomingAppointments">
             </app-empty-state>
 
             <div class="booking-list" *ngIf="upcomingBookings().length">
@@ -101,10 +101,10 @@
           <div class="dash-card pending-alert" *ngIf="pendingBookings() > 0">
             <div class="pending-icon">⚡</div>
             <div>
-              <strong>{{ pendingBookings() }} réservation(s) en attente</strong>
-              <p>Des clients attendent votre confirmation.</p>
+              <strong>{{ pendingBookings() }} {{ langService.t().pendingBookingsAlert }}</strong>
+              <p>{{ langService.t().clientsWaiting }}</p>
             </div>
-            <button pButton type="button" label="Gérer" severity="warn"
+            <button pButton type="button" [label]="langService.t().manageBtn" severity="warn"
               routerLink="/barber/bookings">
             </button>
           </div>
@@ -116,29 +116,29 @@
 
           <!-- WALLET -->
           <div class="dash-card">
-            <span class="card-kicker">WALLET</span>
-            <h2>Mon portefeuille</h2>
+            <span class="card-kicker">{{ langService.t().walletLabel }}</span>
+            <h2>{{ langService.t().myWallet }}</h2>
 
             <div class="wallet-box">
-              <span>Solde disponible</span>
+              <span>{{ langService.t().availableBalance }}</span>
               <strong class="wallet-amount">{{ stats.currentBalance }} DH</strong>
-              <p>-5% du prix du service par réservation acceptée</p>
+              <p>{{ langService.t().commissionInfo }}</p>
             </div>
 
             <div class="wallet-stats">
               <div class="wallet-stat-row">
-                <span>Total commissions payées</span>
+                <span>{{ langService.t().totalCommissionsPaid }}</span>
                 <strong>{{ stats.totalCommission }} DH</strong>
               </div>
               <div class="wallet-stat-row">
-                <span>Réservations confirmées</span>
+                <span>{{ langService.t().confirmedBookingsCount }}</span>
                 <strong>{{ confirmedBookings() }}</strong>
               </div>
             </div>
 
             <!-- TRANSACTIONS -->
             <div *ngIf="walletTransactions().length > 0" class="transactions">
-              <span class="card-kicker">HISTORIQUE</span>
+              <span class="card-kicker">{{ langService.t().historyLabel }}</span>
               <div class="tx-list">
                 <div class="tx-item" *ngFor="let tx of walletTransactions().slice(0, 5)">
                   <span class="tx-icon">{{ getTransactionIcon(tx.type) }}</span>
@@ -157,18 +157,18 @@
 
           <!-- ACTIONS RAPIDES -->
           <div class="dash-card quick-actions">
-            <span class="card-kicker">ACTIONS RAPIDES</span>
-            <h2>Gérer mon activité</h2>
+            <span class="card-kicker">{{ langService.t().quickActionsLabel }}</span>
+            <h2>{{ langService.t().manageActivity }}</h2>
             <div class="actions-grid">
               <button pButton type="button" icon="pi pi-calendar"
-                label="Disponibilités" routerLink="/barber/availability">
+                [label]="langService.t().availabilitiesBtn" routerLink="/barber/availability">
               </button>
               <button pButton type="button" icon="pi pi-list"
-                label="Réservations" severity="secondary" [outlined]="true"
+                [label]="langService.t().bookingsBtn" severity="secondary" [outlined]="true"
                 routerLink="/barber/bookings">
               </button>
               <button pButton type="button" icon="pi pi-user"
-                label="Mon profil" severity="secondary" [outlined]="true"
+                [label]="langService.t().myProfileBtn" severity="secondary" [outlined]="true"
                 routerLink="/barber/profile">
               </button>
             </div>
