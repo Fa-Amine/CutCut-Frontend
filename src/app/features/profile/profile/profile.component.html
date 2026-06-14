@@ -7,8 +7,8 @@
     </div>
 
     <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()"></p-message>
-    <app-loading-spinner *ngIf="isLoading()" message="Chargement du profil..."></app-loading-spinner>
-    <app-error-alert *ngIf="!isLoading() && errorMessage()" title="Erreur" [message]="errorMessage()"></app-error-alert>
+    <app-loading-spinner *ngIf="isLoading()" [message]="langService.t().loadingProfile"></app-loading-spinner>
+    <app-error-alert *ngIf="!isLoading() && errorMessage()" [title]="langService.t().error" [message]="errorMessage()"></app-error-alert>
 
     <p-card *ngIf="!isLoading() && !errorMessage() && profile()">
       <div class="profile-card">
@@ -34,9 +34,9 @@
 
           <div>
             <h2>{{ profile()!.name }}</h2>
-            <p>{{ langService.isArabic() ? 'عميل CutCut' : 'Client CutCut' }}</p>
+            <p>{{ langService.t().cutcutClient }}</p>
             <span *ngIf="isUploadingPhoto()" style="color:#64748b; font-size:0.82rem;">
-              {{ langService.isArabic() ? 'جار الرفع...' : 'Upload en cours...' }}
+              {{ langService.t().uploading }}
             </span>
           </div>
         </div>
@@ -62,23 +62,23 @@
 
           <div class="info-box">
             <span>{{ langService.t().role }}</span>
-            <strong>{{ langService.isArabic() ? 'عميل' : 'Client' }}</strong>
+            <strong>{{ langService.t().roleClient }}</strong>
           </div>
         </form>
 
         <div class="profile-actions">
           <button *ngIf="!isEditMode()" pButton type="button"
-            [label]="langService.t().editBtn || 'Modifier'"
+            [label]="langService.t().editBtn"
             (click)="startEdit()">
           </button>
           <ng-container *ngIf="isEditMode()">
             <button pButton type="button"
-              [label]="langService.t().saveBtn || 'Enregistrer'"
+              [label]="langService.t().saveBtn"
               [disabled]="isSaving()"
               (click)="saveProfile()">
             </button>
             <button pButton type="button"
-              [label]="langService.t().cancelBtn || 'Annuler'"
+              [label]="langService.t().cancelBtn"
               severity="secondary" [outlined]="true"
               (click)="cancelEdit()">
             </button>

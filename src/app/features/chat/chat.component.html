@@ -7,7 +7,7 @@
       <div class="partner-avatar">{{ partnerName().charAt(0).toUpperCase() }}</div>
       <div>
         <h3>{{ partnerName() }}</h3>
-        <span class="online-status">En ligne</span>
+        <span class="online-status">{{ langService.t().online }}</span>
       </div>
     </div>
   </div>
@@ -16,12 +16,12 @@
   <div class="messages-container" #messagesContainer>
 
     <div *ngIf="isLoading()" class="loading-msgs">
-      <p>Chargement...</p>
+      <p>{{ langService.t().loadingChat }}</p>
     </div>
 
     <div *ngIf="!isLoading() && messages().length === 0" class="empty-chat">
       <span>💬</span>
-      <p>Commencez la conversation avec {{ partnerName() }}</p>
+      <p>{{ langService.t().startConversation }} {{ partnerName() }}</p>
     </div>
 
     <div *ngFor="let msg of messages(); let i = index">
@@ -52,7 +52,7 @@
   <div class="chat-input-bar">
     <textarea
       [(ngModel)]="newMessage"
-      placeholder="Écrire un message..."
+      [placeholder]="langService.t().writeMessage"
       rows="1"
       (keydown)="onKeyPress($event)"
       [disabled]="isSending()"

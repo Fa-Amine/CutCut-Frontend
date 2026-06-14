@@ -2,19 +2,19 @@
   <div class="messages-shell">
 
     <div class="page-header">
-      <span class="page-kicker">MESSAGES</span>
-      <h1>💬 Mes Messages</h1>
-      <p>Conversations avec vos clients</p>
+      <span class="page-kicker">{{ langService.t().messagesKicker }}</span>
+      <h1>💬 {{ langService.t().myMessages }}</h1>
+      <p>{{ langService.t().conversationsSubtitle }}</p>
     </div>
 
     <div *ngIf="isLoading()" style="text-align:center; padding:3rem; color:#a3a3a3;">
-      Chargement...
+      {{ langService.t().loadingMsg }}
     </div>
 
     <div *ngIf="!isLoading() && partners().length === 0" class="empty-state">
       <span>💬</span>
-      <h3>Aucun message</h3>
-      <p>Vos clients pourront vous envoyer des messages depuis votre profil.</p>
+      <h3>{{ langService.t().noMessages }}</h3>
+      <p>{{ langService.t().noMessagesDesc }}</p>
     </div>
 
     <div class="conversations-list" *ngIf="!isLoading() && partners().length > 0">

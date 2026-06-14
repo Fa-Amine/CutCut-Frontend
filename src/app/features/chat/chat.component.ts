@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ChatService, ChatMessage } from '../../core/services/chat.service';
 import { SessionService } from '../../core/services/session.service';
 import { WebSocketService } from '../../core/services/websocket.service';
+import { LanguageService } from '../../core/services/language.service';
 
 @Component({
   selector: 'app-chat',
@@ -19,6 +20,7 @@ export class ChatComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private chatService = inject(ChatService);
   sessionService = inject(SessionService);
+  langService = inject(LanguageService);
   private wsService = inject(WebSocketService);
 
   messages = signal<ChatMessage[]>([]);
