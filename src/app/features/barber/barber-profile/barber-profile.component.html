@@ -134,6 +134,25 @@
           </ng-container>
         </div>
 
+        <!-- ✅ QR CODE -->
+        <div style="margin-top:1.5rem; border-top:1px solid rgba(26,26,26,0.08); padding-top:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h3 style="margin:0; font-size:1rem; color:#1A1A1A;">{{ langService.isArabic() ? 'رمز QR الخاص بي' : 'Mon QR Code' }}</h3>
+              <p style="margin:4px 0 0; font-size:0.82rem; color:#737373;">{{ langService.isArabic() ? 'شاركه مع العملاء للحجز المباشر' : 'Partagez-le pour que les clients réservent directement' }}</p>
+            </div>
+            <button pButton type="button"
+              [label]="showQr() ? (langService.isArabic() ? 'إخفاء' : 'Masquer') : (langService.isArabic() ? 'Afficher' : 'Afficher')"
+              severity="secondary" [outlined]="true"
+              (click)="showQr.set(!showQr())">
+            </button>
+          </div>
+          <div *ngIf="showQr()" style="display:flex; flex-direction:column; align-items:center; gap:1rem; padding:1.5rem; background:#fafafa; border:1px solid #e5e5e5; border-radius:16px;">
+            <qrcode [qrdata]="qrUrl()" [width]="220" [errorCorrectionLevel]="'M'" [cssClass]="'qr-canvas'"></qrcode>
+            <p style="font-size:0.78rem; color:#a3a3a3; text-align:center; margin:0; font-family:'Courier New',monospace; word-break:break-all;">{{ qrUrl() }}</p>
+          </div>
+        </div>
+
         <!-- ✅ SERVICES -->
         <div class="services-section">
           <div class="services-header">
