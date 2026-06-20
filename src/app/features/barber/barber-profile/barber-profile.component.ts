@@ -1,6 +1,7 @@
 import { Component, inject, signal, AfterViewChecked, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { AvatarModule } from 'primeng/avatar';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -40,7 +41,7 @@ interface PredefinedServiceItem {
     CommonModule, ReactiveFormsModule, FormsModule,
     AvatarModule, CardModule, TagModule, ButtonModule,
     InputTextModule, InputNumberModule, TextareaModule, MessageModule,
-    LoadingSpinnerComponent, ErrorAlertComponent, SafeUrlPipe
+    LoadingSpinnerComponent, ErrorAlertComponent, SafeUrlPipe, QRCodeComponent
   ],
   templateUrl: './barber-profile.component.html',
   styleUrl: './barber-profile.component.css'
@@ -56,6 +57,8 @@ export class BarberProfileComponent implements AfterViewChecked {
   langService = inject(LanguageService);
 
   isLoading = signal(true);
+  showQr = signal(false);
+  qrUrl = computed(() => `${window.location.origin}/barbers/${this.sessionService.userId()}`);
   isSaving = signal(false);
   isEditMode = signal(false);
   isUploadingPhoto = signal(false);
