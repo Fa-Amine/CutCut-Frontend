@@ -191,9 +191,25 @@
 .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 /* RESPONSIVE */
-@media (max-width: 640px) {
-  .chat-page { height: calc(100vh - 140px); }
-  .messages-container { padding: 1rem; }
-  .chat-input-bar { padding: 0.75rem 1rem; }
+@media (max-width: 980px) {
+  .chat-page {
+    height: 100vh;
+    padding-bottom: 130px;
+  }
+
+  .chat-input-bar {
+    position: fixed;
+    bottom: 70px;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 0.75rem 1rem;
+  }
+
+  .messages-container {
+    padding: 1rem;
+    padding-bottom: 1rem;
+  }
+
   .message-bubble { max-width: 85%; }
 }
