@@ -20,7 +20,9 @@ export class WebSocketService {
     const isBarber = this.sessionService.isBarber();
     const isClient = this.sessionService.isClient();
 
-    const wsUrl = 'https://cutcut.online/ws';
+    const wsUrl = environment.production 
+  ? 'https://cutcut.online/ws' 
+  : 'http://localhost:8080/ws';
 
     this.client = new Client({
       webSocketFactory: () => {

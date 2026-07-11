@@ -1,4 +1,5 @@
 export const environment = {
-    production: true,
-    apiBaseUrl: 'https://api.cutcut.online/api'
+    production: false,
+    apiBaseUrl: 'http://localhost:8080/api'
 };
+
