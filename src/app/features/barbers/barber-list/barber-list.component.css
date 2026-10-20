@@ -338,3 +338,23 @@
   opacity: 1;
   transform: scale(1.2);
 }
+
+.location-notice {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #f3d28b;
+  border-radius: 16px;
+  background: #fffbeb;
+  color: #713f12;
+}
+.location-notice p { margin: 0 0 0.5rem; }
+.location-notice button {
+  padding: 0.65rem 1rem;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.location-notice button:disabled { opacity: 0.6; cursor: wait; }

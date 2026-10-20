@@ -44,6 +44,7 @@ export class BarberListComponent implements AfterViewChecked {
   userLat = signal<number | null>(null);
   userLng = signal<number | null>(null);
   isLocating = signal(false);
+  locationMessage = signal('');
   sortByDistance = signal(false);
   selectedCategory = signal<'ALL' | 'HOMME' | 'FEMME'>('ALL');
 
@@ -158,8 +159,14 @@ export class BarberListComponent implements AfterViewChecked {
   }
 
   locateMe() {
+    if (this.isLocating()) return;
+    this.locationMessage.set('');
+    if (!window.isSecureContext) {
+      this.locationMessage.set('La localisation nécessite une connexion HTTPS. Vous pouvez continuer à rechercher un barbier par nom.');
+      return;
+    }
     if (!navigator.geolocation) {
-      this.errorMessage.set('La geolocalisation n\'est pas supportee.');
+      this.locationMessage.set('Ce navigateur ne permet pas la localisation. Vous pouvez rechercher un barbier par nom.');
       return;
     }
     this.isLocating.set(true);
@@ -181,10 +188,16 @@ export class BarberListComponent implements AfterViewChecked {
           });
         }
       },
-      () => {
+      (error) => {
         this.isLocating.set(false);
-        this.errorMessage.set('Impossible de recuperer votre position.');
-      }
+        const messages: Record<number, string> = {
+          1: 'Localisation refusée. Autorisez la localisation pour cutcut.online dans les réglages du navigateur, puis réessayez.',
+          2: 'Votre position est indisponible. Vérifiez que le service de localisation de votre téléphone est activé, puis réessayez.',
+          3: 'La recherche de votre position a pris trop de temps. Vérifiez votre connexion, puis réessayez.'
+        };
+        this.locationMessage.set(messages[error.code] ?? 'Impossible de déterminer votre position. Réessayez ou recherchez un barbier par nom.');
+      },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 }
     );
   }
 

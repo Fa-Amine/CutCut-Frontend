@@ -1,4 +1,5 @@
 @import "primeicons/primeicons.css";
+@import "leaflet/dist/leaflet.css";
 
 :root {
   color-scheme: light only;
@@ -169,3 +170,22 @@ select,
 
 /* DARK MODE DISABLED */
 body.dark-mode { background: #ffffff !important; color: #171717 !important; }
+
+.home-barber-pin,
+.home-radius-pin {
+  display: grid;
+  place-items: center;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: #171717;
+  color: white;
+  font: 700 16px sans-serif;
+  box-shadow: 0 3px 12px #0003;
+}
+
+.home-radius-pin {
+  background: #1676ff;
+  font-size: 24px;
+  cursor: grab;
+  touch-action: none;
+}
