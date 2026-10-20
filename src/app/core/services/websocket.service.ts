@@ -20,7 +20,9 @@ export class WebSocketService {
     const isBarber = this.sessionService.isBarber();
     const isClient = this.sessionService.isClient();
 
-    const wsUrl = environment.apiBaseUrl.replace('/api', '/ws');
+    const wsUrl = environment.production 
+  ? 'https://cutcut.online/ws' 
+  : 'http://localhost:8080/ws';
 
     this.client = new Client({
       webSocketFactory: () => {
@@ -35,6 +37,7 @@ export class WebSocketService {
             this.showBrowserNotification(message.body);
             this.playNotificationSound('barber');
           });
+
         }
         if (isClient) {
           this.client!.subscribe(`/topic/client/${userId}`, (message) => {

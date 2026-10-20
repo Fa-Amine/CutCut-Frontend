@@ -56,6 +56,14 @@
       </div>
     </div>
 
+    <div *ngIf="locationMessage()" class="location-notice" role="status" aria-live="polite">
+      <p>{{ locationMessage() }}</p>
+      <p>La liste et la carte restent accessibles sans localisation.</p>
+      <button type="button" (click)="locateMe()" [disabled]="isLocating()">
+        {{ isLocating() ? langService.t().locating : 'Réessayer la localisation' }}
+      </button>
+    </div>
+
     <app-loading-spinner *ngIf="isLoading()" [message]="langService.t().loadingBarbers"></app-loading-spinner>
     <app-error-alert *ngIf="!isLoading() && errorMessage()" [title]="langService.t().error" [message]="errorMessage()"></app-error-alert>
 

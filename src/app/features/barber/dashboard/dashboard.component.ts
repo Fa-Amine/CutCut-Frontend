@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
@@ -26,7 +27,8 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
     TagModule,
     LoadingSpinnerComponent,
     ErrorAlertComponent,
-    EmptyStateComponent
+    EmptyStateComponent,
+    QRCodeComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
@@ -38,6 +40,8 @@ export class DashboardComponent {
   private bookingService = inject(BookingService);
 
   isLoading = signal(true);
+  showQr = signal(false);
+  qrUrl = computed(() => `${window.location.origin}/barbers/${this.sessionService.userId()}`);
   errorMessage = signal('');
   dashboard = signal<BarberDashboardResponse | null>(null);
   recentBookings = signal<BookingResponse[]>([]);

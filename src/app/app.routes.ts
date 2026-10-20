@@ -29,6 +29,12 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: '', component: HomeComponent },
+{
+  path: 'home-service',
+  loadComponent: () =>
+    import('./features/home-service/home-service.component')
+      .then((module) => module.HomeServiceComponent),
+},
       { path: 'barbers', component: BarberListComponent },
       { path: 'barbers/:id', component: BarberDetailsComponent },
       { path: 'bookings', component: MyBookingsComponent, canActivate: [clientGuard] },

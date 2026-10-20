@@ -1,0 +1,487 @@
+<section
+  class="home-service"
+  [attr.dir]="lang.isArabic() ? 'rtl' : 'ltr'"
+>
+  <header class="page-head">
+    <div>
+      <p class="eyebrow">
+        CUTCUT · {{ tr('CHEZ TOI', 'في منزلك') }}
+      </p>
+
+      <h1>
+        {{ tr('Ton barbier, à domicile.', 'حلاقك، في منزلك.') }}
+      </h1>
+
+      <p>
+        {{
+          tr(
+            'Choisis ta position et élargis la recherche pour trouver un professionnel qui se déplace.',
+            'حدد موقعك ووسّع نطاق البحث للعثور على حلاق يقدم الخدمة المنزلية.'
+          )
+        }}
+      </p>
+    </div>
+
+    <a routerLink="/barbers" class="secondary">
+      {{ tr('Je vais au salon', 'أذهب إلى الصالون') }} ↗
+    </a>
+  </header>
+
+  <div class="workspace">
+    <aside class="search-panel">
+      <div class="panel-title">
+        <h2>{{ tr('Il vient chez moi', 'يأتي إلى منزلي') }}</h2>
+        <span class="badge">{{ radiusKm }} km</span>
+      </div>
+
+      <button
+        type="button"
+        class="primary full"
+        (click)="locate()"
+        [disabled]="locating || landLoading || !!landError"
+      >
+        {{
+          locating
+            ? tr('Localisation…', 'جارٍ تحديد الموقع…')
+            : tr('Utiliser ma position', 'استخدام موقعي')
+        }}
+      </button>
+
+      <p class="help">
+        {{
+          tr(
+            'Tu peux aussi cliquer sur la carte pour choisir ton adresse.',
+            'يمكنك أيضاً الضغط على الخريطة لتحديد عنوانك.'
+          )
+        }}
+      </p>
+
+      <p class="notice" *ngIf="positionSource === 'preview'">
+        {{
+          tr(
+            'Aperçu sur Salé : confirme ta position avant d’envoyer une demande.',
+            'معاينة لمدينة سلا: أكد موقعك قبل إرسال الطلب.'
+          )
+        }}
+      </p>
+
+      <p class="confirmed" *ngIf="positionSource !== 'preview'">
+        ✓
+        {{
+          positionSource === 'gps'
+            ? tr('Position GPS sélectionnée', 'تم تحديد الموقع عبر GPS')
+            : tr('Position choisie sur la carte', 'تم تحديد الموقع على الخريطة')
+        }}
+      </p>
+
+      <p class="error" role="alert" *ngIf="locationError">
+        {{ locationError }}
+      </p>
+
+      <label for="home-radius">
+        {{ tr('Rayon de recherche', 'نطاق البحث') }}
+      </label>
+
+      <div class="radius-control">
+        <button
+          type="button"
+          (click)="setRadius(radiusKm - 1, true)"
+          [disabled]="radiusKm <= 1"
+          [attr.aria-label]="tr('Réduire le rayon', 'تقليص النطاق')"
+        >
+          −
+        </button>
+
+        <input
+          id="home-radius"
+          type="range"
+          min="1"
+          max="30"
+          step="1"
+          [ngModel]="radiusKm"
+          (ngModelChange)="setRadius($event)"
+          (change)="fitZone()"
+          [attr.aria-valuetext]="radiusKm + ' km'"
+        />
+
+        <button
+          type="button"
+          (click)="setRadius(radiusKm + 1, true)"
+          [disabled]="radiusKm >= 30"
+          [attr.aria-label]="tr('Élargir le rayon', 'توسيع النطاق')"
+        >
+          +
+        </button>
+      </div>
+
+      <p class="help">
+        {{
+          tr(
+            'De 1 à 30 km. Tu peux aussi tirer le point ↔ sur la carte. La zone suit les terres ; le littoral est indicatif.',
+            'من 1 إلى 30 كم. يمكنك أيضاً سحب النقطة ↔ على الخريطة. النطاق يتبع اليابسة وحدود الساحل تقريبية.'
+          )
+        }}
+      </p>
+
+      <p class="help" *ngIf="landLoading" role="status">
+        {{ tr('Chargement du littoral…', 'جارٍ تحميل الساحل…') }}
+      </p>
+
+      <div class="error" *ngIf="landError" role="alert">
+        {{ landError }}
+        <button type="button" (click)="loadLand()">
+          {{ tr('Réessayer', 'حاول مجدداً') }}
+        </button>
+      </div>
+
+      <p
+        class="notice"
+        *ngIf="!landLoading && !landError && !zoneAvailable"
+      >
+        {{
+          tr(
+            'Aucune terre dans ce rayon, ou position hors de la zone couverte autour du Maroc.',
+            'لا توجد يابسة في هذا النطاق، أو أن الموقع خارج المنطقة المغطاة حول المغرب.'
+          )
+        }}
+      </p>
+
+      <label for="home-query">
+        {{ tr('Nom du barbier ou du salon', 'اسم الحلاق أو الصالون') }}
+      </label>
+
+      <input
+        id="home-query"
+        type="search"
+        [(ngModel)]="query"
+        (ngModelChange)="refresh()"
+      />
+
+      <div class="filter-grid">
+        <div>
+          <label for="home-category">
+            {{ tr('Type', 'النوع') }}
+          </label>
+
+          <select
+            id="home-category"
+            [(ngModel)]="category"
+            (ngModelChange)="refresh()"
+          >
+            <option value="">{{ tr('Tous', 'الكل') }}</option>
+            <option value="HOMME">{{ tr('Homme', 'رجال') }}</option>
+            <option value="FEMME">{{ tr('Femme', 'نساء') }}</option>
+            <option value="MIXTE">{{ tr('Mixte', 'مختلط') }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="home-rating">
+            {{ tr('Note minimale', 'أدنى تقييم') }}
+          </label>
+
+          <select
+            id="home-rating"
+            [(ngModel)]="minRating"
+            (ngModelChange)="refresh()"
+          >
+            <option [ngValue]="0">
+              {{ tr('Toutes', 'الكل') }}
+            </option>
+            <option [ngValue]="3">3 ★ +</option>
+            <option [ngValue]="4">4 ★ +</option>
+            <option [ngValue]="5">5 ★</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="help">
+        {{
+          tr(
+            'Seuls les barbiers autorisés à domicile, avec une position renseignée dans cette zone, apparaissent.',
+            'تظهر فقط حسابات الحلاقين المعتمدين للخدمة المنزلية والذين حددوا مواقعهم داخل هذا النطاق.'
+          )
+        }}
+      </p>
+    </aside>
+
+    <div class="map-column">
+      <div class="map-box">
+        <div
+          #mapHost
+          class="home-map"
+          dir="ltr"
+          [attr.aria-label]="
+            tr('Carte des barbiers à domicile', 'خريطة حلاقي الخدمة المنزلية')
+          "
+        ></div>
+      </div>
+
+      <div class="error" role="alert" *ngIf="mapError">
+        {{ mapError }}
+        <button type="button" (click)="retryMap()">
+          {{ tr('Réessayer', 'حاول مجدداً') }}
+        </button>
+      </div>
+
+      <div class="success" *ngIf="sentTo" role="status">
+        {{
+          tr(
+            'Ta demande a été envoyée au barbier. Confirmez le prix et le rendez-vous dans la discussion.',
+            'تم إرسال طلبك إلى الحلاق. أكدا السعر والموعد في المحادثة.'
+          )
+        }}
+
+        <a [routerLink]="['/chat', sentTo]">
+          {{ tr('Ouvrir la discussion', 'فتح المحادثة') }} →
+        </a>
+      </div>
+
+      <div class="results-heading">
+        <h2>
+          {{ tr('Barbiers dans la zone', 'الحلاقون في النطاق') }}
+        </h2>
+        <span aria-live="polite">{{ results.length }}</span>
+      </div>
+
+      <p *ngIf="loading" role="status">
+        {{ tr('Chargement des barbiers…', 'جارٍ تحميل الحلاقين…') }}
+      </p>
+
+      <div class="error" *ngIf="dataError" role="alert">
+        {{ dataError }}
+        <button type="button" (click)="reloadBarbers()">
+          {{ tr('Réessayer', 'حاول مجدداً') }}
+        </button>
+      </div>
+
+      <div
+        class="empty"
+        *ngIf="
+          !loading &&
+          !dataError &&
+          !landLoading &&
+          !landError &&
+          results.length === 0
+        "
+      >
+        <h3>
+          {{ tr('Aucun barbier dans cette zone', 'لا يوجد حلاق في هذا النطاق') }}
+        </h3>
+
+        <p>
+          {{
+            tr(
+              'Élargis le rayon ou change les filtres pour voir plus de professionnels.',
+              'وسّع نطاق البحث أو غيّر المرشحات لعرض المزيد من الحلاقين.'
+            )
+          }}
+        </p>
+
+        <button
+          type="button"
+          class="secondary"
+          [disabled]="radiusKm >= 30"
+          (click)="setRadius(radiusKm + 5, true)"
+        >
+          {{ tr('Élargir de 5 km', 'توسيع النطاق بـ5 كم') }}
+        </button>
+      </div>
+
+      <div class="barber-grid">
+        <article class="barber-card" *ngFor="let barber of results">
+          <div class="barber-avatar" aria-hidden="true">
+            {{ barber.name.slice(0, 1) }}
+          </div>
+
+          <div class="barber-info">
+            <h3>{{ barber.shopName || barber.name }}</h3>
+
+            <p>
+              {{ barber.name }} ·
+              {{ barber.km | number:'1.1-1' }} km
+            </p>
+
+            <p>
+              ★ {{ barber.averageRating || 0 }} ·
+              {{ barber.reviewCount || 0 }}
+              {{ tr('avis', 'تقييم') }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="secondary full"
+            (click)="openRequest(barber)"
+          >
+            {{ tr('Voir et demander', 'عرض وإرسال طلب') }}
+          </button>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <dialog
+    #requestDialog
+    class="request-dialog"
+    (cancel)="cancelDialog($event)"
+  >
+    <div
+      *ngIf="selected as barber"
+      [attr.dir]="lang.isArabic() ? 'rtl' : 'ltr'"
+    >
+      <div class="panel-title">
+        <h2>{{ barber.shopName || barber.name }}</h2>
+
+        <button
+          type="button"
+          class="close-btn"
+          (click)="closeRequest()"
+          [disabled]="sending"
+          [attr.aria-label]="tr('Fermer', 'إغلاق')"
+        >
+          ×
+        </button>
+      </div>
+
+      <p>
+        {{ barber.name }} · {{ barber.km | number:'1.1-1' }} km
+      </p>
+
+      <a
+        [routerLink]="['/barbers', barber.id]"
+        (click)="closeRequest()"
+      >
+        {{ tr('Voir son profil', 'عرض الملف الشخصي') }} ↗
+      </a>
+
+      <p class="help">
+        {{
+          tr(
+            'Le barbier recevra ta demande dans Messages. Vous confirmerez ensemble la date, le prix et sa disponibilité.',
+            'سيتلقى الحلاق طلبك في الرسائل. ستتفقان معاً على التاريخ والسعر والتوفر.'
+          )
+        }}
+      </p>
+
+      <p class="notice" *ngIf="positionSource === 'preview'">
+        {{
+          tr(
+            'Ferme cette fiche et confirme ta position avec le GPS ou un clic sur la carte.',
+            'أغلق هذه النافذة وأكد موقعك عبر GPS أو الضغط على الخريطة.'
+          )
+        }}
+      </p>
+
+      <ng-container *ngIf="session.isClient(); else loginRequired">
+        <form
+          (ngSubmit)="sendRequest()"
+          #requestForm="ngForm"
+        >
+          <label for="request-service">
+            {{ tr('Service souhaité', 'الخدمة المطلوبة') }}
+          </label>
+
+          <input
+            id="request-service"
+            name="service"
+            [(ngModel)]="service"
+            required
+            maxlength="300"
+            [disabled]="sending"
+          />
+
+          <label for="request-price">
+            {{ tr('Prix proposé (MAD)', 'السعر المقترح (درهم)') }}
+          </label>
+
+          <input
+            id="request-price"
+            name="price"
+            type="number"
+            [(ngModel)]="price"
+            required
+            min="0.01"
+            max="100000"
+            step="0.01"
+            [disabled]="sending"
+          />
+
+          <label for="request-address">
+            {{
+              tr(
+                'Adresse et précisions pour le déplacement',
+                'العنوان وتفاصيل الوصول'
+              )
+            }}
+          </label>
+
+          <textarea
+            id="request-address"
+            name="address"
+            [(ngModel)]="address"
+            required
+            maxlength="500"
+            rows="3"
+            [disabled]="sending"
+          ></textarea>
+
+          <p class="help">
+            {{
+              tr(
+                'L’adresse et le point choisi seront partagés dans ta demande à ce barbier.',
+                'سيتم إرسال العنوان والنقطة المحددة ضمن طلبك إلى هذا الحلاق.'
+              )
+            }}
+          </p>
+
+          <p class="error" *ngIf="sendError" role="alert">
+            {{ sendError }}
+          </p>
+
+          <button
+            type="submit"
+            class="primary full"
+            [disabled]="
+              sending ||
+              requestForm.invalid ||
+              positionSource === 'preview' ||
+              !zoneAvailable
+            "
+          >
+            {{
+              sending
+                ? tr('Envoi…', 'جارٍ الإرسال…')
+                : tr('Envoyer la demande au barbier', 'إرسال الطلب إلى الحلاق')
+            }}
+          </button>
+        </form>
+      </ng-container>
+
+      <ng-template #loginRequired>
+        <a
+          *ngIf="session.isGuest()"
+          class="primary full login-link"
+          routerLink="/login"
+          (click)="closeRequest()"
+        >
+          {{
+            tr(
+              'Se connecter pour envoyer une demande',
+              'تسجيل الدخول لإرسال طلب'
+            )
+          }}
+        </a>
+
+        <p *ngIf="!session.isGuest()" class="notice">
+          {{
+            tr(
+              'L’envoi de demandes est réservé aux comptes clients.',
+              'إرسال الطلبات متاح لحسابات الزبائن.'
+            )
+          }}
+        </p>
+      </ng-template>
+    </div>
+  </dialog>
+</section>
