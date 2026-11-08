@@ -45,7 +45,7 @@ export class AuthService {
   // ✅ Demande de code de réinitialisation
   forgotPassword(email: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
-      `${this.baseUrl}/auth/forgot-password`,
+      `${this.baseUrl}/auth/password-reset/request`,
       { email }
     );
   }
@@ -53,7 +53,7 @@ export class AuthService {
   // ✅ Réinitialisation avec code
   resetPassword(email: string, code: string, newPassword: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
-      `${this.baseUrl}/auth/reset-password`,
+      `${this.baseUrl}/auth/password-reset/confirm`,
       { email, code, newPassword }
     );
   }
