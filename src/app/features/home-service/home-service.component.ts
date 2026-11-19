@@ -16,14 +16,15 @@ import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as L from 'leaflet';
-import { from, of } from 'rxjs';
-import { catchError, finalize, map, mergeMap } from 'rxjs/operators';
+import { from, of, timer, Subscription } from 'rxjs';
+import { catchError, finalize, map, mergeMap, timeout, takeWhile } from 'rxjs/operators';
+import { REQUEST_TTL, RequestDelivery, remainingSeconds, hasTimelyReply } from './home-tracking.utils';
 import { buildHomeRequest } from './home-request.utils';
 import type { MultiPolygon } from 'polygon-clipping';
 
 import { BarberService } from '../../core/services/barber.service';
 import { BarberListItem } from '../../core/models/barber.models';
-import { ChatService } from '../../core/services/chat.service';
+import { ChatMessage, ChatService } from '../../core/services/chat.service';
 import { SessionService } from '../../core/services/session.service';
 import { LanguageService } from '../../core/services/language.service';
 
@@ -49,7 +50,7 @@ type NearbyBarber = BarberListItem & {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './home-service.component.html',
-  styleUrl: './home-service.component.css',
+  styleUrls: ['./home-service.component.css', './home-tracking.css'],
 })
 export class HomeServiceComponent
   implements OnInit, AfterViewInit, OnDestroy
@@ -92,7 +93,98 @@ export class HomeServiceComponent
   otherService = '';
   timing: 'now' | 'scheduled' = 'now';
   requestedAt = '';
-  deliveries: { id: number; name: string; state: 'pending' | 'sent' | 'failed' }[] = [];
+  deliveries: RequestDelivery[] = [];
+  startedAt = 0;
+  now = Date.now();
+  trackingError = false;
+  checkingReplies = false;
+  private clock?: Subscription;
+  private trackingOwner: number | null = null;
+
+  get secondsLeft(): number { return this.startedAt ? remainingSeconds(this.startedAt, this.now) : 0; }
+  get expired(): boolean { return this.startedAt > 0 && this.secondsLeft === 0; }
+  get countdown(): string { return `${Math.floor(this.secondsLeft / 60)}:${String(this.secondsLeft % 60).padStart(2, '0')}`; }
+  get timeProgress(): number { return this.secondsLeft / 360 * 100; }
+  get replyCount(): number { return this.deliveries.filter(item => item.replied).length; }
+  get waitingCount(): number { return this.deliveries.filter(item => item.state === 'sent' && !item.replied).length; }
+  get canStartAgain(): boolean { return !this.sending && (this.expired || !this.waitingCount); }
+
+  deliveryLabel(item: RequestDelivery): string {
+    if (item.state === 'pending') return this.tr('Envoi en cours', 'جارٍ الإرسال');
+    if (item.state === 'failed') return this.tr('Envoi non confirmé', 'الإرسال غير مؤكد');
+    if (item.replied) return this.tr('Réponse reçue', 'تم استلام رد');
+    return this.expired ? this.tr('Expirée', 'منتهي الصلاحية') : this.tr('En attente de réponse', 'في انتظار الرد');
+  }
+
+  private storageKey(): string { return `cutcut_client_tracking_v1_${this.trackingOwner}`; }
+  private saveTracking(): void {
+    try { sessionStorage.setItem(this.storageKey(), JSON.stringify({
+      startedAt: this.startedAt, deliveries: this.deliveries, content: this.batchContent,
+      services: this.services, otherService: this.otherService, price: this.price,
+      timing: this.timing, requestedAt: this.requestedAt,
+    })); } catch { /* Tracking still works when browser storage is unavailable. */ }
+  }
+
+  private restoreTracking(): void {
+    this.trackingOwner = this.session.userId();
+    if (!this.trackingOwner || !this.session.isClient()) return;
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(this.storageKey()) || 'null');
+      if (!saved || !Number.isFinite(saved.startedAt) || saved.startedAt > Date.now() ||
+          saved.startedAt < Date.now() - 86400000 || typeof saved.content !== 'string' ||
+          !Array.isArray(saved.deliveries) || !saved.deliveries.every((item: RequestDelivery) =>
+            Number.isSafeInteger(item.id) && item.id > 0 && typeof item.name === 'string' &&
+            ['pending', 'sent', 'failed'].includes(item.state))) return;
+      this.startedAt = saved.startedAt;
+      this.batchContent = saved.content;
+      this.deliveries = saved.deliveries.map((item: RequestDelivery) => ({...item,
+        state: item.state === 'pending' ? 'failed' : item.state}));
+      this.services = Array.isArray(saved.services) ? saved.services.filter((x: unknown) => typeof x === 'string') : [];
+      this.otherService = typeof saved.otherService === 'string' ? saved.otherService : '';
+      this.price = typeof saved.price === 'number' ? saved.price : null;
+      this.timing = saved.timing === 'scheduled' ? 'scheduled' : 'now';
+      this.requestedAt = typeof saved.requestedAt === 'string' ? saved.requestedAt : '';
+      this.startTracking();
+    } catch { /* Ignore invalid or unavailable saved state. */ }
+  }
+
+  private startTracking(): void {
+    this.clock?.unsubscribe();
+    this.now = Date.now();
+    this.clock = timer(0, 1000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(tick => {
+      if (this.session.userId() !== this.trackingOwner || !this.session.isClient()) {
+        this.clock?.unsubscribe(); this.batchContent = null; this.deliveries = []; return;
+      }
+      const wasExpired = this.expired;
+      this.now = Date.now();
+      if (tick === 0 || (!this.expired && tick % 10 === 0) || (!wasExpired && this.expired)) this.refreshReplies();
+    });
+  }
+
+  refreshReplies(): void {
+    const owner = this.trackingOwner;
+    if (!owner || this.session.userId() !== owner || this.checkingReplies) return;
+    const batch = this.batchContent;
+    const startedAt = this.startedAt;
+    const targets = this.deliveries.filter(item => item.state === 'sent' && !item.replied);
+    this.checkingReplies = true;
+    this.trackingError = false;
+    from(targets).pipe(
+      mergeMap(target => this.chat.getConversation(owner, target.id).pipe(
+        timeout(10000),
+        map(messages => ({target, replied: hasTimelyReply(messages, owner, target, startedAt), error: false})),
+        catchError(() => of({target, replied: false, error: true})),
+      ), 3),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => { this.checkingReplies = false; }),
+    ).subscribe(result => {
+      if (this.batchContent !== batch || this.session.userId() !== owner) return;
+      result.target.replied = result.replied;
+      this.trackingError ||= result.error;
+      this.saveTracking();
+    });
+  }
+
   batchContent: string | null = null;
 
   get requestLocked(): boolean { return this.batchContent !== null; }
@@ -113,7 +205,10 @@ export class HomeServiceComponent
   }
 
   newRequest(): void {
-    if (this.sending) return;
+    if (!this.canStartAgain) return;
+    this.clock?.unsubscribe();
+    try { sessionStorage.removeItem(this.storageKey()); } catch {}
+    this.startedAt = 0;
     this.batchContent = null;
     this.deliveries = [];
     this.sendError = '';
@@ -144,6 +239,7 @@ export class HomeServiceComponent
   }
 
   ngOnInit(): void {
+    this.restoreTracking();
     this.reloadBarbers();
     void this.loadLand();
   }
@@ -569,13 +665,14 @@ export class HomeServiceComponent
       this.sendError = this.tr('Attends le chargement ou réessaie.', 'انتظر التحميل أو حاول مجدداً.');
       return;
     }
+    const startedAt = Date.now();
     let content: string;
     try {
       content = buildHomeRequest({
         services: [...this.services, this.otherService], price: Number(this.price),
         timing: this.timing, requestedAt: this.requestedAt,
         center: this.center, radiusKm: this.radiusKm,
-      });
+      }, startedAt);
     } catch {
       this.sendError = this.tr(
         'Choisis une prestation, un prix entre 0,01 et 100 000 DH et, si nécessaire, un horaire futur.',
@@ -594,22 +691,35 @@ export class HomeServiceComponent
       );
       return;
     }
+    this.startedAt = startedAt;
+    this.now = startedAt;
+    this.trackingOwner = id;
     this.batchContent = content;
     this.deliveries = recipients.map(item => ({
       id: item.id, name: item.shopName || item.name, state: 'pending',
     }));
     this.sending = true;
+    this.saveTracking();
+    this.startTracking();
     this.handle?.dragging?.disable();
     from(this.deliveries).pipe(
       // Bound concurrency; each success/error is shown separately. No automatic retries.
-      mergeMap(target => this.chat.sendMessage(id, target.id, content).pipe(
-        map(() => ({ target, state: 'sent' as const })),
-        catchError(() => of({ target, state: 'failed' as const })),
+      takeWhile(() => Date.now() < startedAt + REQUEST_TTL),
+      mergeMap(target => (Date.now() >= startedAt + REQUEST_TTL
+        ? of<ChatMessage | null>(null) : this.chat.sendMessage(id, target.id, content).pipe(timeout(15000))).pipe(
+        map(message => ({ target, messageId: message?.id, state: message ? 'sent' as const : 'failed' as const })),
+        catchError(() => of({ target, messageId: undefined, state: 'failed' as const })),
       ), 3),
       takeUntilDestroyed(this.destroyRef),
-      finalize(() => { this.sending = false; }),
-    ).subscribe(({ target, state }) => {
+      finalize(() => {
+        this.sending = false;
+        this.deliveries.filter(item => item.state === 'pending').forEach(item => item.state = 'failed');
+        this.saveTracking(); this.refreshReplies();
+      }),
+    ).subscribe(({ target, state, messageId }) => {
       target.state = state;
+      target.messageId = messageId;
+      this.saveTracking();
       if (state === 'failed') {
         this.sendError = this.tr(
           'Certains envois ne sont pas confirmés. Consulte les discussions avant de contacter ces professionnels à nouveau.',
@@ -621,6 +731,7 @@ export class HomeServiceComponent
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    this.clock?.unsubscribe();
 
     this.abort?.abort();
 
