@@ -15,7 +15,7 @@ const HEADERS = [
 ];
 
 /** Classify existing Messages; this is not an authoritative booking status. */
-export function homeInboxRequests(messages: ChatMessage[], ownerId: number): HomeInboxRequest[] {
+export function homeInboxRequests(messages: ChatMessage[], ownerId: number, now = Date.now()): HomeInboxRequest[] {
   const unique = new Map<number, HomeInboxRequest>();
   for (const message of messages) {
     if (message.receiver?.id !== ownerId || message.sender?.id === ownerId ||
@@ -23,6 +23,14 @@ export function homeInboxRequests(messages: ChatMessage[], ownerId: number): Hom
         !Number.isSafeInteger(message.sender?.id) || message.sender.id <= 0 ||
         typeof message.content !== 'string' ||
         !HEADERS.includes(message.content.trim().split(/\r?\n/)[0])) continue;
+    const expiry = message.content.match(/^Expiration de la demande \(UTC\) : (.+)$/m);
+    if (expiry) {
+      const deadline = Date.parse(expiry[1]);
+      const replied = messages.some(reply => reply.sender?.id === ownerId &&
+        reply.receiver?.id === message.sender.id && reply.id > message.id &&
+        Date.parse(reply.sentAt) >= Date.parse(message.sentAt) && Date.parse(reply.sentAt) < deadline);
+      if (!Number.isFinite(deadline) || (deadline <= now && !replied)) continue;
+    }
     unique.set(message.id, {
       id: message.id, clientId: message.sender.id,
       clientName: message.sender.name || 'Client', content: message.content,

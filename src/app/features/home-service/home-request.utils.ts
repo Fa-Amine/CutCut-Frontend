@@ -40,6 +40,8 @@ export function buildHomeRequest(draft: HomeRequestDraft, now = Date.now()): str
   const area = `${draft.center.lat.toFixed(2)},${draft.center.lng.toFixed(2)}`;
   return [
     'Demande de prestation à domicile — CutCut',
+    `Expiration de la demande (UTC) : ${new Date(now + 6 * 60 * 1000).toISOString()}`,
+    'Sans réponse sous 6 minutes, cette demande expire. Un nouveau message reste possible, sans réservation automatique.',
     `Prestations : ${services.join(', ')}`,
     `Prix total proposé : ${draft.price.toFixed(2)} MAD`,
     `Horaire souhaité : ${time}`,

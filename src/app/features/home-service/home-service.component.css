@@ -332,37 +332,6 @@ textarea {
   margin: 10px 0 16px;
 }
 
-.request-dialog {
-  border: 0;
-  border-radius: 24px;
-  width: min(520px, calc(100vw - 32px));
-  max-height: calc(100dvh - 40px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 26px;
-  margin: auto;
-  box-shadow: 0 24px 90px #0004;
-  color: #171717;
-  background: white;
-}
-
-.request-dialog::backdrop {
-  background: #1119;
-}
-
-.request-dialog a {
-  color: #0b5ac9;
-  font-size: 13px;
-}
-
-.request-dialog a.primary {
-  color: white;
-}
-
-.request-dialog form > .primary {
-  margin-top: 18px;
-}
-
 .close-btn {
   border: 0;
   border-radius: 50%;
@@ -429,11 +398,7 @@ select:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .request-dialog {
-    padding: 20px;
-    max-height: calc(100dvh - 32px);
   }
-}
 /* Request form: keep the original map and coastline presentation. */
 :host *, :host *::before, :host *::after { box-sizing: border-box; }
 fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
@@ -450,3 +415,4 @@ fieldset:disabled { opacity: .7; }
 .delivery-list li { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e3e6ea; font-size: 13px; }
 .delivery-list a { color: #0b5ac9; }
 @media (max-width: 700px) { .map-column { position: static; grid-row: 1; } .home-map { height: 300px; } }
+

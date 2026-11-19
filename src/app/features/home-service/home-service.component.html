@@ -188,10 +188,10 @@
       <p *ngIf="!session.isClient() && !session.isGuest()" class="notice">
         {{ tr('La demande est réservée aux comptes clients.', 'الطلب متاح لحسابات الزبائن.') }}
       </p>
-      <button *ngIf="requestLocked" type="button" class="secondary full" (click)="newRequest()" [disabled]="sending">
+      <button *ngIf="requestLocked" type="button" class="secondary full" (click)="newRequest()" [disabled]="!canStartAgain">
         {{ tr('Préparer une nouvelle demande', 'إعداد طلب جديد') }}
       </button>
-      <p *ngIf="requestLocked" class="help">{{ tr('Une nouvelle demande n’annule pas les messages déjà envoyés.', 'الطلب الجديد لا يلغي الرسائل المرسلة.') }}</p>
+      <p *ngIf="requestLocked" class="help">{{ tr('Délai de réponse : 6 minutes maximum. Les discussions restent accessibles après expiration.', 'مهلة الرد 6 دقائق كحد أقصى. تبقى المحادثات متاحة بعد انتهاء الصلاحية.') }}</p>
       </form>
     </aside>
 
@@ -214,22 +214,41 @@
         </button>
       </div>
 
-      <section *ngIf="requestLocked" class="request-status" aria-live="polite" aria-atomic="true">
-        <h2>{{ sending ? tr('Envoi de ta demande…', 'جارٍ إرسال طلبك…') : tr('Suivi des envois', 'متابعة الإرسال') }}</h2>
-        <p>{{ sentCount }} / {{ deliveries.length }} {{ tr('envois confirmés', 'إرسالات مؤكدة') }}</p>
-        <p *ngIf="!sending && sentCount" class="success">
-          {{ tr('Demande envoyée. Consulte les discussions pour les réponses et confirme le rendez-vous avec un professionnel.', 'تم إرسال الطلب. راجع المحادثات للاطلاع على الردود وتأكيد الموعد مع أحد المهنيين.') }}
-        </p>
-        <p *ngIf="!sending && failedCount" class="notice">
-          {{ failedCount }} {{ tr('envoi(s) non confirmé(s). Vérifie les discussions avant de réessayer pour éviter un doublon.', 'إرسالات غير مؤكدة. تحقق من المحادثات قبل إعادة المحاولة لتجنب التكرار.') }}
-        </p>
+      <section *ngIf="requestLocked" class="request-status" [class.is-expired]="expired" aria-labelledby="tracking-title">
+        <div class="tracking-topline">
+          <span class="tracking-eyebrow">{{ tr('TA DEMANDE À DOMICILE', 'طلبك للخدمة المنزلية') }}</span>
+          <span class="tracking-pill" [class.closed]="expired"><span aria-hidden="true">●</span> {{ expired ? tr('Recherche terminée', 'انتهى البحث') : tr('Recherche en cours', 'البحث جارٍ') }}</span>
+        </div>
+        <div class="tracking-hero">
+          <div class="tracking-copy">
+            <h2 id="tracking-title">{{ sending ? tr('On transmet ta demande.', 'نرسل طلبك.') : replyCount ? tr('Tu as reçu une réponse.', 'لقد تلقيت رداً.') : expired ? tr('Le délai est écoulé.', 'انتهت المهلة.') : tr('En attente d’une réponse.', 'في انتظار رد.') }}</h2>
+            <p>{{ expired ? tr('Les demandes sans réponse ont expiré. Tu peux ajuster ta recherche et réessayer.', 'انتهت صلاحية الطلبات دون رد. يمكنك تعديل البحث والمحاولة مجدداً.') : tr('Les professionnels de ta zone ont 6 minutes pour répondre. Une réponse ne confirme pas encore le rendez-vous.', 'لدى المهنيين في منطقتك 6 دقائق للرد. الرد لا يؤكد الموعد بعد.') }}</p>
+          </div>
+          <div class="tracking-clock" [class.urgent]="secondsLeft <= 60 && !expired" role="timer" aria-live="off" [attr.aria-label]="tr('Temps restant', 'الوقت المتبقي')">
+            <strong dir="ltr">{{ countdown }}</strong><span>{{ tr('temps restant', 'الوقت المتبقي') }}</span>
+          </div>
+        </div>
+        <div class="tracking-progress" role="progressbar" [attr.aria-valuenow]="secondsLeft" aria-valuemin="0" aria-valuemax="360" [attr.aria-label]="tr('Délai de réponse', 'مهلة الرد')"><span [style.width.%]="timeProgress"></span></div>
+        <div class="tracking-summary">
+          <span><strong>{{ sentCount }}</strong> {{ tr('contacté(s)', 'تم التواصل معهم') }}</span>
+          <span><strong>{{ replyCount }}</strong> {{ tr('réponse(s)', 'ردود') }}</span>
+          <span><strong>{{ waitingCount }}</strong> {{ expired ? tr('expirée(s)', 'منتهية الصلاحية') : tr('en attente', 'في الانتظار') }}</span>
+        </div>
+        <p class="tracking-announcement" role="status">{{ expired ? tr('Délai de 6 minutes terminé.', 'انتهت مهلة 6 دقائق.') : '' }} {{ replyCount ? tr('Une réponse est disponible dans tes discussions.', 'يوجد رد في محادثاتك.') : '' }}</p>
         <ul class="delivery-list">
           <li *ngFor="let item of deliveries">
-            <span>{{ item.name }}</span>
-            <span>{{ item.state === 'sent' ? tr('Envoyée', 'أرسلت') : item.state === 'failed' ? tr('Non confirmé', 'غير مؤكد') : tr('En cours', 'قيد الإرسال') }}</span>
-            <a *ngIf="item.state !== 'pending'" [routerLink]="['/chat', item.id]">{{ tr('Discussion', 'المحادثة') }} ↗</a>
+            <div class="tracking-avatar" aria-hidden="true">{{ item.name.charAt(0) }}</div>
+            <div class="delivery-person"><strong>{{ item.name }}</strong><span [class.has-reply]="item.replied">{{ deliveryLabel(item) }}</span></div>
+            <a *ngIf="item.state !== 'pending'" [routerLink]="['/chat', item.id]" [class.reply-link]="item.replied">{{ item.replied ? tr('Voir la réponse', 'عرض الرد') : tr('Discussion', 'المحادثة') }} <span aria-hidden="true">↗</span></a>
           </li>
         </ul>
+        <p *ngIf="failedCount" class="notice">{{ tr('Certains envois ne sont pas confirmés. Vérifie les discussions avant de réessayer.', 'بعض الإرسالات غير مؤكدة. راجع المحادثات قبل المحاولة مجدداً.') }}</p>
+        <p *ngIf="trackingError" class="notice" role="status">{{ tr('Les réponses ne sont pas à jour. Actualise ou consulte les discussions.', 'الردود غير محدثة. حدّث الصفحة أو راجع المحادثات.') }}</p>
+        <footer class="tracking-footer">
+          <span>{{ tr('Le prix et le rendez-vous se confirment en discussion.', 'يؤكد السعر والموعد في المحادثة.') }}</span>
+          <button type="button" class="tracking-refresh" (click)="refreshReplies()" [disabled]="checkingReplies || sending">{{ checkingReplies ? tr('Actualisation…', 'جارٍ التحديث…') : tr('Actualiser', 'تحديث') }}</button>
+          <button *ngIf="canStartAgain" type="button" class="primary" (click)="newRequest()">{{ tr('Nouvelle recherche', 'بحث جديد') }}</button>
+        </footer>
       </section>
 
       <div class="results-heading">
