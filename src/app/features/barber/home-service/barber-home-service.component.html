@@ -1,49 +1,45 @@
 <section class="pro-home" [attr.dir]="lang.isArabic() ? 'rtl' : 'ltr'">
   <header class="heading">
     <div><p class="eyebrow">CUTCUT · {{ tr('ESPACE PROFESSIONNEL', 'فضاء المهني') }}</p>
-      <h1>{{ tr('Tes prestations à domicile', 'خدماتك المنزلية') }}</h1>
-      <p>{{ tr('Suis ton activation et retrouve les demandes des clients de ta zone.', 'تابع تفعيل الخدمة وطلبات زبائن منطقتك.') }}</p>
+      <h1>{{ enabled() ? tr('Tes prestations à domicile', 'خدماتك المنزلية') : status() === 'PENDING' ? tr('Ta candidature est en cours', 'طلبك قيد المراجعة') : tr('Proposer tes services à domicile', 'قدّم خدماتك في المنزل') }}</h1>
+      <p>{{ enabled() ? tr('Retrouve les demandes des clients de ta zone.', 'اطّلع على طلبات زبائن منطقتك.') : tr('Complète ton dossier, envoie ta demande puis attends la réponse de CutCut.', 'أكمل ملفك وأرسل طلبك ثم انتظر رد CutCut.') }}</p>
     </div>
     <a routerLink="/barber/dashboard" class="button secondary">{{ tr('Tableau de bord', 'لوحة التحكم') }}</a>
   </header>
 
   <app-home-private-auth (unlocked)="loadStatus()"></app-home-private-auth>
 
-  <div class="layout">
+  <ol class="application-steps" *ngIf="privateApi.ready() && access() && !enabled()" aria-label="Étapes de candidature">
+    <li [class.current]="canApply"><span>1</span>{{ tr('Compléter le dossier', 'إكمال الملف') }}</li>
+    <li [class.current]="status() === 'PENDING'"><span>2</span>{{ tr('Attendre la validation', 'انتظار الموافقة') }}</li>
+    <li><span>3</span>{{ tr('Recevoir les demandes', 'استقبال الطلبات') }}</li>
+  </ol>
+
+  <div class="layout" [class.application-layout]="!enabled()">
     <aside class="activation card">
-      <h2>{{ tr('Activation du service', 'تفعيل الخدمة') }}</h2>
+      <h2>{{ enabled() ? tr('Service activé', 'الخدمة مفعلة') : status() === 'PENDING' ? tr('Demande envoyée', 'تم إرسال الطلب') : tr('Ton dossier de candidature', 'ملف ترشحك') }}</h2>
       <p *ngIf="loadingStatus()" role="status">{{ tr('Vérification…', 'جارٍ التحقق…') }}</p>
       <div *ngIf="profileError()" class="error" role="alert">{{ profileError() }}</div>
       <div *ngIf="applicationError()" class="error" role="alert">{{ applicationError() }}</div>
       <ng-container *ngIf="privateApi.ready() && access() && !loadingStatus()">
-        <p class="badge" [class.active]="enabled()">{{ enabled() ? tr('Service actif', 'الخدمة مفعلة') : tr('Service non activé', 'الخدمة غير مفعلة') }}</p>
+        <p class="badge" *ngIf="!canApply" [class.active]="enabled()">{{ enabled() ? tr('Service actif', 'الخدمة مفعلة') : tr('Service non activé', 'الخدمة غير مفعلة') }}</p>
         <p *ngIf="enabled()">{{ tr('Les clients peuvent te contacter si ta position se trouve dans leur rayon de recherche.', 'يمكن للزبائن التواصل معك إذا كنت داخل نطاق بحثهم.') }}</p>
         <ng-container *ngIf="!applicationError()">
-          <p *ngIf="status() === 'PENDING'" class="notice">{{ tr('Ton dossier est en attente de validation. Un envoi ne vaut pas une acceptation.', 'ملفك في انتظار المراجعة. الإرسال لا يعني الموافقة.') }}</p>
+          <p *ngIf="status() === 'PENDING'" class="notice">{{ tr('Ton dossier a bien été envoyé. L’administrateur va l’examiner. Les demandes clients seront accessibles après son acceptation.', 'تم إرسال ملفك. سيراجعه المسؤول، وستتاح طلبات الزبائن بعد الموافقة.') }}</p>
           <p *ngIf="status() === 'APPROVED'" class="success">{{ tr('Ton dossier a été accepté.', 'تم قبول ملفك.') }}</p>
           <p *ngIf="status() === 'APPROVED' && !enabled()" class="notice">{{ tr('Le dossier est accepté mais le service ne paraît pas actif. Contacte CutCut pour vérifier.', 'تم قبول الملف لكن الخدمة لا تبدو مفعلة. تواصل مع CutCut للتحقق.') }}</p>
           <div *ngIf="status() === 'REJECTED'" class="error">
             <strong>{{ tr('Dossier refusé', 'تم رفض الملف') }}</strong>
             <p>{{ application()?.rejectionReason || tr('Contacte CutCut pour connaître les éléments à corriger.', 'تواصل مع CutCut لمعرفة العناصر المطلوبة.') }}</p>
           </div>
-          <p *ngIf="!status() && !enabled()">{{ tr('Aucune demande d’activation enregistrée.', 'لا يوجد طلب تفعيل مسجل.') }}</p>
+          <p *ngIf="!status() && !enabled()">{{ tr('Renseigne les informations ci-dessous et ajoute les quatre photos pour demander l’activation.', 'أكمل المعلومات أدناه وأضف الصور الأربع لالمعلومات والوثائق.') }}</p>
         </ng-container>
         <p *ngIf="!positioned()" class="notice">{{ tr('Ajoute et enregistre ta position dans ton profil pour apparaître dans une zone de recherche.', 'أضف واحفظ موقعك في ملفك لتظهر ضمن نطاق البحث.') }}</p>
       </ng-container>
-      <div class="actions">
-        <a routerLink="/barber/profile" class="button secondary">{{ tr('Modifier mon profil et ma position', 'تعديل الملف والموقع') }}</a>
-        <button type="button" class="button secondary" (click)="loadStatus()" [disabled]="loadingStatus() || !privateApi.ready()">{{ tr('Actualiser mon statut', 'تحديث حالتي') }}</button>
-      </div>
-      <p *ngIf="!privateApi.ready()" class="notice">{{ tr('Déverrouille ton dossier pour consulter son statut ou envoyer tes justificatifs.', 'افتح ملفك الخاص للاطلاع على الحالة أو إرسال الوثائق.') }}</p>
+      <p *ngIf="!privateApi.ready()" class="notice">{{ tr('Reconnecte-toi depuis la page de connexion pour accéder à ton dossier.', 'أعد تسجيل الدخول للوصول إلى ملفك.') }}</p>
       <p class="success" *ngIf="submitSuccess()" role="status">{{ submitSuccess() }}</p>
-      <div class="documents-note" *ngIf="privateApi.ready() && application() as dossier">
-        <h3>{{ tr('Mon dossier', 'ملفي') }}</h3>
-        <p>{{ dossier.city }} · {{ dossier.experienceYears }} {{ tr('an(s) d’expérience', 'سنوات خبرة') }}</p>
-        <p>{{ dossier.experienceDescription }}</p>
-        <app-home-document-viewer [requestId]="dossier.id"></app-home-document-viewer>
-      </div>
       <form class="application-form" *ngIf="privateApi.ready() && canApply" (ngSubmit)="submitApplication()">
-        <h3>{{ tr('Demander l’activation', 'طلب التفعيل') }}</h3>
+        <h3>{{ tr('Informations et justificatifs', 'المعلومات والوثائق') }}</h3>
         <p>{{ tr('Ces quatre photos sont réservées à ton dossier et aux administrateurs autorisés. Elles ne seront pas publiées dans ta galerie.', 'تخصص الصور الأربع لملفك وللمسؤولين المخولين. لا تنشر في معرضك.') }}</p>
         <fieldset [disabled]="submitting()">
           <label for="pro-city">{{ tr('Ville', 'المدينة') }}</label>
@@ -64,9 +60,19 @@
           {{ submitting() ? tr('Envoi du dossier…', 'جارٍ إرسال الملف…') : tr('Envoyer pour validation', 'إرسال للمراجعة') }}
         </button>
       </form>
+      <details class="documents-note" *ngIf="privateApi.ready() && application() as dossier">
+        <summary>{{ tr('Consulter mon dossier envoyé', 'الاطلاع على ملفي المرسل') }}</summary>
+        <p>{{ dossier.city }} · {{ dossier.experienceYears }} {{ tr('an(s) d’expérience', 'سنوات خبرة') }}</p>
+        <p>{{ dossier.experienceDescription }}</p>
+        <app-home-document-viewer [requestId]="dossier.id"></app-home-document-viewer>
+      </details>
+      <div class="actions">
+        <a routerLink="/barber/profile" class="button secondary">{{ tr('Modifier mon profil et ma position', 'تعديل الملف والموقع') }}</a>
+        <button type="button" class="button secondary" (click)="loadStatus()" [disabled]="loadingStatus() || !privateApi.ready()">{{ tr('Actualiser mon statut', 'تحديث حالتي') }}</button>
+      </div>
     </aside>
 
-    <main class="inbox">
+    <main class="inbox" *ngIf="privateApi.ready() && enabled()">
       <div class="inbox-head">
         <div><h2>{{ tr('Demandes reçues', 'الطلبات الواردة') }} <span class="count">{{ requests().length }}</span></h2>
           <p *ngIf="unread()">{{ unread() }} {{ tr('message(s) non lu(s)', 'رسائل غير مقروءة') }}</p>

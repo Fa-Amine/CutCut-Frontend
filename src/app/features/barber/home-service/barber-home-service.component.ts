@@ -95,6 +95,10 @@ export class BarberHomeServiceComponent implements OnInit, OnDestroy {
           this.draft = {city: '', experienceDescription: ''};
           this.fileErrors = {};
           this.submitSuccess.set('');
+          this.requests.set([]);
+          this.updatedAt.set(null);
+          this.inboxError.set('');
+          this.failedConversations.set(0);
         }
       });
     });
@@ -106,7 +110,6 @@ export class BarberHomeServiceComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadStatus();
-    this.loadRequests();
   }
 
   loadStatus(): void {
@@ -118,7 +121,14 @@ export class BarberHomeServiceComponent implements OnInit, OnDestroy {
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.loadingStatus.set(false)),
     ).subscribe({
-      next: access => { this.access.set(access); },
+      next: access => {
+        this.access.set(access);
+        if (this.enabled()) this.loadRequests();
+        else {
+          this.requests.set([]); this.updatedAt.set(null);
+          this.inboxError.set(''); this.failedConversations.set(0);
+        }
+      },
       error: error => { this.access.set(null); this.applicationError.set(privateHomeError(error)); },
     });
     this.barbers.getBarberById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -129,7 +139,7 @@ export class BarberHomeServiceComponent implements OnInit, OnDestroy {
 
   loadRequests(): void {
     const id = this.session.userId();
-    if (!id || !this.session.isBarber() || this.loadingRequests()) return;
+    if (!id || !this.session.isBarber() || !this.privateApi.ready() || !this.enabled() || this.loadingRequests()) return;
     this.loadingRequests.set(true);
     this.inboxError.set('');
     this.failedConversations.set(0);
@@ -150,12 +160,16 @@ export class BarberHomeServiceComponent implements OnInit, OnDestroy {
       finalize(() => this.loadingRequests.set(false)),
     ).subscribe({
       next: batches => {
+        if (this.session.userId() !== id || !this.privateApi.ready() || !this.enabled()) return;
         const unique = new Map(batches.flatMap(batch => batch.requests).map(item => [item.id, item]));
         this.requests.set([...unique.values()].sort((a, b) => (Date.parse(b.sentAt) || 0) - (Date.parse(a.sentAt) || 0) || b.id - a.id));
         this.failedConversations.set(batches.filter(batch => batch.failed).length);
         this.updatedAt.set(new Date());
       },
-      error: () => this.inboxError.set(this.tr('Impossible de charger les demandes. La liste affichée peut être ancienne.', 'تعذر تحميل الطلبات. قد تكون القائمة المعروضة قديمة.')),
+      error: () => {
+        if (this.session.userId() === id && this.privateApi.ready() && this.enabled())
+          this.inboxError.set(this.tr('Impossible de charger les demandes. La liste affichée peut être ancienne.', 'تعذر تحميل الطلبات. قد تكون القائمة المعروضة قديمة.'));
+      },
     });
   }
 }
