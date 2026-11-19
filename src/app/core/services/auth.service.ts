@@ -8,6 +8,7 @@ import {
   RegisterBarberRequest,
   RegisterClientRequest
 } from '../models/auth.models';
+import { PrivateHomeService } from './private-home-service.service';
 import { SessionService } from './session.service';
 
 @Injectable({
@@ -16,12 +17,15 @@ import { SessionService } from './session.service';
 export class AuthService {
   private http = inject(HttpClient);
   private sessionService = inject(SessionService);
+  private privateHome = inject(PrivateHomeService);
   private readonly baseUrl = environment.apiBaseUrl;
 
   login(payload: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, payload).pipe(
       tap((response) => {
+        this.privateHome.lock();
         this.sessionService.setSession(response);
+        this.privateHome.acceptLogin(response);
       })
     );
   }
@@ -29,7 +33,9 @@ export class AuthService {
   registerClient(payload: RegisterClientRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register/client`, payload).pipe(
       tap((response) => {
+        this.privateHome.lock();
         this.sessionService.setSession(response);
+        this.privateHome.acceptLogin(response);
       })
     );
   }
@@ -37,7 +43,9 @@ export class AuthService {
   registerBarber(payload: RegisterBarberRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register/barber`, payload).pipe(
       tap((response) => {
+        this.privateHome.lock();
         this.sessionService.setSession(response);
+        this.privateHome.acceptLogin(response);
       })
     );
   }
@@ -59,6 +67,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.privateHome.lock();
     this.sessionService.logout();
   }
 }

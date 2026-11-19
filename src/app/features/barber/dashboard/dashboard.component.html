@@ -26,6 +26,13 @@
         </div>
       </div>
 
+      <a routerLink="/barber/home-service"
+        style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px;margin:0 0 24px;border:1px solid #d9e1e8;border-radius:16px;background:#fff;color:inherit;text-decoration:none;">
+        <span><strong>{{ langService.isArabic() ? 'خدماتي المنزلية' : 'Mes prestations à domicile' }}</strong><br>
+        <span style="font-size:13px;">{{ langService.isArabic() ? 'التفعيل وطلبات الزبائن والردود' : 'Activation, demandes clients et réponses' }}</span></span>
+        <span aria-hidden="true">→</span>
+      </a>
+
       <!-- STATS GRID -->
       <div class="stats-grid">
         <div class="stat-card">

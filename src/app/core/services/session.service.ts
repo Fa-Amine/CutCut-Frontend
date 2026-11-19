@@ -33,13 +33,15 @@ export class SessionService {
   }
 
   setSession(user: AuthResponse) {
-    this.userSignal.set(user);
-    localStorage.setItem('auth_user', JSON.stringify(user));
+    const { homeServiceToken, ...account } = user;
+    this.userSignal.set(account);
+    localStorage.setItem('auth_user', JSON.stringify(account));
   }
 
   clearSession() {
     this.userSignal.set(null);
     localStorage.removeItem('auth_user');
+    sessionStorage.removeItem('cutcut_home_session');
   }
 
   logout() {

@@ -1,5 +1,6 @@
 import { Component, inject, signal, AfterViewChecked, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { AvatarModule } from 'primeng/avatar';
@@ -21,8 +22,6 @@ import { SafeUrlPipe } from '../../../core/pipes/safe-url.pipe';
 import { BarberPhotoService, BarberPhoto } from '../../../core/services/barber-photo.service';
 import { BarberServiceService } from '../../../core/services/barber-service.service';
 import { BarberServiceItem } from '../../../core/models/booking.models';
-import { HomeServiceService } from '../../../core/services/home-service.service';
-import { HomeServiceRequest } from '../../../core/models/barber.models';
 
 declare const L: any;
 
@@ -38,7 +37,7 @@ interface PredefinedServiceItem {
   selector: 'app-barber-profile',
   standalone: true,
   imports: [
-    CommonModule, ReactiveFormsModule, FormsModule,
+    CommonModule, ReactiveFormsModule, FormsModule, RouterLink,
     AvatarModule, CardModule, TagModule, ButtonModule,
     InputTextModule, InputNumberModule, TextareaModule, MessageModule,
     LoadingSpinnerComponent, ErrorAlertComponent, SafeUrlPipe, QRCodeComponent
@@ -51,7 +50,6 @@ export class BarberProfileComponent implements AfterViewChecked {
   private profileService = inject(ProfileService);
   private barberPhotoService = inject(BarberPhotoService);
   private barberServiceService = inject(BarberServiceService);
-  private homeServiceService = inject(HomeServiceService);
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   langService = inject(LanguageService);
@@ -87,16 +85,6 @@ export class BarberProfileComponent implements AfterViewChecked {
   selectedPredefinedService = signal<PredefinedServiceItem | null>(null);
   predefinedServicePrice: number = 0;
   showPredefinedPriceInput = signal(false);
-
-  homeServiceRequest = signal<HomeServiceRequest | null>(null);
-  diplomaUrl = signal('');
-  cinUrl = signal('');
-  selfieUrl = signal('');
-  isUploadingDiploma = signal(false);
-  isUploadingCin = signal(false);
-  isUploadingSelfie = signal(false);
-  isSubmittingHomeService = signal(false);
-  isUploadingDoc = () => this.isUploadingDiploma() || this.isUploadingCin() || this.isUploadingSelfie();
 
   private editMap: any = null;
   private editMarker: any = null;
@@ -359,57 +347,6 @@ export class BarberProfileComponent implements AfterViewChecked {
     this.newServiceImageUrl.set('');
   }
 
-  loadHomeServiceRequest(barberId: number) {
-    this.homeServiceService.getByBarber(barberId).subscribe({
-      next: (req) => { if (req) this.homeServiceRequest.set(req); },
-      error: () => {}
-    });
-  }
-
-  onDocumentSelected(event: Event, type: 'diploma' | 'cin' | 'selfie') {
-    const input = event.target as HTMLInputElement;
-    if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
-    if (type === 'diploma') this.isUploadingDiploma.set(true);
-    if (type === 'cin') this.isUploadingCin.set(true);
-    if (type === 'selfie') this.isUploadingSelfie.set(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', this.CLOUDINARY_UPLOAD_PRESET);
-    this.http.post<any>(
-      `https://api.cloudinary.com/v1_1/${this.CLOUDINARY_CLOUD_NAME}/image/upload`,
-      formData
-    ).subscribe({
-      next: (response) => {
-        if (type === 'diploma') { this.diplomaUrl.set(response.secure_url); this.isUploadingDiploma.set(false); }
-        if (type === 'cin') { this.cinUrl.set(response.secure_url); this.isUploadingCin.set(false); }
-        if (type === 'selfie') { this.selfieUrl.set(response.secure_url); this.isUploadingSelfie.set(false); }
-      },
-      error: () => {
-        this.isUploadingDiploma.set(false);
-        this.isUploadingCin.set(false);
-        this.isUploadingSelfie.set(false);
-      }
-    });
-  }
-
-  submitHomeService() {
-    const barberId = this.sessionService.userId();
-    if (!barberId) return;
-    this.isSubmittingHomeService.set(true);
-    this.homeServiceService.submitRequest(
-      barberId, this.diplomaUrl(), this.cinUrl(), this.selfieUrl()
-    ).subscribe({
-      next: (req) => {
-        this.homeServiceRequest.set(req);
-        this.isSubmittingHomeService.set(false);
-        this.successMessage.set('Demande soumise !');
-        setTimeout(() => this.successMessage.set(''), 4000);
-      },
-      error: () => { this.isSubmittingHomeService.set(false); }
-    });
-  }
-
   // ✅ Upload photo avec preview immédiat
   onPhotoSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -533,7 +470,6 @@ export class BarberProfileComponent implements AfterViewChecked {
         this.isLoading.set(false);
         this.loadPhotos(barberId);
         this.loadServices(barberId);
-        this.loadHomeServiceRequest(barberId);
       },
       error: (error) => {
         this.errorMessage.set(error?.error?.message || 'Impossible de charger le profil barbier.');

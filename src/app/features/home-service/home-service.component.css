@@ -434,3 +434,19 @@ select:focus-visible {
     max-height: calc(100dvh - 32px);
   }
 }
+/* Request form: keep the original map and coastline presentation. */
+:host *, :host *::before, :host *::after { box-sizing: border-box; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+fieldset:disabled { opacity: .7; }
+.search-panel { position: static; }
+.map-column { position: sticky; top: 100px; }
+.service-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.service-choices button { border: 1px solid #d9dfe5; border-radius: 20px; background: white; padding: 10px 14px; min-height: 44px; font-size: 13px; }
+.service-choices button.chosen { background: #eaf2ff; color: #0b5ac9; border-color: #1676ff; }
+.search-panel form > .primary { margin-top: 12px; }
+.request-status { margin-top: 20px; background: white; border: 1px solid #e3e6ea; border-radius: 18px; padding: 20px; }
+.request-status h2 { font-size: 18px; }
+.delivery-list { list-style: none; margin: 0; padding: 0; }
+.delivery-list li { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e3e6ea; font-size: 13px; }
+.delivery-list a { color: #0b5ac9; }
+@media (max-width: 700px) { .map-column { position: static; grid-row: 1; } .home-map { height: 300px; } }

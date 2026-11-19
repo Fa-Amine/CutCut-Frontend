@@ -78,6 +78,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
           path: '/barber/messages',
         },
         {
+          label: this.langService.isArabic() ? 'في المنزل' : 'À domicile',
+          path: '/barber/home-service',
+        },
+        {
           label: this.langService.t().barberProfileNav,
           path: '/barber/profile',
         },

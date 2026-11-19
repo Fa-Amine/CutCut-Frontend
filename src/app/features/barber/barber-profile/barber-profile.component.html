@@ -291,25 +291,16 @@
           </p>
         </div>
 
-        <!-- ✅ SERVICE A DOMICILE -->
-        <div class="home-service-section" style="opacity:0.55; pointer-events:none; user-select:none;">
+        <section class="home-service-section">
           <div class="home-service-header">
-            <div>
-              <h3 style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
-                {{ langService.t().homeServiceTitle }}
-                <span style="background:#f59e0b; color:white; font-size:0.68rem; font-weight:700; padding:3px 10px; border-radius:999px; letter-spacing:0.05em; text-transform:uppercase;">
-                  {{ langService.t().comingSoon }}
-                </span>
-              </h3>
-              <p>{{ langService.t().homeServiceDesc }}</p>
-            </div>
+            <div><h3>{{ langService.isArabic() ? 'خدماتي المنزلية' : 'Mes prestations à domicile' }}</h3>
+            <p>{{ langService.isArabic() ? 'تابع التفعيل وطلبات الزبائن في فضائك المخصص.' : 'Retrouve ton statut d’activation et les demandes clients dans ton espace dédié.' }}</p></div>
           </div>
-          <div style="background:#f5f5f5; border:1.5px dashed #d4d4d4; border-radius:12px; padding:2rem; text-align:center;">
-            <p style="color:#a3a3a3; font-size:0.9rem; margin:0; font-weight:500;">
-              {{ langService.t().comingSoonText }}
-            </p>
-          </div>
-        </div>
+          <a routerLink="/barber/home-service"
+            style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:12px 18px;background:#171717;color:white;text-decoration:none;border-radius:12px;font-weight:600;">
+            {{ langService.isArabic() ? 'فتح فضاء الخدمة المنزلية' : 'Ouvrir mon espace à domicile' }} →
+          </a>
+        </section>
 
         <!-- ✅ PHOTOS -->
         <div class="gallery-section">

@@ -41,6 +41,12 @@ export const routes: Routes = [
       { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
       { path: 'barber/dashboard', component: DashboardComponent, canActivate: [barberGuard] },
       { path: 'barber/profile', component: BarberProfileComponent, canActivate: [barberGuard] },
+      {
+        path: 'barber/home-service',
+        canActivate: [barberGuard],
+        loadComponent: () => import('./features/barber/home-service/barber-home-service.component')
+          .then(module => module.BarberHomeServiceComponent),
+      },
       { path: 'barber/availability', component: AvailabilityComponent, canActivate: [barberGuard] },
       { path: 'barber/bookings', component: BarberBookingsComponent, canActivate: [barberGuard] },
       { path: 'barber/messages', component: BarberMessagesComponent, canActivate: [barberGuard] },
