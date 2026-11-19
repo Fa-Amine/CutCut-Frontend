@@ -9,14 +9,14 @@
       </p>
 
       <h1>
-        {{ tr('Ton barbier, à domicile.', 'حلاقك، في منزلك.') }}
+        {{ tr('Tes prestations, à domicile.', 'خدماتك، في منزلك.') }}
       </h1>
 
       <p>
         {{
           tr(
-            'Choisis ta position et élargis la recherche pour trouver un professionnel qui se déplace.',
-            'حدد موقعك ووسّع نطاق البحث للعثور على حلاق يقدم الخدمة المنزلية.'
+            'Choisis tes prestations, ton budget et ton horaire. Lance une demande auprès des professionnels de ta zone.',
+            'حدد الخدمات والميزانية والموعد، ثم أرسل طلبك إلى مهنيي منطقتك.'
           )
         }}
       </p>
@@ -29,6 +29,8 @@
 
   <div class="workspace">
     <aside class="search-panel">
+      <form (ngSubmit)="sendRequest()" #requestForm="ngForm">
+      <fieldset [disabled]="requestLocked">
       <div class="panel-title">
         <h2>{{ tr('Il vient chez moi', 'يأتي إلى منزلي') }}</h2>
         <span class="badge">{{ radiusKm }} km</span>
@@ -98,7 +100,7 @@
           min="1"
           max="30"
           step="1"
-          [ngModel]="radiusKm"
+          [ngModel]="radiusKm" name="radius"
           (ngModelChange)="setRadius($event)"
           (change)="fitZone()"
           [attr.aria-valuetext]="radiusKm + ' km'"
@@ -107,7 +109,7 @@
         <button
           type="button"
           (click)="setRadius(radiusKm + 1, true)"
-          [disabled]="radiusKm >= 30"
+          [disabled]="radiusKm >= 30 || requestLocked"
           [attr.aria-label]="tr('Élargir le rayon', 'توسيع النطاق')"
         >
           +
@@ -146,63 +148,51 @@
         }}
       </p>
 
-      <label for="home-query">
-        {{ tr('Nom du barbier ou du salon', 'اسم الحلاق أو الصالون') }}
-      </label>
-
-      <input
-        id="home-query"
-        type="search"
-        [(ngModel)]="query"
-        (ngModelChange)="refresh()"
-      />
-
-      <div class="filter-grid">
-        <div>
-          <label for="home-category">
-            {{ tr('Type', 'النوع') }}
-          </label>
-
-          <select
-            id="home-category"
-            [(ngModel)]="category"
-            (ngModelChange)="refresh()"
-          >
-            <option value="">{{ tr('Tous', 'الكل') }}</option>
-            <option value="HOMME">{{ tr('Homme', 'رجال') }}</option>
-            <option value="FEMME">{{ tr('Femme', 'نساء') }}</option>
-            <option value="MIXTE">{{ tr('Mixte', 'مختلط') }}</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="home-rating">
-            {{ tr('Note minimale', 'أدنى تقييم') }}
-          </label>
-
-          <select
-            id="home-rating"
-            [(ngModel)]="minRating"
-            (ngModelChange)="refresh()"
-          >
-            <option [ngValue]="0">
-              {{ tr('Toutes', 'الكل') }}
-            </option>
-            <option [ngValue]="3">3 ★ +</option>
-            <option [ngValue]="4">4 ★ +</option>
-            <option [ngValue]="5">5 ★</option>
-          </select>
-        </div>
+      <label>{{ tr('Prestations souhaitées', 'الخدمات المطلوبة') }}</label>
+      <div class="service-choices" role="group" [attr.aria-label]="tr('Prestations', 'الخدمات')">
+        <button type="button" *ngFor="let option of serviceOptions"
+          [class.chosen]="services.includes(option)" [attr.aria-pressed]="services.includes(option)"
+          (click)="toggleService(option)">{{ serviceLabel(option) }}</button>
       </div>
+      <label for="other-service">{{ tr('Autres prestations ou précisions', 'خدمات أخرى أو تفاصيل') }}</label>
+      <input id="other-service" name="otherService" [(ngModel)]="otherService" maxlength="300"
+        [placeholder]="tr('Ex. : coupe et barbe pour deux personnes', 'مثال: قص الشعر واللحية لشخصين')" />
+      <p class="help">{{ tr('Tu peux choisir plusieurs prestations.', 'يمكنك اختيار عدة خدمات.') }}</p>
 
-      <p class="help">
-        {{
-          tr(
-            'Seuls les barbiers autorisés à domicile, avec une position renseignée dans cette zone, apparaissent.',
-            'تظهر فقط حسابات الحلاقين المعتمدين للخدمة المنزلية والذين حددوا مواقعهم داخل هذا النطاق.'
-          )
-        }}
+      <label for="home-price">{{ tr('Prix total proposé (DH)', 'السعر الإجمالي المقترح (درهم)') }}</label>
+      <input id="home-price" name="price" type="number" inputmode="decimal" required
+        min="0.01" max="100000" step="0.01" [(ngModel)]="price" />
+      <p class="help">{{ tr('Budget pour l’ensemble des prestations. Le professionnel confirmera le prix, déplacement compris.', 'ميزانية جميع الخدمات. يؤكد المهني السعر مع التنقل.') }}</p>
+
+      <label for="home-timing">{{ tr('Quand ?', 'متى؟') }}</label>
+      <select id="home-timing" name="timing" [(ngModel)]="timing">
+        <option value="now">{{ tr('Dès que possible', 'في أقرب وقت') }}</option>
+        <option value="scheduled">{{ tr('Choisir une date et une heure', 'اختيار تاريخ وموعد') }}</option>
+      </select>
+      <ng-container *ngIf="timing === 'scheduled'">
+        <label for="home-date">{{ tr('Date et heure souhaitées', 'التاريخ والوقت المطلوبان') }}</label>
+        <input id="home-date" name="requestedAt" type="datetime-local" required [(ngModel)]="requestedAt" />
+        <p class="help">{{ tr('Saisis l’heure locale de ton appareil. Le message indiquera l’heure correspondante au Maroc.', 'أدخل توقيت جهازك المحلي. ستظهر الرسالة التوقيت الموافق في المغرب.') }}</p>
+      </ng-container>
+      </fieldset>
+
+      <p class="help">{{ tr('La demande sera envoyée dans Messages aux professionnels à domicile présents dans le rayon. Les prestations, le prix et la disponibilité restent à confirmer. Seul un point approximatif est transmis ; partage ton adresse exacte après accord.', 'يرسل الطلب عبر الرسائل إلى مهنيي الخدمة المنزلية في النطاق. تؤكد الخدمات والسعر والتوفر في المحادثة. يرسل موقع تقريبي فقط؛ شارك العنوان الدقيق بعد الاتفاق.') }}</p>
+      <p class="error" *ngIf="sendError" role="alert">{{ sendError }}</p>
+      <button *ngIf="session.isClient() && !requestLocked" type="submit" class="primary full"
+        [disabled]="requestForm.invalid || (!services.length && !otherService.trim()) || positionSource === 'preview' || !zoneAvailable || loading || landLoading || !!dataError || !!landError || !results.length">
+        {{ tr('Lancer la recherche', 'بدء البحث') }} · {{ results.length }}
+      </button>
+      <a *ngIf="session.isGuest()" routerLink="/login" class="primary full login-link">
+        {{ tr('Se connecter pour lancer la recherche', 'سجل الدخول لبدء البحث') }}
+      </a>
+      <p *ngIf="!session.isClient() && !session.isGuest()" class="notice">
+        {{ tr('La demande est réservée aux comptes clients.', 'الطلب متاح لحسابات الزبائن.') }}
       </p>
+      <button *ngIf="requestLocked" type="button" class="secondary full" (click)="newRequest()" [disabled]="sending">
+        {{ tr('Préparer une nouvelle demande', 'إعداد طلب جديد') }}
+      </button>
+      <p *ngIf="requestLocked" class="help">{{ tr('Une nouvelle demande n’annule pas les messages déjà envoyés.', 'الطلب الجديد لا يلغي الرسائل المرسلة.') }}</p>
+      </form>
     </aside>
 
     <div class="map-column">
@@ -224,22 +214,27 @@
         </button>
       </div>
 
-      <div class="success" *ngIf="sentTo" role="status">
-        {{
-          tr(
-            'Ta demande a été envoyée au barbier. Confirmez le prix et le rendez-vous dans la discussion.',
-            'تم إرسال طلبك إلى الحلاق. أكدا السعر والموعد في المحادثة.'
-          )
-        }}
-
-        <a [routerLink]="['/chat', sentTo]">
-          {{ tr('Ouvrir la discussion', 'فتح المحادثة') }} →
-        </a>
-      </div>
+      <section *ngIf="requestLocked" class="request-status" aria-live="polite" aria-atomic="true">
+        <h2>{{ sending ? tr('Envoi de ta demande…', 'جارٍ إرسال طلبك…') : tr('Suivi des envois', 'متابعة الإرسال') }}</h2>
+        <p>{{ sentCount }} / {{ deliveries.length }} {{ tr('envois confirmés', 'إرسالات مؤكدة') }}</p>
+        <p *ngIf="!sending && sentCount" class="success">
+          {{ tr('Demande envoyée. Consulte les discussions pour les réponses et confirme le rendez-vous avec un professionnel.', 'تم إرسال الطلب. راجع المحادثات للاطلاع على الردود وتأكيد الموعد مع أحد المهنيين.') }}
+        </p>
+        <p *ngIf="!sending && failedCount" class="notice">
+          {{ failedCount }} {{ tr('envoi(s) non confirmé(s). Vérifie les discussions avant de réessayer pour éviter un doublon.', 'إرسالات غير مؤكدة. تحقق من المحادثات قبل إعادة المحاولة لتجنب التكرار.') }}
+        </p>
+        <ul class="delivery-list">
+          <li *ngFor="let item of deliveries">
+            <span>{{ item.name }}</span>
+            <span>{{ item.state === 'sent' ? tr('Envoyée', 'أرسلت') : item.state === 'failed' ? tr('Non confirmé', 'غير مؤكد') : tr('En cours', 'قيد الإرسال') }}</span>
+            <a *ngIf="item.state !== 'pending'" [routerLink]="['/chat', item.id]">{{ tr('Discussion', 'المحادثة') }} ↗</a>
+          </li>
+        </ul>
+      </section>
 
       <div class="results-heading">
         <h2>
-          {{ tr('Barbiers dans la zone', 'الحلاقون في النطاق') }}
+          {{ tr('Professionnels à domicile dans la zone', 'مهنيو الخدمة المنزلية في النطاق') }}
         </h2>
         <span aria-live="polite">{{ results.length }}</span>
       </div>
@@ -272,7 +267,7 @@
         <p>
           {{
             tr(
-              'Élargis le rayon ou change les filtres pour voir plus de professionnels.',
+              'Élargis le rayon ou choisis un autre point. Aucune demande ne sera envoyée tant que la zone est vide.',
               'وسّع نطاق البحث أو غيّر المرشحات لعرض المزيد من الحلاقين.'
             )
           }}
@@ -281,207 +276,16 @@
         <button
           type="button"
           class="secondary"
-          [disabled]="radiusKm >= 30"
+          [disabled]="radiusKm >= 30 || requestLocked"
           (click)="setRadius(radiusKm + 5, true)"
         >
           {{ tr('Élargir de 5 km', 'توسيع النطاق بـ5 كم') }}
         </button>
       </div>
 
-      <div class="barber-grid">
-        <article class="barber-card" *ngFor="let barber of results">
-          <div class="barber-avatar" aria-hidden="true">
-            {{ barber.name.slice(0, 1) }}
-          </div>
-
-          <div class="barber-info">
-            <h3>{{ barber.shopName || barber.name }}</h3>
-
-            <p>
-              {{ barber.name }} ·
-              {{ barber.km | number:'1.1-1' }} km
-            </p>
-
-            <p>
-              ★ {{ barber.averageRating || 0 }} ·
-              {{ barber.reviewCount || 0 }}
-              {{ tr('avis', 'تقييم') }}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            class="secondary full"
-            (click)="openRequest(barber)"
-          >
-            {{ tr('Voir et demander', 'عرض وإرسال طلب') }}
-          </button>
-        </article>
-      </div>
+      <p class="help" *ngIf="results.length && !requestLocked">
+        {{ tr('Tu n’as pas besoin de choisir un nom : complète les critères et lance la recherche.', 'لا تحتاج لاختيار اسم: أكمل المعايير وابدأ البحث.') }}
+      </p>
     </div>
   </div>
-
-  <dialog
-    #requestDialog
-    class="request-dialog"
-    (cancel)="cancelDialog($event)"
-  >
-    <div
-      *ngIf="selected as barber"
-      [attr.dir]="lang.isArabic() ? 'rtl' : 'ltr'"
-    >
-      <div class="panel-title">
-        <h2>{{ barber.shopName || barber.name }}</h2>
-
-        <button
-          type="button"
-          class="close-btn"
-          (click)="closeRequest()"
-          [disabled]="sending"
-          [attr.aria-label]="tr('Fermer', 'إغلاق')"
-        >
-          ×
-        </button>
-      </div>
-
-      <p>
-        {{ barber.name }} · {{ barber.km | number:'1.1-1' }} km
-      </p>
-
-      <a
-        [routerLink]="['/barbers', barber.id]"
-        (click)="closeRequest()"
-      >
-        {{ tr('Voir son profil', 'عرض الملف الشخصي') }} ↗
-      </a>
-
-      <p class="help">
-        {{
-          tr(
-            'Le barbier recevra ta demande dans Messages. Vous confirmerez ensemble la date, le prix et sa disponibilité.',
-            'سيتلقى الحلاق طلبك في الرسائل. ستتفقان معاً على التاريخ والسعر والتوفر.'
-          )
-        }}
-      </p>
-
-      <p class="notice" *ngIf="positionSource === 'preview'">
-        {{
-          tr(
-            'Ferme cette fiche et confirme ta position avec le GPS ou un clic sur la carte.',
-            'أغلق هذه النافذة وأكد موقعك عبر GPS أو الضغط على الخريطة.'
-          )
-        }}
-      </p>
-
-      <ng-container *ngIf="session.isClient(); else loginRequired">
-        <form
-          (ngSubmit)="sendRequest()"
-          #requestForm="ngForm"
-        >
-          <label for="request-service">
-            {{ tr('Service souhaité', 'الخدمة المطلوبة') }}
-          </label>
-
-          <input
-            id="request-service"
-            name="service"
-            [(ngModel)]="service"
-            required
-            maxlength="300"
-            [disabled]="sending"
-          />
-
-          <label for="request-price">
-            {{ tr('Prix proposé (MAD)', 'السعر المقترح (درهم)') }}
-          </label>
-
-          <input
-            id="request-price"
-            name="price"
-            type="number"
-            [(ngModel)]="price"
-            required
-            min="0.01"
-            max="100000"
-            step="0.01"
-            [disabled]="sending"
-          />
-
-          <label for="request-address">
-            {{
-              tr(
-                'Adresse et précisions pour le déplacement',
-                'العنوان وتفاصيل الوصول'
-              )
-            }}
-          </label>
-
-          <textarea
-            id="request-address"
-            name="address"
-            [(ngModel)]="address"
-            required
-            maxlength="500"
-            rows="3"
-            [disabled]="sending"
-          ></textarea>
-
-          <p class="help">
-            {{
-              tr(
-                'L’adresse et le point choisi seront partagés dans ta demande à ce barbier.',
-                'سيتم إرسال العنوان والنقطة المحددة ضمن طلبك إلى هذا الحلاق.'
-              )
-            }}
-          </p>
-
-          <p class="error" *ngIf="sendError" role="alert">
-            {{ sendError }}
-          </p>
-
-          <button
-            type="submit"
-            class="primary full"
-            [disabled]="
-              sending ||
-              requestForm.invalid ||
-              positionSource === 'preview' ||
-              !zoneAvailable
-            "
-          >
-            {{
-              sending
-                ? tr('Envoi…', 'جارٍ الإرسال…')
-                : tr('Envoyer la demande au barbier', 'إرسال الطلب إلى الحلاق')
-            }}
-          </button>
-        </form>
-      </ng-container>
-
-      <ng-template #loginRequired>
-        <a
-          *ngIf="session.isGuest()"
-          class="primary full login-link"
-          routerLink="/login"
-          (click)="closeRequest()"
-        >
-          {{
-            tr(
-              'Se connecter pour envoyer une demande',
-              'تسجيل الدخول لإرسال طلب'
-            )
-          }}
-        </a>
-
-        <p *ngIf="!session.isGuest()" class="notice">
-          {{
-            tr(
-              'L’envoi de demandes est réservé aux comptes clients.',
-              'إرسال الطلبات متاح لحسابات الزبائن.'
-            )
-          }}
-        </p>
-      </ng-template>
-    </div>
-  </dialog>
 </section>

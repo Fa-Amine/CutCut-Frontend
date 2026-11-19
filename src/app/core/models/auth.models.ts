@@ -34,6 +34,7 @@ export interface RegisterBarberRequest {
 }
 
 export interface AuthResponse {
+  homeServiceToken?: string;
   id: number;
   name: string;
   email: string;

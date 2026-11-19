@@ -1,0 +1,32 @@
+<section class="home-admin">
+  <h2>Validation des prestations à domicile</h2>
+  <app-home-private-auth (unlocked)="unlockComplete()"></app-home-private-auth>
+  <ng-container *ngIf="api.ready()">
+    <div class="toolbar">
+      <label><input type="checkbox" [ngModel]="pendingOnly()" (ngModelChange)="pendingOnly.set($event)" /> Dossiers en attente uniquement</label>
+      <button type="button" (click)="reload()" [disabled]="loading() || busyId() !== null">{{ loading() ? 'Chargement…' : 'Actualiser' }}</button>
+    </div>
+    <p class="error" *ngIf="error()" role="alert">{{ error() }}</p>
+    <p class="success" *ngIf="success()" role="status">{{ success() }}</p>
+    <p *ngIf="!loading() && !error() && !visible().length">Aucun dossier dans cette liste.</p>
+    <article *ngFor="let dossier of visible()" class="dossier">
+      <header><h3>{{ dossier.barberName }} · #{{ dossier.barberId }}</h3><span>{{ dossier.status }}</span></header>
+      <p>{{ dossier.city || 'Ville non renseignée' }} · {{ dossier.experienceYears ?? '—' }} an(s) d’expérience</p>
+      <p class="description">{{ dossier.experienceDescription }}</p>
+      <p class="meta">Dépôt : {{ dossier.createdAt | date:'medium' }}</p>
+      <app-home-document-viewer [requestId]="dossier.id" (viewed)="documentViewed(dossier.id, $event)"></app-home-document-viewer>
+      <ng-container *ngIf="dossier.status === 'PENDING'">
+        <p class="meta">{{ viewedCount(dossier.id) }} / 4 photos consultées pendant cette session.</p>
+        <label class="confirmation"><input type="checkbox" [(ngModel)]="confirmations[dossier.id]" [disabled]="busyId() !== null" /> J’ai examiné les quatre photos et validé les informations du dossier.</label>
+        <button class="approve" type="button" (click)="approve(dossier)" [disabled]="busyId() !== null || !canApprove(dossier)">Accepter et activer</button>
+        <label class="reason">Motif du refus (obligatoire pour refuser)
+          <textarea rows="2" maxlength="255" [(ngModel)]="reasons[dossier.id]" [disabled]="busyId() !== null"></textarea>
+        </label>
+        <button class="reject" type="button" (click)="reject(dossier)" [disabled]="busyId() !== null || !reasons[dossier.id]?.trim()">Refuser avec ce motif</button>
+        <p *ngIf="busyId() === dossier.id" role="status">Enregistrement de la décision…</p>
+      </ng-container>
+      <p *ngIf="dossier.rejectionReason" class="error">Motif : {{ dossier.rejectionReason }}</p>
+      <p *ngIf="dossier.reviewedAt" class="meta">Décision : {{ dossier.reviewedAt | date:'medium' }}</p>
+    </article>
+  </ng-container>
+</section>

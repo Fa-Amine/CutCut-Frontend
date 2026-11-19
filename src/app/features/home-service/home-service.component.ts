@@ -16,6 +16,9 @@ import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as L from 'leaflet';
+import { from, of } from 'rxjs';
+import { catchError, finalize, map, mergeMap } from 'rxjs/operators';
+import { buildHomeRequest } from './home-request.utils';
 import type { MultiPolygon } from 'polygon-clipping';
 
 import { BarberService } from '../../core/services/barber.service';
@@ -29,7 +32,6 @@ import {
   distanceKm,
   landZone,
   onLand,
-  requestMessage,
   resizeHandle,
   validPosition,
 } from './home-search.utils';
@@ -55,9 +57,6 @@ export class HomeServiceComponent
   @ViewChild('mapHost', { static: true })
   private mapHost!: ElementRef<HTMLDivElement>;
 
-  @ViewChild('requestDialog', { static: true })
-  private requestDialog!: ElementRef<HTMLDialogElement>;
-
   private readonly api = inject(BarberService);
   private readonly chat = inject(ChatService);
   private readonly zone = inject(NgZone);
@@ -74,9 +73,6 @@ export class HomeServiceComponent
   positionSource: 'preview' | 'gps' | 'manual' = 'preview';
 
   radiusKm = 10;
-  query = '';
-  category = '';
-  minRating = 0;
 
   barbers: BarberListItem[] = [];
   results: NearbyBarber[] = [];
@@ -91,15 +87,43 @@ export class HomeServiceComponent
   landLoading = false;
   zoneAvailable = false;
 
-  selected: NearbyBarber | null = null;
+  readonly serviceOptions = ['Coupe', 'Barbe', 'Coiffure', 'Soin du visage'];
+  services: string[] = [];
+  otherService = '';
+  timing: 'now' | 'scheduled' = 'now';
+  requestedAt = '';
+  deliveries: { id: number; name: string; state: 'pending' | 'sent' | 'failed' }[] = [];
+  batchContent: string | null = null;
 
-  service = '';
+  get requestLocked(): boolean { return this.batchContent !== null; }
+  get sentCount(): number { return this.deliveries.filter(item => item.state === 'sent').length; }
+  get failedCount(): number { return this.deliveries.filter(item => item.state === 'failed').length; }
+
+  serviceLabel(value: string): string {
+    const labels: Record<string, string> = {
+      'Coupe': 'قص الشعر', 'Barbe': 'اللحية', 'Coiffure': 'تصفيف الشعر', 'Soin du visage': 'العناية بالوجه',
+    };
+    return this.tr(value, labels[value] || value);
+  }
+
+  toggleService(value: string): void {
+    if (this.requestLocked) return;
+    this.services = this.services.includes(value)
+      ? this.services.filter(item => item !== value) : [...this.services, value];
+  }
+
+  newRequest(): void {
+    if (this.sending) return;
+    this.batchContent = null;
+    this.deliveries = [];
+    this.sendError = '';
+    this.handle?.dragging?.enable();
+  }
+
   price: number | null = null;
-  address = '';
 
   sending = false;
   sendError = '';
-  sentTo: number | null = null;
 
   private map?: L.Map;
   private tiles?: L.TileLayer;
@@ -297,7 +321,7 @@ export class HomeServiceComponent
   }
 
   locate(): void {
-    if (this.locating) return;
+    if (this.locating || this.requestLocked) return;
 
     if (!navigator.geolocation) {
       this.locationError = this.tr(
@@ -348,6 +372,7 @@ export class HomeServiceComponent
     position: Position,
     source: 'gps' | 'manual',
   ): void {
+    if (this.requestLocked) return;
     if (
       !validPosition(position.lat, position.lng) ||
       !this.land.length
@@ -371,8 +396,6 @@ export class HomeServiceComponent
     this.positionSource = source;
     this.locationError = '';
 
-    this.selected = null;
-    this.sentTo = null;
 
     this.me?.setLatLng([position.lat, position.lng]);
 
@@ -380,13 +403,12 @@ export class HomeServiceComponent
   }
 
   setRadius(value: number, fit = false): void {
+    if (this.requestLocked) return;
     this.radiusKm = clampRadius(Number(value));
     this.refresh(fit);
   }
 
   refresh(fit = false, keepHandle = false): void {
-    const query = this.query.trim().toLocaleLowerCase();
-
     this.results = this.barbers
       .filter(
         (barber) =>
@@ -413,22 +435,6 @@ export class HomeServiceComponent
             this.land,
           ),
       )
-      .filter(
-        (barber) =>
-          !this.category ||
-          barber.category?.toUpperCase() === this.category,
-      )
-      .filter(
-        (barber) =>
-          (barber.averageRating ?? 0) >= Number(this.minRating),
-      )
-      .filter(
-        (barber) =>
-          !query ||
-          `${barber.name} ${barber.shopName ?? ''}`
-            .toLocaleLowerCase()
-            .includes(query),
-      )
       .sort((a, b) => a.km - b.km);
 
     this.drawZone(fit, keepHandle);
@@ -454,9 +460,6 @@ export class HomeServiceComponent
         title: barber.name,
       })
         .bindTooltip(tooltip)
-        .on('click', () =>
-          this.zone.run(() => this.openRequest(barber)),
-        )
         .addTo(this.markers);
     }
   }
@@ -517,6 +520,7 @@ export class HomeServiceComponent
 
         this.handle.on('drag', () =>
           this.zone.run(() => {
+            if (this.requestLocked) return;
             this.radiusKm = clampRadius(
               distanceKm(
                 this.center,
@@ -546,102 +550,73 @@ export class HomeServiceComponent
     if (this.map && this.area && this.zoneAvailable) {
       this.map.fitBounds(this.area.getBounds(), {
         padding: [40, 40],
-        maxZoom: 15,
+        maxZoom: 13,
         animate: false,
       });
     }
   }
 
-  openRequest(barber: NearbyBarber): void {
-    if (this.sending) return;
-
-    this.selected = barber;
-    this.sendError = '';
-    this.sentTo = null;
-
-    if (!this.requestDialog.nativeElement.open) {
-      this.requestDialog.nativeElement.showModal();
-    }
-  }
-
-  closeRequest(): void {
-    if (!this.sending) {
-      this.requestDialog.nativeElement.close();
-    }
-  }
-
-  cancelDialog(event: Event): void {
-    if (this.sending) {
-      event.preventDefault();
-    }
-  }
-
   sendRequest(): void {
     const id = this.session.userId();
-    const barber = this.selected;
-
-    if (
-      this.sending ||
-      !id ||
-      !this.session.isClient() ||
-      !barber ||
-      this.positionSource === 'preview' ||
-      !this.zoneAvailable
-    ) {
+    if (this.sending || this.requestLocked) return;
+    this.sendError = '';
+    if (!id || !this.session.isClient()) return;
+    if (this.positionSource === 'preview' || !this.zoneAvailable) {
+      this.sendError = this.tr('Confirme ta position sur la carte.', 'أكد موقعك على الخريطة.');
       return;
     }
-
-    if (!this.results.some((item) => item.id === barber.id)) {
-      this.sendError = this.tr(
-        'Ce barbier ne fait plus partie des résultats. Choisis-en un autre.',
-        'لم يعد هذا الحلاق ضمن النتائج. اختر حلاقاً آخر.',
-      );
+    if (this.loading || this.dataError || this.landLoading || this.landError) {
+      this.sendError = this.tr('Attends le chargement ou réessaie.', 'انتظر التحميل أو حاول مجدداً.');
       return;
     }
-
     let content: string;
-
     try {
-      content = requestMessage(
-        this.service,
-        Number(this.price),
-        this.address,
-        this.center,
-      );
+      content = buildHomeRequest({
+        services: [...this.services, this.otherService], price: Number(this.price),
+        timing: this.timing, requestedAt: this.requestedAt,
+        center: this.center, radiusKm: this.radiusKm,
+      });
     } catch {
       this.sendError = this.tr(
-        'Renseigne le service, une adresse et un prix entre 0,01 et 100 000 MAD.',
-        'أدخل الخدمة والعنوان وسعراً بين 0,01 و100 000 درهم.',
+        'Choisis une prestation, un prix entre 0,01 et 100 000 DH et, si nécessaire, un horaire futur.',
+        'اختر خدمة وسعراً بين 0,01 و100 000 درهم، وموعداً مستقبلياً عند الحاجة.',
       );
       return;
     }
-
+    // A fixed recipient list prevents new arrivals from receiving a request silently.
+    const recipients = [...new Map(this.results
+      .filter(item => item.id !== id)
+      .map(item => [item.id, item])).values()];
+    if (!recipients.length) {
+      this.sendError = this.tr(
+        'Aucun professionnel à domicile dans ce rayon. Élargis la zone.',
+        'لا يوجد مهني للخدمة المنزلية في هذا النطاق. وسّع البحث.',
+      );
+      return;
+    }
+    this.batchContent = content;
+    this.deliveries = recipients.map(item => ({
+      id: item.id, name: item.shopName || item.name, state: 'pending',
+    }));
     this.sending = true;
-    this.sendError = '';
-
-    this.chat
-      .sendMessage(id, barber.id, content)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.sending = false;
-          this.sentTo = barber.id;
-
-          this.requestDialog.nativeElement.close();
-
-          this.service = '';
-          this.price = null;
-          this.address = '';
-        },
-        error: () => {
-          this.sending = false;
-
-          this.sendError = this.tr(
-            'L’envoi a échoué. Ta demande est conservée dans le formulaire, tu peux réessayer.',
-            'تعذر الإرسال. طلبك محفوظ في النموذج، يمكنك المحاولة مجدداً.',
-          );
-        },
-      });
+    this.handle?.dragging?.disable();
+    from(this.deliveries).pipe(
+      // Bound concurrency; each success/error is shown separately. No automatic retries.
+      mergeMap(target => this.chat.sendMessage(id, target.id, content).pipe(
+        map(() => ({ target, state: 'sent' as const })),
+        catchError(() => of({ target, state: 'failed' as const })),
+      ), 3),
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => { this.sending = false; }),
+    ).subscribe(({ target, state }) => {
+      target.state = state;
+      if (state === 'failed') {
+        this.sendError = this.tr(
+          'Certains envois ne sont pas confirmés. Consulte les discussions avant de contacter ces professionnels à nouveau.',
+          'لم يتم تأكيد بعض الإرسالات. تحقق من المحادثات قبل التواصل مجدداً.',
+        );
+      }
+    });
   }
 
   ngOnDestroy(): void {
