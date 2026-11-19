@@ -34,3 +34,14 @@ a:focus-visible,button:focus-visible { outline:3px solid #1676ff; outline-offset
 .application-form input[type=file] { font-size:12px; }
 .application-form textarea { resize:vertical; }
 .application-form .button { width:100%; }
+
+.application-layout { grid-template-columns:minmax(0, 740px); justify-content:center; }
+.application-layout .application-form { margin-top:22px; }
+.application-layout .actions { grid-template-columns:repeat(2, minmax(0,1fr)); }
+.application-steps { display:flex; flex-wrap:wrap; gap:12px 24px; list-style:none; margin:0 auto 24px; padding:0; max-width:740px; }
+.application-steps li { display:flex; align-items:center; gap:8px; color:#65717d; font-size:13px; }
+.application-steps span { display:inline-grid; place-items:center; width:28px; height:28px; border-radius:50%; background:#e5e9ee; color:#52606d; font-weight:700; }
+.application-steps .current { color:#171717; font-weight:700; }
+.application-steps .current span { background:#171717; color:#fff; }
+.documents-note summary { cursor:pointer; font-size:14px; font-weight:650; min-height:32px; }
+@media(max-width:600px) { .application-layout .actions { grid-template-columns:1fr; } }
